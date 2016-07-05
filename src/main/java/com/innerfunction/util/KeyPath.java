@@ -1,0 +1,101 @@
+// Copyright 2016 InnerFunction Ltd.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License
+package com.innerfunction.util;
+
+import java.util.List;
+import java.util.Map;
+
+/**
+ * A utility for providing key-path access to collections.
+ * A key path is a string containing a series of keys separated by full-stops (.). Keys are used to
+ * lookup values in Map instances; keys are converted to integers and used to lookup items in
+ * List instances.
+ * Values can be modified on the fly by using a Modifier instance.
+ * Created by juliangoacher on 26/03/16.
+ */
+public class KeyPath {
+
+    /**
+     * An interface allowing on-the-fly modification of values found along a key path.
+     */
+    public interface Modifier {
+        /**
+         * Modify the object that a key will be resolved on.
+         * @param key       The current key.
+         * @param object    The current object.
+         * @return The object that key should be resolved on. Can be null, in which case no object
+         * resolution will be done.
+         */
+        public Object modifyObject(String key, Object object);
+        /**
+         * Modify the value found mapped to a key.
+         * @param key       The key used to lookup the value.
+         * @param value     The value to modify. Can be null.
+         * @return The modified value. Can be null.
+         */
+        public Object modifyValue(String key, Object value);
+    }
+
+    /**
+     * Resolve a key path on a root object.
+     * No value modifications are performed.
+     * @param keyPath   The key path to resolve.
+     * @param rootValue The root object.
+     * @return The resolved value, or null if the value can't be resolved.
+     */
+    public static Object resolve(String keyPath, Object rootValue) {
+        return resolve( keyPath, rootValue, null );
+    }
+
+    /**
+     * Resolve a key path on a root object.
+     * @param keyPath   The key path to resolve.
+     * @param rootValue The root object.
+     * @param modifier  An object used to modify objects and values as the key path is resolved.
+     *                  Can be null, in which case no modifications are done.
+     * @return The resolved value, or null if the value can't be resolved.
+     */
+    public static Object resolve(String keyPath, Object rootValue, Modifier modifier) {
+        String[] keys = keyPath.split("\\.");
+        int i = 0;
+        Object value = rootValue;
+        while( value != null && i < keys.length ) {
+            if( modifier != null ) {
+                value = modifier.modifyObject( keys[i], value );
+            }
+            if( value instanceof Map) {
+                // Attempt to read the next value using the key as the map key.
+                value = ((Map)value).get( keys[i] );
+            }
+            else if( value instanceof List) {
+                try {
+                    // Attempt to read the next value using the key as the list index.
+                    int key = Integer.valueOf( keys[i] );
+                    value = ((List)value).get( key );
+                }
+                catch(NumberFormatException e) {
+                    value = null;
+                }
+            }
+            else {
+                value = null;
+            }
+            if( modifier != null ) {
+                value = modifier.modifyValue( keys[i], value );
+            }
+            i++;
+        }
+        return value;
+    }
+}

@@ -1,0 +1,437 @@
+// Copyright 2016 InnerFunction Ltd.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License
+package com.innerfunction.util;
+
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.io.StringBufferInputStream;
+import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
+
+import org.json.simple.JSONValue;
+import org.json.simple.parser.ParseException;
+
+import android.content.Context;
+import android.os.Environment;
+import android.util.Log;
+
+/**
+ * Utility methods for reading and writing files and streams.
+ * @author juliangoacher
+ *
+ */
+@SuppressWarnings("deprecation")
+public class Files {
+
+    static final String LogTag = "Files";
+
+    /** Test whether a file exists at the specified path. */
+    public static boolean fileExists(String path) {
+        return new File( path ).exists();
+    }
+
+    /** Test whether a directory exists at the specified path. */
+    public static boolean dirExists(String path) {
+        return new File( path ).isDirectory();
+    }
+
+    /** Read data from a file and return as a byte array. */
+    public static byte[] readData(File file) throws FileNotFoundException{
+        byte[] data = null;
+        FileInputStream fin = null;
+        try {
+            fin = new FileInputStream( file );
+            data = new byte[ (int)file.length() ];
+            fin.read( data, 0, data.length );
+        }
+        catch(FileNotFoundException e){
+            throw e;
+        }
+        catch(Exception e) {
+            Log.e( LogTag, String.format("Reading file %s", file.getPath() ), e );
+        }
+        finally {
+            try {
+                fin.close();
+            }
+            catch(Exception e) {}
+        }
+        return data;
+    }
+
+    /**
+     * Read data from an input stream and return as a byte array.
+     * @param in    The input stream to read from.
+     * @param name  A name (e.g. a filename) associated with the stream; used for logging.
+     * @return A byte array containing the data.
+     */
+    public static byte[] readData(InputStream in, String name) {
+        ByteArrayOutputStream result = new ByteArrayOutputStream( 16384 );
+        try {
+            byte[] buffer = new byte[16384];
+            int read;
+            while( (read = in.read( buffer )) != -1 ) {
+                result.write( buffer, 0, read );
+            }
+        }
+        catch(Exception e) {
+            Log.e( LogTag, String.format("Reading stream %s", name ), e );
+        }
+        finally {
+            try {
+                in.close();
+            }
+            catch(Exception e) {}
+        }
+        return result.toByteArray();
+    }
+
+
+    /**
+     * Read data from a file and return as a string.
+     * @param path      The path to the file to read from.
+     * @param encoding  The file's encoding.
+     * @return A string containing the file's data.
+     */
+    public static String readString(String path, String encoding) {
+        return readString( new File( path ), encoding );
+    }
+
+    /**
+     * Read data from a file and return as a string.
+     * @param file      The file to read from.
+     * @param encoding  The file's encoding.
+     * @return A string containing the file's data.
+     */
+    public static String readString(File file, String encoding) {
+        String str = null;
+        try {
+            str = new String( Files.readData( file ), encoding );
+        }
+        catch (FileNotFoundException e){
+            Log.e( LogTag, String.format("File not found %s", file.getAbsolutePath()));
+        }
+        catch(UnsupportedEncodingException e) {
+            Log.e( LogTag, String.format("%s decoding error", encoding) );
+        }
+        return str;
+    }
+
+    /**
+     * Read data from an input stream and return as a string.
+     * @param in    The input stream to read from.
+     * @param name  A name (e.g. a filename) associated with the stream; used for logging.
+     * @param encoding The string encoding used by the stream.
+     * @return A string containing the data.
+     */
+    public static String readString(InputStream in, String name, String encoding) {
+        String str = null;
+        try {
+            str = new String( Files.readData( in, name ), encoding );
+        }
+        catch(UnsupportedEncodingException e) {
+            Log.e( LogTag, String.format("%s decoding error", encoding) );
+        }
+        return str;
+    }
+
+    /**
+     * Read a JSON file.
+     * @param file      The file to read from.
+     * @param encoding  The file's string encoding.
+     * @return An object representing the parsed file contents.
+     * @throws FileNotFoundException    If the file isn't found.
+     * @throws ParseException           If the file doesn't contain valid JSON.
+     */
+    public static Object readJSON(File file, String encoding) throws FileNotFoundException, ParseException {
+        return JSONValue.parse( readString( file, encoding ) );
+    }
+
+    /**
+     * Read JSON from an input stream.
+     * @param in        The stream to read from.
+     * @param name      A name (e.g. filename) associated with the stream; used for logging.
+     * @param encoding  The stream's string encoding.
+     * @return An object representing the parsed stream contents.
+     * @throws ParseException   If the stream doesn't contain valid JSON.
+     */
+    public static Object readJSON(InputStream in, String name, String encoding) throws ParseException {
+        return JSONValue.parse( readString( in, name, encoding ) );
+    }
+
+    /**
+     * Write data from an input stream to a file.
+     * Overwrites any data already in the file.
+     * @param file  The file to write to.
+     * @param in    An input stream containing the data to write.
+     * @return Returns true if the data was successfully written.
+     */
+    public static boolean writeData(File file, InputStream in) {
+        return Files.writeData( file, in, false );
+    }
+
+    /**
+     * Write data from an input stream to a file.
+     * @param file      The file to write to.
+     * @param in        An input stream containing the data to write.
+     * @param append    If true then data is appended to the file; otherwise the file is
+     *                  overwritten.
+     * @return Returns true if the data was successfully written.
+     */
+    public static boolean writeData(File file, InputStream in, boolean append) {
+        boolean ok = true;
+        FileOutputStream fout = null;
+        try {
+            byte[] buffer = new byte[16384];
+            fout = new FileOutputStream( file, append );
+            int length;
+            while( (length = in.read( buffer )) > 0 ) {
+                fout.write( buffer, 0, length );
+            }
+        }
+        catch(Exception e) {
+            Log.e(LogTag, String.format("Writing %s", file ), e );
+        }
+        finally {
+            try {
+                fout.close();
+            }
+            catch(Exception e) {}
+        }
+        return ok;
+    }
+
+    /**
+     * Write a string to a file.
+     * Uses the system default string encoding. Overwrites any data already in the file.
+     * @param file  The file to write to.
+     * @param s     The string to write.
+     * @return Returns true if the string was successfully written to the file.
+     */
+    public static boolean writeString(File file, String s) {
+        return Files.writeData( file, new StringBufferInputStream( s ) );
+    }
+
+    /**
+     * Unzip a zip archive.
+     * @param zipFile   The file containing the zip archive.
+     * @param targetDir The directory to write the archive's contents to.
+     * @return Returns An array containing the full path of each unzipped file, or null if the file
+     *         couldn't be unzipped.
+     */
+    public static String[] unzip(File zipFile, File targetDir) {
+        FileInputStream in = null;
+        try {
+            in = new FileInputStream( zipFile );
+            return unzip( in, targetDir );
+        }
+        catch(Exception e) {
+            Log.e(LogTag, String.format("Unzipping %s", zipFile ), e );
+        }
+        return null;
+    }
+
+    /**
+     * Unzip an input stream containing a zip archive.
+     * @param in        The stream containing the zip archive.
+     * @param targetDir The directory to write the archive's contents to.
+     * @return Returns An array containing the full path of each unzipped file, or null if the file
+     *         couldn't be unzipped.
+     */
+    public static String[] unzip(InputStream in, File targetDir) {
+        String[] result = null;
+        List<String> files = new ArrayList<>();
+        ZipInputStream zin = null;
+        try {
+            zin = new ZipInputStream( in );
+            ZipEntry entry;
+            // Process each zip file entry.
+            while( (entry = zin.getNextEntry()) != null ) {
+                String fileName = entry.getName();
+                File entryFile = new File( targetDir, fileName );
+                if( entry.isDirectory() ) {
+                    if( !entryFile.isDirectory() ) {
+                        entryFile.mkdirs();
+                    }
+                }
+                else {
+                    File parentDir = entryFile.getParentFile();
+                    if( !parentDir.isDirectory() ) {
+                        parentDir.mkdirs();
+                    }
+                    Files.writeData( entryFile, zin );
+                }
+                zin.closeEntry();
+                files.add( entryFile.getAbsolutePath() );
+            }
+            // Generate list of unpacked file paths.
+            result = files.toArray( new String[files.size()] );
+        }
+        catch(Exception e) {
+            Log.e(LogTag, "Unzipping input stream");
+        }
+        finally {
+            try {
+                zin.close();
+            }
+            catch(Exception e) {}
+        }
+        return result;
+    }
+
+    /** Get the directory to use for content caching. */
+    public static File getCacheDir(Context context) {
+        // TODO: Should instead use getExternalCacheDir?
+        return context.getExternalFilesDir( Environment.DIRECTORY_DOWNLOADS );
+    }
+
+    /**
+     * Remove a directory from the filesystem.
+     * Delete's the directory and all of its contents. The function works by first moving (i.e.
+     * renaming) the directory to a temporary location, and then deleteing it. This is done because
+     * otherwise problems can occur if the directory location is to be reused immediately
+     * afterwards.
+     * @param dir       The directory to delete.
+     * @param context   The app context.
+     * @return Returns true if the directory was successfully deleted.
+     */
+    public static boolean removeDir(File dir, Context context) {
+        boolean ok = false;
+        File cacheDir = Files.getCacheDir( context );
+        if( dir.exists() && dir.toString().startsWith( cacheDir.toString() ) ) {
+            Runtime rt = Runtime.getRuntime();
+            try {
+                // Delete the directory by first moving to a temporary location, then deleting.
+                // This is because deleting in place will cause problems if the location is to be written
+                // to immediately after.
+                File temp = new File( dir.getParentFile(), String.format("fileio-%d-rm", System.currentTimeMillis() ) );
+                dir.renameTo( temp );
+                String cmd = String.format("rm -Rf %s", temp );
+                @SuppressWarnings("unused")
+                Process p = rt.exec( cmd );
+                //p.waitFor(); Uncomment if should wait for rm to complete before continuing (i.e. synchronous behaviour)
+                ok = true;
+            }
+            catch(Exception e) {
+                Log.e(LogTag, String.format("Removing directory %s", dir ), e );
+            }
+        }
+        return ok;
+    }
+
+    /**
+     * Move a file or files from a source location to a target location.
+     * @param from The location to move from. May be a single file or a directory. If a directory
+     *             then all of its file contents are also moved.
+     * @param to   The location to move to. May be specified as a file or directory. Overwrites
+     *             any file already at that location.
+     * @return true if all files were moved.
+     */
+    public static boolean mv(File from, File to) {
+        boolean ok = true;
+        if( from.exists() ) {
+            if( from.isDirectory() ) {
+                if( ensureDirectoryExists( to, true ) ) {
+                    // Iterate over all files in the from directory and move them to the target.
+                    String[] filenames = from.list();
+                    for( String filename : filenames ) {
+                        File file = new File( from, filename );
+                        ok &= mv( file, to );
+                        if( !ok ) {
+                            break;
+                        }
+                    }
+                }
+                else ok = false; // Couldn't create target directory.
+            }
+            else {
+                // Check whether 'to' is a file or directory:
+                // * If a directory, then derive the target file by appending the from filename to
+                //   the target path;
+                // * If a file then get the target directory as the file's parent.
+                File toDir;
+                if( to.isDirectory() ) {
+                    toDir = to;
+                    to = new File( toDir, from.getName() );
+                }
+                else {
+                    toDir = to.getParentFile();
+                }
+                if( ensureDirectoryExists( toDir, true ) ) {
+                    from.renameTo( to );
+                }
+                else ok = false; // Couldn't create target directory.
+            }
+        }
+        return ok;
+    }
+
+    /**
+     * Ensure a directory exists at the path specified by a file.
+     * @param file  A file identifying where the directory should be.
+     * @param deleteExistingFile If true, and if a file already exists at the required path which
+     *                           isn't a directory, then delete that file before creating a new
+     *                           directory.
+     * @return true if a directory exists at the required path.
+     */
+    public static boolean ensureDirectoryExists(File file, boolean deleteExistingFile) {
+        if( !file.exists() ) {
+            // If no file exists at the specified path then create a new directory and all
+            // required parent directories.
+            return file.mkdirs();
+        }
+        boolean isDir = file.isDirectory();
+        if( !isDir && deleteExistingFile ) {
+            // If a non-directory file already exists at the required path then delete it before
+            // creating a new directory.
+            if( file.delete() ) {
+                return file.mkdir();
+            }
+            return false; // File couldn't be deleted.
+        }
+        return isDir; // Return whether the pre-existing file is a directory.
+    }
+
+    /**
+     * Remove a file from the file system.
+     * Handles single files and directories. For directories, will recursively delete all files
+     * and directories below the directory before deleting the file.
+     * @param file
+     * @return true if the file and all its contents were successfully deleted.
+     */
+    public static boolean rm(File file) {
+        boolean ok = true;
+        if( file.isDirectory() ) {
+            // If the file is a directory then recursively delete all of its contents.
+            String[] filenames = file.list();
+            for( String filename : filenames ) {
+                ok &= rm( new File( file, filename ) );
+                if( !ok ) {
+                    break;
+                }
+            }
+        }
+        if( ok ) {
+            ok &= file.delete();
+        }
+        return ok;
+    }
+}
