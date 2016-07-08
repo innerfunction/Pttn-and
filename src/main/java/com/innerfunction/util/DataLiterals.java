@@ -20,11 +20,11 @@ public class DataLiterals {
         }
     }
 
-    public static KeyValuePair _(String key, Object value) {
+    public static KeyValuePair kv(String key, Object value) {
         return new KeyValuePair( key, value );
     }
 
-    public static Map<String,Object> $(KeyValuePair... kvPairs) {
+    public static Map<String,Object> m(KeyValuePair... kvPairs) {
         Map<String,Object> result = new HashMap<>();
         for( KeyValuePair kvPair : kvPairs ) {
             result.put( kvPair.key, kvPair.value );
@@ -32,7 +32,7 @@ public class DataLiterals {
         return result;
     }
 
-    public static List<Object> $(Object... items) {
+    public static List<Object> l(Object... items) {
         return Arrays.asList( items );
     }
 }

@@ -8,7 +8,7 @@ import com.innerfunction.uri.URIScheme;
 import java.util.Map;
 
 /**
- * An internal URI handler for the _new:_ scheme.
+ * An internal URI handler for the _new:kv scheme.
  * The new: scheme allows new components to be instantiated using a URI. The URI's 'name'
  * part specified the type or class name of the object to be instantiated. Dependency injection
  * is then performed using the URI's parameters as configuration values.

@@ -85,9 +85,9 @@ public class AnRBasedScheme extends FileBasedScheme {
         // Build a resource ID by -
         // * stripping any file extension from the asset name;
         // * converting / to __
-        // * converting - to _
+        // * converting - to kv
         // This will convert a name like ep/icons/icon-schedule.png to ep__icons__icon_schedule
-        String resourceID = Paths.stripext( name ).replace("/","__").replace("-","_");
+        String resourceID = Paths.stripext( name ).replace("/","__").replace("-","kv");
         return this.r.getIdentifier( resourceID, resourceType, packageName );
     }
 }

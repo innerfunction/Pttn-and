@@ -98,4 +98,20 @@ public class KeyPath {
         }
         return value;
     }
+
+    /**
+     * Resolve a key path reference and return its value as a string.
+     */
+    public static final String getValueAsString(String keyPath, Object rootValue) {
+        Object value = resolve( keyPath, rootValue );
+        return value == null ? null : value.toString();
+    }
+
+    /**
+     * Resolve a key path reference and return its value as an integer.
+     */
+    public static final int getValueAsInt(String keyPath, Object rootValue) {
+        Object value = resolve( keyPath, rootValue );
+        return value instanceof Number ? ((Number)value).intValue() : null;
+    }
 }

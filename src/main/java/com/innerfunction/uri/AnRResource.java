@@ -130,7 +130,7 @@ public class AnRResource extends FileResource {
         public String asString() {
             String s = null;
             try {
-                s = Files.readString( openInputStream(), getAssetName(), "UTF-8" );
+                s = Files.readString( openInputStream(), getAssetName() );
             }
             catch(IOException e) {
                 Log.e(LogTag, String.format("Reading string from %s", getAssetName()), e );

@@ -35,6 +35,7 @@ import com.innerfunction.uri.StandardURIHandler;
 import com.innerfunction.uri.URIScheme;
 import com.innerfunction.uri.URIValueFormatter;
 import com.innerfunction.util.I18nMap;
+import com.innerfunction.util.UserDefaults;
 
 import java.net.URISyntaxException;
 import java.util.HashMap;
@@ -321,6 +322,13 @@ public class AppContainer extends Container {
         if( currentActivity == activity ) {
             currentActivity = null;
         }
+    }
+
+    /**
+     * Get an object for reading and writing shared preferences.
+     */
+    public UserDefaults getUserDefaults() {
+        return new UserDefaults( androidContext );
     }
 
     /**

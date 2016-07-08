@@ -108,29 +108,27 @@ public class Files {
     /**
      * Read data from a file and return as a string.
      * @param path      The path to the file to read from.
-     * @param encoding  The file's encoding.
      * @return A string containing the file's data.
      */
-    public static String readString(String path, String encoding) {
-        return readString( new File( path ), encoding );
+    public static String readString(String path) {
+        return readString( new File( path ) );
     }
 
     /**
      * Read data from a file and return as a string.
      * @param file      The file to read from.
-     * @param encoding  The file's encoding.
      * @return A string containing the file's data.
      */
-    public static String readString(File file, String encoding) {
+    public static String readString(File file) {
         String str = null;
         try {
-            str = new String( Files.readData( file ), encoding );
+            str = new String( Files.readData( file ), "UTF-8");
         }
-        catch (FileNotFoundException e){
+        catch(FileNotFoundException e) {
             Log.e( LogTag, String.format("File not found %s", file.getAbsolutePath()));
         }
         catch(UnsupportedEncodingException e) {
-            Log.e( LogTag, String.format("%s decoding error", encoding) );
+            Log.e( LogTag, "UTF-8 decoding error");
         }
         return str;
     }
@@ -139,16 +137,15 @@ public class Files {
      * Read data from an input stream and return as a string.
      * @param in    The input stream to read from.
      * @param name  A name (e.g. a filename) associated with the stream; used for logging.
-     * @param encoding The string encoding used by the stream.
      * @return A string containing the data.
      */
-    public static String readString(InputStream in, String name, String encoding) {
+    public static String readString(InputStream in, String name) {
         String str = null;
         try {
-            str = new String( Files.readData( in, name ), encoding );
+            str = new String( Files.readData( in, name ), "UTF-8");
         }
         catch(UnsupportedEncodingException e) {
-            Log.e( LogTag, String.format("%s decoding error", encoding) );
+            Log.e( LogTag, "UTF-8 decoding error");
         }
         return str;
     }
@@ -156,25 +153,21 @@ public class Files {
     /**
      * Read a JSON file.
      * @param file      The file to read from.
-     * @param encoding  The file's string encoding.
      * @return An object representing the parsed file contents.
-     * @throws FileNotFoundException    If the file isn't found.
-     * @throws ParseException           If the file doesn't contain valid JSON.
      */
-    public static Object readJSON(File file, String encoding) throws FileNotFoundException, ParseException {
-        return JSONValue.parse( readString( file, encoding ) );
+    public static Object readJSON(File file) {
+        return JSONValue.parse( readString( file ) );
     }
 
     /**
      * Read JSON from an input stream.
      * @param in        The stream to read from.
      * @param name      A name (e.g. filename) associated with the stream; used for logging.
-     * @param encoding  The stream's string encoding.
      * @return An object representing the parsed stream contents.
      * @throws ParseException   If the stream doesn't contain valid JSON.
      */
-    public static Object readJSON(InputStream in, String name, String encoding) throws ParseException {
-        return JSONValue.parse( readString( in, name, encoding ) );
+    public static Object readJSON(InputStream in, String name) {
+        return JSONValue.parse( readString( in, name ) );
     }
 
     /**
@@ -228,6 +221,18 @@ public class Files {
      */
     public static boolean writeString(File file, String s) {
         return Files.writeData( file, new StringBufferInputStream( s ) );
+    }
+
+    /**
+     * Write JSON data to a file.
+     * Uses the system default string encoding. Overwrites any data already in the file.
+     * @param file  The file to write to.
+     * @param data  The data to write. Must be JSON encodable.
+     * @return Returns true if the data was successfully encoded and written to the file.
+     */
+    public static boolean writeJSON(File file, Object data) {
+        String json = JSONValue.toJSONString( data );
+        return writeString( file, json );
     }
 
     /**

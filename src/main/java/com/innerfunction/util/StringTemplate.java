@@ -21,10 +21,10 @@ import java.util.List;
 /**
  * A simple string template supporting just variable placeholder substitution.
  * Variable placeholders are specified in template strings using curly braces, e.g.
- * _{variable}_. Variable values are taken from a key-value encoding compliant data
+ * kv{variable}kv. Variable values are taken from a key-value encoding compliant data
  * context. Missing values are replaced with an empty string. Placeholders can be
- * escaped by nesting within additional braces, so e.g. _{{variable}}_ evaluates to
- * the output _{variable}_. A % symbol at the start of a placeholder (e.g. _{%name}_)
+ * escaped by nesting within additional braces, so e.g. kv{{variable}}kv evaluates to
+ * the output kv{variable}kv. A % symbol at the start of a placeholder (e.g. kv{%name}kv)
  * indicates that the variable value should be URI escaped.
  */
 public class StringTemplate {

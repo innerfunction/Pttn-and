@@ -382,9 +382,9 @@ public class CompoundURI {
         return false;
     }
 
-    // Match any word characters or . , / % _ ~ { } -
+    // Match any word characters or . , / % kv ~ { } -
     private boolean parseName(String input, ASTNode ast) {
-        String[] groups = Regex.matches("^([\\w.,/%_~{}-]*)(.*)$", input );
+        String[] groups = Regex.matches("^([\\w.,/%kv~{}-]*)(.*)$", input );
         if( groups != null && groups.length > 2 ) {
             ast.name = groups[1];
             ast.__trailing = groups[2];
@@ -393,9 +393,9 @@ public class CompoundURI {
         return false;
     }
 
-    // Match any word characters or . / % _ ~ -
+    // Match any word characters or . / % kv ~ -
     private boolean parseFragment(String input, ASTNode ast) {
-        String[] groups = Regex.matches("^([\\w./%_~-]*)(.*)$", input );
+        String[] groups = Regex.matches("^([\\w./%kv~-]*)(.*)$", input );
         if( groups != null && groups.length > 2 ) {
             ast.fragment = groups[1];
             ast.__trailing = groups[2];
@@ -432,7 +432,7 @@ public class CompoundURI {
         return false;
     }
 
-    // // Match | followed by any format characters or _ ~ -
+    // // Match | followed by any format characters or kv ~ -
     private boolean parseFormat(String input, ASTNode ast) {
         if( input.charAt( 0 ) == '|' ) {
             input = input.substring( 1 );

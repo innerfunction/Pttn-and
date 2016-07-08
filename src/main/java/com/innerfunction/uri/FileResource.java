@@ -63,7 +63,7 @@ public class FileResource extends Resource {
 
     /** Return the string contents of the file resource. */
     public String asString() {
-        return Files.readString( this.file, "UTF-8" );
+        return Files.readString( this.file );
     }
 
     /** Return the file URL. */
