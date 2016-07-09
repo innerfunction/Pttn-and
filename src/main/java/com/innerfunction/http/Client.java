@@ -62,10 +62,12 @@ public class Client {
         this.authenticationDelegate = delegate;
     }
 
+    /** Get an HTTP URL. */
     public Q.Promise<Response> get(String url) throws MalformedURLException {
         return get( url, null );
     }
 
+    /** Get an HTTP URL, using the specified values as query parameters. */
     public Q.Promise<Response> get(String url, Map<String,Object> params) throws MalformedURLException {
         if( params != null ) {
             String query = makeQueryString( params );
@@ -83,11 +85,24 @@ public class Client {
         return send( request );
     }
 
+    /**
+     * Get a file from an HTTP URL.
+     * @param url       The URL to get.
+     * @param dataFile  A file to write the URL's contents to.
+     */
     public Q.Promise<Response> getFile(String url, File dataFile) throws MalformedURLException {
         Request request = new FileRequest( url, "GET", dataFile );
         return send( request );
     }
 
+    /**
+     * Post to an HTTP URL.
+     * Performs an HTTP form post.
+     * @param url       The URL to post to.
+     * @param data      The data to post.
+     * @return
+     * @throws MalformedURLException
+     */
     public Q.Promise<Response> post(String url, Map<String,Object> data) throws MalformedURLException {
         Request request = new DataRequest( url, "POST");
         request.setBody( makeQueryString( data ) );
@@ -100,10 +115,19 @@ public class Client {
         return send( request );
     }
 
+    /**
+     * Submit a request to an HTTP URL.
+     * @param method    The HTTP method to use, e.g. GET or POST.
+     * @param url       The URL to submit the request to.
+     * @param data      Data to include in the request.
+     * @return
+     * @throws MalformedURLException
+     */
     public Q.Promise<Response> submit(String method, String url, Map<String,Object> data) throws MalformedURLException {
         return "POST".equals( method ) ? post( url, data ) : get( url, data );
     }
 
+    /** Test whether a response represents an authentication error. */
     private boolean isAuthenticationErrorResponse(Response response) {
         if( authenticationDelegate != null ) {
             return authenticationDelegate.isAuthenticationErrorResponse( this, response );
@@ -111,6 +135,7 @@ public class Client {
         return false;
     }
 
+    /** Perform HTTP authentication. */
     private Q.Promise<Response> authenticate() {
         if( authenticationDelegate != null ) {
             return authenticationDelegate.authenticateUsingHTTPClient( this );
@@ -135,7 +160,7 @@ public class Client {
                     NetworkInfo netInfo = connectivityManager.getActiveNetworkInfo();
                     if( netInfo == null || !netInfo.isConnected() ) {
                         // TODO Add client configuration options to control which networks can be used.
-                        throw new IOException("Network not connected");
+                        throw new IOException("Network not available");
                     }
                     // Connectivity OK, try submitting the request. (Note that this method call
                     // blocks until the request completes, but that's ok because we are on a
@@ -176,6 +201,7 @@ public class Client {
         return promise;
     }
 
+    /** Make a HTTP query string using the values in the specified map. */
     static String makeQueryString(Map<String,Object> params) {
         String[] pairs = new String[params.size()];
         int i = 0;
