@@ -38,6 +38,7 @@ public class FileRequest extends Request {
     @Override
     Response readResponse(HttpURLConnection connection) throws IOException {
         InputStream in = connection.getInputStream();
+        checkForNetworkSignon( connection );
         FileOutputStream out = new FileOutputStream( dataFile );
         byte[] buffer = new byte[DataBufferSize];
         while( true ) {
@@ -49,6 +50,6 @@ public class FileRequest extends Request {
         }
         out.flush();
         out.close();
-        return new Response( url, connection.getResponseCode(), dataFile );
+        return new Response( getURL(), connection.getResponseCode(), dataFile );
     }
 }

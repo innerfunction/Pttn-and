@@ -25,7 +25,10 @@ public interface AuthenticationDelegate {
     /** Test whether a response represents an authentication error. */
     boolean isAuthenticationErrorResponse(Client client, Response response);
 
-    /** Perform a reauthentication. */
-    Q.Promise<Response> reauthenticateUsingHTTPClient(Client client);
+    /**
+     * Perform an authentication.
+     * TODO: A more complete API design would provide info on the domain/realm that authentication is required for.
+     */
+    Q.Promise<Response> authenticateUsingHTTPClient(Client client);
 
 }

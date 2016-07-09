@@ -13,23 +13,50 @@
 // limitations under the License
 package com.innerfunction.http;
 
+import android.content.Context;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
+import android.net.Uri;
+import android.text.TextUtils;
+
 import com.innerfunction.q.Q;
 import com.innerfunction.util.RunQueue;
 
+import static com.innerfunction.util.DataLiterals.*;
+
 import java.io.File;
 import java.io.IOException;
+import java.net.CookieHandler;
+import java.net.CookieManager;
 import java.net.MalformedURLException;
+import java.nio.charset.Charset;
 import java.util.Map;
 
 /**
  * An HTTP client.
  * Provides asynchronous methods for fetching files and data from an HTTP server.
- * 
+ *
+ * TODO Setup caching behaviour, as per https://developer.android.com/reference/android/net/http/HttpResponseCache.html
+ * TODO Need to figure out how this will work with the filesystem content cache.
+ *
  * Created by juliangoacher on 08/07/16.
  */
 public class Client {
 
+    // Setup cookie management.
+    static final CookieManager CookieManager = new CookieManager();
+    static {
+        CookieHandler.setDefault( CookieManager );
+    }
+
+    /** A delegate object used to perform HTTP authentication, when required. */
     private AuthenticationDelegate authenticationDelegate;
+    /** An object for checking network connectivity. */
+    private ConnectivityManager connectivityManager;
+
+    public Client(Context context) {
+        this.connectivityManager = (ConnectivityManager)context.getSystemService( Context.CONNECTIVITY_SERVICE );
+    }
 
     public void setAuthenticationDelegate(AuthenticationDelegate delegate) {
         this.authenticationDelegate = delegate;
@@ -39,8 +66,19 @@ public class Client {
         return get( url, null );
     }
 
-    public Q.Promise<Response> get(String url, Map<String,Object> data) throws MalformedURLException {
-        // TODO Add request parameters to URL
+    public Q.Promise<Response> get(String url, Map<String,Object> params) throws MalformedURLException {
+        if( params != null ) {
+            String query = makeQueryString( params );
+            // Does the URL already have a query string?
+            if( url.indexOf('?') > -1 ) {
+                // Append additional parameters to end of query string.
+                url = String.format("%s&%s", url, query );
+            }
+            else {
+                // Append parameters as new query string.
+                url = String.format("%s?%s", url, query );
+            }
+        }
         Request request = new DataRequest( url, "GET");
         return send( request );
     }
@@ -52,7 +90,13 @@ public class Client {
 
     public Q.Promise<Response> post(String url, Map<String,Object> data) throws MalformedURLException {
         Request request = new DataRequest( url, "POST");
-        // TODO Encode and set request body
+        request.setBody( makeQueryString( data ) );
+        request.setHeaders( m(
+            kv("Content-Type", "application/x-www-form-urlencoded"),
+            // The following is necessary because the string version of setBody is used above,
+            // which converts the body string to a byte array using the platform default encoding.
+            kv("charset", Charset.defaultCharset().name() )
+        ));
         return send( request );
     }
 
@@ -67,9 +111,9 @@ public class Client {
         return false;
     }
 
-    private Q.Promise<Response> reauthenticate() {
+    private Q.Promise<Response> authenticate() {
         if( authenticationDelegate != null ) {
-            return authenticationDelegate.reauthenticateUsingHTTPClient( this );
+            return authenticationDelegate.authenticateUsingHTTPClient( this );
         }
         return Q.reject("Authentication delegate not available");
     }
@@ -87,21 +131,30 @@ public class Client {
             @Override
             public void run() {
                 try {
+                    // First check for network connectivity.
+                    NetworkInfo netInfo = connectivityManager.getActiveNetworkInfo();
+                    if( netInfo == null || !netInfo.isConnected() ) {
+                        // TODO Add client configuration options to control which networks can be used.
+                        throw new IOException("Network not connected");
+                    }
+                    // Connectivity OK, try submitting the request. (Note that this method call
+                    // blocks until the request completes, but that's ok because we are on a
+                    // background thread).
                     Response response = request.connect( Client.this );
                     // Check for authentication failures.
-                    // TODO Following code needs to be reviewed - does it interact correctly with the request queue?
-                    // TODO i.e. specifically the reauthenticate step, and the re-submit that follows it.
                     if( isAuthenticationErrorResponse( response ) ) {
-                        // Try to reauthenticate and then resubmit the original request.
-                        reauthenticate()
+                        // Try to authenticate and then resubmit the original request.
+                        authenticate()
                             .then(new Q.Promise.Callback<Response, Response>() {
+                                @Override
                                 public Response result(Response response) {
                                     // Retry the original request.
-                                    send( request );
+                                    promise.resolve( send( request ) );
                                     return response;
                                 }
                             })
                             .error(new Q.Promise.ErrorCallback() {
+                                @Override
                                 public void error(Exception e) {
                                     promise.reject( e );
                                 }
@@ -121,5 +174,14 @@ public class Client {
             promise.reject("Failed to dispatch to request queue");
         }
         return promise;
+    }
+
+    static String makeQueryString(Map<String,Object> params) {
+        String[] pairs = new String[params.size()];
+        int i = 0;
+        for( String key : params.keySet() ) {
+            pairs[i++] = (Uri.encode( key ) + '=' + Uri.encode( params.get( key ).toString() ) );
+        }
+        return TextUtils.join("&", pairs );
     }
 }

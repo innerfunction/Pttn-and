@@ -34,6 +34,7 @@ public class DataRequest extends Request {
     @Override
     Response readResponse(HttpURLConnection connection) throws IOException {
         BufferedInputStream in = new BufferedInputStream( connection.getInputStream(), DataBufferSize );
+        checkForNetworkSignon( connection );
         byte[] body = new byte[0];
         int offset = 0;
         while( true ) {
@@ -46,7 +47,7 @@ public class DataRequest extends Request {
             }
             else break;
         }
-        return new Response( url, connection.getResponseCode(), body );
+        return new Response( getURL(), connection.getResponseCode(), body );
     }
 
 }
