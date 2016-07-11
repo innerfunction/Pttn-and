@@ -24,4 +24,9 @@ public class Null {
 
     public static final Object Placeholder = new Object();
 
+    /** Return the argument if non-null, else return the null placeholder. */
+    public static Object valueOrPlaceholder(Object value) {
+        return value != null ? value : Placeholder;
+    }
+
 }

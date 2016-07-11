@@ -21,7 +21,7 @@ package com.innerfunction.pttn;
  * from its configuration, i.e. the container won't perform any dependency injection on the component
  * after its construction has been delegated to the function.
  */
-public interface IOCObjectFactory {
+public interface IOCObjectFactory<T> {
 
     /**
      * Build an object from its configuration. Instantiates and configures the object.
@@ -30,6 +30,6 @@ public interface IOCObjectFactory {
      * @param identifier        An identifier for the object instance, used for log output.
      * @returns Returns a fully configured object instance.
      */
-    Object buildObject(Configuration configuration, Container container, String identifier);
+    T buildObject(Configuration configuration, Container container, String identifier);
 
 }

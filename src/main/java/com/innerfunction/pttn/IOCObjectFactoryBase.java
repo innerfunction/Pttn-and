@@ -22,7 +22,7 @@ import java.util.Map;
  *
  * Created by juliangoacher on 29/03/16.
  */
-public class IOCObjectFactoryBase implements IOCObjectFactory {
+public class IOCObjectFactoryBase<T> implements IOCObjectFactory {
 
     /**
      * A default base configuration for instances produced by this class.
@@ -39,7 +39,7 @@ public class IOCObjectFactoryBase implements IOCObjectFactory {
         this.baseConfiguration = baseConfiguration;
     }
 
-    public Object buildObject(Configuration configuration, Container container, Map<String,Object> parameters, String identifier) {
+    public T buildObject(Configuration configuration, Container container, Map<String,Object> parameters, String identifier) {
         // Flatten the object configuration.
         configuration = configuration.flatten();
         // Extend the object configuration from the base configuration.
@@ -49,10 +49,10 @@ public class IOCObjectFactoryBase implements IOCObjectFactory {
             configuration = configuration.extendWithParameters( parameters );
         }
         // Ask the container to build the object, then return the result.
-        return container.buildObject( configuration, identifier );
+        return (T)container.buildObject( configuration, identifier );
     }
 
-    public Object buildObject(Configuration configuration, Container container, String identifier) {
+    public T buildObject(Configuration configuration, Container container, String identifier) {
         return buildObject( configuration, container, null, identifier );
     }
 
