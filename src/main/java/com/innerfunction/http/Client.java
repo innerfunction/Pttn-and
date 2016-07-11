@@ -20,6 +20,7 @@ import android.net.Uri;
 import android.text.TextUtils;
 
 import com.innerfunction.q.Q;
+import com.innerfunction.util.Files;
 import com.innerfunction.util.RunQueue;
 
 import static com.innerfunction.util.DataLiterals.*;
@@ -53,9 +54,12 @@ public class Client {
     private AuthenticationDelegate authenticationDelegate;
     /** An object for checking network connectivity. */
     private ConnectivityManager connectivityManager;
+    /** The app's cache location. Used for temporary download files. */
+    private File cacheDir;
 
     public Client(Context context) {
         this.connectivityManager = (ConnectivityManager)context.getSystemService( Context.CONNECTIVITY_SERVICE );
+        this.cacheDir = context.getCacheDir();
     }
 
     public void setAuthenticationDelegate(AuthenticationDelegate delegate) {
@@ -91,6 +95,35 @@ public class Client {
      * @param dataFile  A file to write the URL's contents to.
      */
     public Q.Promise<Response> getFile(String url, File dataFile) throws MalformedURLException {
+        Request request = new FileRequest( url, "GET", dataFile );
+        return send( request );
+    }
+
+    /**
+     * Get a file from an HTTP URL.
+     * Writes the response to a temporary file. The file can be retrieved through a call to
+     * Response.getDataFile(). The file should be moved to suitable location if it needs to
+     * be kept. (Note that the file object returned has a modified renameTo() method that can
+     * properly handle moving files between separate disk partitions).
+     * @param url       The URL to get.
+     */
+    public Q.Promise<Response> getFile(String url) throws MalformedURLException {
+        String filename = String.format("%s_%d.tmp", getClass().getName(), System.currentTimeMillis() );
+        File dataFile = new File( cacheDir, filename ) {
+            @Override
+            public boolean renameTo(File destFile) {
+                return Files.mv( this, destFile );
+            }
+            @Override
+            public void finalize() throws Throwable {
+                try {
+                    // Delete temporary file as soon as this object is GC'd.
+                    delete();
+                }
+                catch(SecurityException e) {}
+                super.finalize();
+            }
+        };
         Request request = new FileRequest( url, "GET", dataFile );
         return send( request );
     }

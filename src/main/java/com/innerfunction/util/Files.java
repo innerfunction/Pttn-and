@@ -18,6 +18,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringBufferInputStream;
 import java.io.UnsupportedEncodingException;
@@ -344,6 +345,8 @@ public class Files {
 
     /**
      * Move a file or files from a source location to a target location.
+     * Handles situations where the source and destination files are on different disk partitions.
+     * Also creates parent directories for the target file, if necessary.
      * @param from The location to move from. May be a single file or a directory. If a directory
      *             then all of its file contents are also moved.
      * @param to   The location to move to. May be specified as a file or directory. Overwrites
@@ -381,7 +384,24 @@ public class Files {
                     toDir = to.getParentFile();
                 }
                 if( ensureDirectoryExists( toDir, true ) ) {
-                    from.renameTo( to );
+                    ok = from.renameTo( to );
+                    // File.renameTo() can fail if the 'from' and 'to' files are on different disk
+                    // partitions (although note that there are many other reasons why it could fail
+                    // also - e.g. file permissions). A better implementation might check first if
+                    // the two files are on the same partition; however, unfortunately - but not
+                    // surprisingly - android provides no methods for doing this simply.
+                    if( !ok ) {
+                        // Try copying contents from source file to the destination, and then
+                        // deleting the source.
+                        try {
+                            FileInputStream in = new FileInputStream( from );
+                            ok = writeData( to, in );
+                            if( ok ) {
+                                from.delete();
+                            }
+                        }
+                        catch(IOException e) {}
+                    }
                 }
                 else ok = false; // Couldn't create target directory.
             }
@@ -439,4 +459,5 @@ public class Files {
         }
         return ok;
     }
+
 }
