@@ -47,7 +47,7 @@ public class DataRequest extends Request {
             }
             else break;
         }
-        return new Response( getURL(), connection.getResponseCode(), body );
+        return new Response( getURL(), connection, body );
     }
 
 }

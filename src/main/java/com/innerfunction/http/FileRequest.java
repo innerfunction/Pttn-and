@@ -50,6 +50,6 @@ public class FileRequest extends Request {
         }
         out.flush();
         out.close();
-        return new Response( getURL(), connection.getResponseCode(), dataFile );
+        return new Response( getURL(), connection, dataFile );
     }
 }

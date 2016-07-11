@@ -13,8 +13,18 @@
 // limitations under the License
 package com.innerfunction.http;
 
+import android.net.Uri;
+import android.text.TextUtils;
+import android.util.Log;
+
+import org.json.simple.JSONValue;
+
 import java.io.File;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -24,24 +34,34 @@ import java.util.Map;
  */
 public class Response {
 
+    static final String Tag = Response.class.getSimpleName();
+
     /** The request URL. */
     private String url;
     /** The HTTP response code. */
     private int statusCode;
+    /** The response content encoding. */
+    private String contentEncoding;
+    /** The response content type. */
+    private String contentType;
     /** The response body. Will be null for file responses. */
     private byte[] body;
     /** A file containing the response. */
     private File dataFile;
 
-    Response(URL url, int statusCode, byte[] body) {
+    Response(URL url, HttpURLConnection connection, byte[] body) throws IOException {
         this.url = url.toString();
-        this.statusCode = statusCode;
+        this.statusCode = connection.getResponseCode();
+        this.contentEncoding = connection.getContentEncoding();
+        this.contentType = connection.getContentType();
         this.body = body;
     }
 
-    Response(URL url, int statusCode, File dataFile) {
+    Response(URL url, HttpURLConnection connection, File dataFile) throws IOException {
         this.url = url.toString();
-        this.statusCode = statusCode;
+        this.statusCode = connection.getResponseCode();
+        this.contentEncoding = connection.getContentEncoding();
+        this.contentType = connection.getContentType();
         this.dataFile = dataFile;
     }
 
@@ -53,12 +73,53 @@ public class Response {
         return statusCode;
     }
 
+    public String getContentEncoding() {
+        return contentEncoding;
+    }
+
+    public String getContentType() {
+        return contentType;
+    }
+
     public File getDataFile() {
         return dataFile;
     }
 
-    public Map<String,Object> parseData() {
-        // TODO Rename this to parse JSON? Check content type? What other content types need to be supported?
+    public byte[] getRawBody() {
+        return body;
+    }
+
+    public String getBody() {
+        try {
+            return new String( body, contentEncoding );
+        }
+        catch(UnsupportedEncodingException e) {
+            Log.e(Tag, String.format("Bad content encoding when reading response body: %s", contentEncoding ) );
+        }
+        return null;
+    }
+
+    public Object parseBodyData() {
+        if("application/json".equals( contentType ) ) {
+            String json = getBody();
+            if( json != null ) {
+                return JSONValue.parse( json );
+            }
+        }
+        else if("application/x-www-form-urlencoded".equals( contentType ) ) {
+            String data = getBody();
+            if( data != null ) {
+                Map<String,Object> result = new HashMap<>();
+                String[] pairs = TextUtils.split( data, "&");
+                for( String pair : pairs ) {
+                    String[] keyValue = TextUtils.split( pair, "=");
+                    String key = Uri.decode( keyValue[0] );
+                    String value = Uri.decode( keyValue[1] );
+                    result.put( key, value );
+                }
+                return result;
+            }
+        }
         return null;
     }
 }
