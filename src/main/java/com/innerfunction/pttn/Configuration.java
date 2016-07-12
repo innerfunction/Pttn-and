@@ -148,6 +148,16 @@ public class Configuration {
     }
 
     /**
+     * Create a configuration using the specified data.
+     * The configuration parent is an empty configuration. Use this constructor for configuration
+     * templates.
+     * @param data      The configuration data.
+     */
+    public Configuration(Object data) {
+        this( data, new Configuration() );
+    }
+
+    /**
      * Create a configuration using data provided by a resource.
      * @param resource  A resource containing configuration data.
      * @param parent    The parent resource.
@@ -232,6 +242,11 @@ public class Configuration {
      */
     public URIHandler getURIHandler() {
         return uriHandler;
+    }
+
+    /** Set the configuration's URI handler. */
+    public void setURIHandler(URIHandler uriHandler) {
+        this.uriHandler = uriHandler;
     }
 
     /** Set the configuration's context data. */
