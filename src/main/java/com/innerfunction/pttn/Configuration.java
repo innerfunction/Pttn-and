@@ -18,8 +18,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
@@ -38,7 +40,7 @@ import com.innerfunction.util.TypeConversions;
  */
 public class Configuration {
 
-    static final String LogTag = Configuration.class.getSimpleName();
+    static final String Tag = Configuration.class.getSimpleName();
 
     /**
      * An object returned by the Configuration.getValueAsMaybeConfiguration() method.
@@ -600,7 +602,7 @@ public class Configuration {
         Configuration result = this;
         if( params.size() > 0 ) {
             result = new Configuration( data, this );
-            result.context = new HashMap<String,Object>( result.context );
+            result.context = new HashMap<>( result.context );
             for( String name : params.keySet() ) {
                 result.context.put("$"+name, params.get( name ) );
             }
@@ -654,6 +656,22 @@ public class Configuration {
         result.root = root;
         result.uriHandler = uriHandler;
         return result;
+    }
+
+    /** Return a copy of the current configuration with the specified top-level keys removed. */
+    public Configuration configurationWithKeysExcluded(String... keys) {
+        Map<String,Object> data = new HashMap<>();
+        // Copy non-excluded keys to the new configuration's data.
+        for( String key : this.data.keySet() ) {
+            for( String excludedKey : keys ) {
+                if( key.equals( excludedKey ) ) {
+                    continue;
+                }
+            }
+            data.put( key, this.data.get( key ) );
+        }
+        // Create and return the new configuration.
+        return new Configuration( data, this );
     }
 
     /** Modify this configuration with a set of new values. */

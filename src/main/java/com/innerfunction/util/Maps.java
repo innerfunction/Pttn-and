@@ -46,9 +46,11 @@ public class Maps {
             }
             @Override
             public V remove(Object key) {
+                /*
                 if( super.containsKey( key ) ) {
                     return super.remove( key );
                 }
+                */
                 return map.remove( key );
             }
             @Override
