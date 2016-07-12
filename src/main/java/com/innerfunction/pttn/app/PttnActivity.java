@@ -48,6 +48,10 @@ public abstract class PttnActivity<T> extends AppCompatActivity {
             }
         }
         */
+        // TODO Allow app's to skip the splashscreen and start directly into a PttnActivity
+        // TODO Check here for Intent.ACTION_MAIN.equals( intent.getAction() )
+        // TODO (Is this sufficient, or should also test for category == LAUNCHER?)
+        // TODO And then set viewUUID to something that will identify the root view to the container
         viewUUID = intent.getStringExtra( IntentActions.ViewUUID.name() );
     }
 

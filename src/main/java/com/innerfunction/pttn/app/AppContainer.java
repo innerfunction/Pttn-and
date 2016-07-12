@@ -37,6 +37,8 @@ import com.innerfunction.uri.URIValueFormatter;
 import com.innerfunction.util.I18nMap;
 import com.innerfunction.util.UserDefaults;
 
+import static com.innerfunction.util.DataLiterals.*;
+
 import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.List;
@@ -87,6 +89,8 @@ public class AppContainer extends Container {
      * PttnActivity) then this will be null.
      */
     private PttnActivity currentActivity;
+    /** A flag indicating that the container has fully started. */
+    private boolean started = false;
 
     public AppContainer(Context context) {
         super( context, StandardURIHandler.getInstance( context ) );
@@ -123,6 +127,17 @@ public class AppContainer extends Container {
 
     public void setAliases(Map<String,String> aliases) {
         uriHandler.setAliases( aliases );
+    }
+
+    /** Test if the container is fully started. */
+    public boolean isStarted() {
+        return started;
+    }
+
+    @Override
+    public void startService() {
+        super.startService();
+        started = true;
     }
 
     /**
@@ -199,9 +214,9 @@ public class AppContainer extends Container {
         // TODO locals + settings
 
         nameds.put("uriHandler", uriHandler );
-        nameds.put( "globals", globals );
+        nameds.put("globals", globals );
         //nameds.put("locals", locals );
-        nameds.put( "container", this );
+        nameds.put("container", this );
 
         // Perform default container configuration.
         super.configureWith( configuration );
@@ -529,6 +544,20 @@ public class AppContainer extends Container {
             */
         }
         return true;
+    }
+
+    /**
+     * Start a new activity to display the app's root view.
+     */
+    public void showRootView() {
+        Object rootView = nameds.get("rootView");
+        if( rootView != null ) {
+            Message message = new Message( "show", m( kv( "view", rootView ) ) );
+            receiveMessage( message, this );
+        }
+        else {
+            Log.e(Tag,"No root view component found");
+        }
     }
 
     /**
