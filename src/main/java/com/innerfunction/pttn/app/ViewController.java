@@ -67,6 +67,8 @@ public class ViewController extends FrameLayout implements MessageReceiver, Mess
     private String title;
     /** The view's background colour. */
     private int backgroundColor = -1;
+    /** A list of view behaviours. */
+    private List<ViewControllerBehaviour> behaviours = new ArrayList<>();
 
     public ViewController(Context context) {
         super( context );
@@ -118,6 +120,10 @@ public class ViewController extends FrameLayout implements MessageReceiver, Mess
                     child.changeState( State.Running );
                 }
                 onResume();
+                // Apply behaviours.
+                for( ViewControllerBehaviour behaviour : behaviours ) {
+                    behaviour.onResume( this );
+                }
                 state = State.Running;
             }
             else if( state != State.Running ) {
@@ -315,5 +321,17 @@ public class ViewController extends FrameLayout implements MessageReceiver, Mess
 
     public Activity getActivity() {
         return activity;
+    }
+
+    public void setBehaviours(List<ViewControllerBehaviour> behaviours) {
+        this.behaviours = behaviours;
+    }
+
+    public void setBehaviour(ViewControllerBehaviour behaviour) {
+        this.behaviours.add( behaviour );
+    }
+
+    public void addBehaviour(ViewControllerBehaviour behaviour) {
+        this.behaviours.add( behaviour );
     }
 }
