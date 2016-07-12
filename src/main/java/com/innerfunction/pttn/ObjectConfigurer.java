@@ -36,6 +36,10 @@ public class ObjectConfigurer {
     private String keyPath;
     /** A flag indicating whether the object being configured is a collection. */
     private boolean isCollection;
+    /** Internal metrics: Number of properties (objects and primitives) configured. */
+    private int configuredPropertyCount;
+    /** Internal metrics: Number of objects (i.e non-primitives) configured. */
+    private int configuredObjectCount;
 
     /**
      * Initialize the configurer with the object to configure.
@@ -288,6 +292,8 @@ public class ObjectConfigurer {
                             }
                             // Configure the value.
                             configurer.configureWith( valueConfig );
+                            configuredPropertyCount += configurer.configuredPropertyCount;
+                            configuredObjectCount++;
                         }
                     }
                 }
@@ -302,6 +308,7 @@ public class ObjectConfigurer {
         if( value != null ) {
             value = injectValueIntoProperty( value, propName );
         }
+        configuredPropertyCount++;
         return value;
     }
 
@@ -392,5 +399,13 @@ public class ObjectConfigurer {
 
     private String getKeyPath(String name) {
         return String.format("%s.%s", keyPath, name );
+    }
+
+    public int getConfiguredPropertyCount() {
+        return configuredPropertyCount;
+    }
+
+    public int getConfiguredObjectCount() {
+        return configuredObjectCount;
     }
 }

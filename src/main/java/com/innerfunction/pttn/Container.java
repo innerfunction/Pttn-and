@@ -350,6 +350,7 @@ public class Container implements ConfigurationData, Service, MessageReceiver, M
      * </ul>
      */
     public void configureWith(Configuration configuration) {
+        long start = System.currentTimeMillis();
         containerConfig = configuration;
         // Build priority names first.
         for( String name : priorityNames ) {
@@ -367,6 +368,20 @@ public class Container implements ConfigurationData, Service, MessageReceiver, M
                 buildNamedObject( name );
             }
         }
+        // Calculate and log some performance metrics.
+        long totalConfigurationTime = System.currentTimeMillis() - start;
+        int configuredPropertyCount = containerConfigurer.getConfiguredPropertyCount();
+        int configuredObjectCount = containerConfigurer.getConfiguredObjectCount();
+        float avgPropertiesPerObject = (float)configuredPropertyCount / (float)configuredObjectCount;
+        float msPerProperty = (float)totalConfigurationTime / (float)configuredPropertyCount;
+        float msPerObject = (float)totalConfigurationTime / (float)configuredObjectCount;
+        Log.d(Tag, "Configuration metrics: ================");
+        Log.d(Tag, String.format("\tTotal configuration time=%d ms", totalConfigurationTime ));
+        Log.d(Tag, String.format("\tNumber of configured objects=%d", configuredObjectCount ));
+        Log.d(Tag, String.format("\tNumber of configured properties=%d", configuredPropertyCount ));
+        Log.d(Tag, String.format("\tAverage number of properties per object=%.2f", avgPropertiesPerObject ));
+        Log.d(Tag, String.format("\tms per property=%.2f ms", msPerProperty ));
+        Log.d(Tag, String.format("\tms per object=%.2f ms", msPerObject ));
     }
 
     /**
