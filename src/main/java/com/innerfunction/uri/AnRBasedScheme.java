@@ -28,8 +28,6 @@ import android.util.Log;
 public class AnRBasedScheme extends FileBasedScheme {
 
     static final String LogTag = AnRBasedScheme.class.getSimpleName();
-    /** The app's context. */
-    private Context context;
     /** The app's resources. */
     private Resources r;
     /** The app's package name. */
@@ -38,7 +36,7 @@ public class AnRBasedScheme extends FileBasedScheme {
     private Assets assets;
 
     public AnRBasedScheme(Context context, Assets assets) {
-        this( context, null, assets );
+        this( context, "", assets );
     }
 
     public AnRBasedScheme(Context context, String rootPath, Assets assets) {
@@ -64,6 +62,9 @@ public class AnRBasedScheme extends FileBasedScheme {
         }
         else {
             String assetName = Paths.join( getRootPath(), name );
+            if( assetName.charAt( 0 ) == '/' ) {
+                assetName = assetName.substring( 1 );
+            }
             if( assets.assetExists( assetName ) ) {
                 // Asset name found at specified location, so return an asset resource.
                 result = new AnRResource.Asset( context, assetName, assets, uri );

@@ -27,7 +27,7 @@ public class SplashScreenActivity extends Activity {
      *  <meta-data android:name="splashScreenDelay" android:value="1000" />
      *
      */
-    private long splashDelay = 2000;
+    private int splashDelay = 2000;
     /**
      * The splash-screen layout ID..
      * Defaults to R.layout.splashscreen_layout. Can be configured within the application
@@ -47,7 +47,7 @@ public class SplashScreenActivity extends Activity {
         try {
             ApplicationInfo ai = getPackageManager().getApplicationInfo( getPackageName(), PackageManager.GET_META_DATA );
             Bundle bundle = ai.metaData;
-            splashDelay = bundle.getLong("splashScreenDelay", splashDelay );
+            splashDelay = bundle.getInt("splashScreenDelay", splashDelay );
             splashScreenLayout = bundle.getInt("splashScreenLayout", splashScreenLayout );
         }
         catch(Exception e) {
@@ -72,6 +72,6 @@ public class SplashScreenActivity extends Activity {
             }
         };
         // Schedule the task to run.
-        new Handler().postDelayed( task, splashDelay );
+        new Handler().postDelayed( task, (long)splashDelay );
     }
 }

@@ -54,6 +54,9 @@ public class TypeConversions {
     }
 
     public static TypeConversions instanceForContext(Context context) {
+        if( context == null ) {
+            throw new IllegalArgumentException("context can not be null");
+        }
         TypeConversions instance = InstancesByContext.get( context );
         if( instance == null ) {
             instance = new TypeConversions( context );

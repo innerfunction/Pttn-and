@@ -37,8 +37,6 @@ import com.innerfunction.uri.URIValueFormatter;
 import com.innerfunction.util.I18nMap;
 import com.innerfunction.util.UserDefaults;
 
-import static com.innerfunction.util.DataLiterals.*;
-
 import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.List;
@@ -508,40 +506,12 @@ public class AppContainer extends Container {
         }
         else if( message.hasName("show") ) {
             Object view = message.getParameter("view");
-
-            // NOTE on support view types: Pttn supports a number of different view types. The
-            // main type is ViewController, and corresponds most closely to the UIViewController
-            // class on iOS. Views can also be represented using Fragments (as the natural native
-            // Android view type) but use of Fragments is discouraged where possible, due to the
-            // baroque fragment life-cycle, and problems that occur when fragments are nested.
-            // If a view is represented by an Activity then an Intent instance should be used at
-            // this point to represent the configured view. (This is because of Android mechanics
-            // - the OS is responsible for instantiating activities, through intents, so it doesn't
-            // make sense for the container to instantiate an activity). Intents, if needed, can
-            // be instantiated for the container by an object factory.
-
-            if( view instanceof ViewController ) {
-                showViewUsingActivityType( view, ViewControllerActivity.class );
+            if( view != null ) {
+                showView( view );
             }
-            else if( view instanceof ViewFragment ) {
-                showViewUsingActivityType( view, ViewFragmentActivity.class );
+            else {
+                Log.w(Tag,"'show' message missing 'view' parameter.");
             }
-            else if( view instanceof Fragment ) {
-                showViewUsingActivityType( view, FragmentActivity.class );
-            }
-            else if( view instanceof Intent ) {
-                androidContext.startActivity( (Intent)view );
-            }
-            /* Following code left here as an example of why it doesn't make sense for the
-               container to instantiate Activities as view instances - the instance is discarded
-               at this point, an intent is created instead which requests the OS to start the
-               activity.
-            else if( view instanceof Activity ) {
-                Intent intent = new Intent( androidContext, Activity.class );
-                intent.addFlags( Intent.FLAG_ACTIVITY_NEW_TASK );
-                androidContext.startActivity( intent );
-            }
-            */
         }
         return true;
     }
@@ -552,12 +522,54 @@ public class AppContainer extends Container {
     public void showRootView() {
         Object rootView = nameds.get("rootView");
         if( rootView != null ) {
-            Message message = new Message( "show", m( kv( "view", rootView ) ) );
-            receiveMessage( message, this );
+            showView( rootView );
         }
         else {
             Log.e(Tag,"No root view component found");
         }
+    }
+
+    /**
+     * Display a view. Starts a new activity if necessary.
+     */
+    public void showView(Object view) {
+
+        // NOTE on support view types: Pttn supports a number of different view types. The
+        // main type is ViewController, and corresponds most closely to the UIViewController
+        // class on iOS. Views can also be represented using Fragments (as the natural native
+        // Android view type) but use of Fragments is discouraged where possible, due to the
+        // baroque fragment life-cycle, and problems that occur when fragments are nested.
+        // If a view is represented by an Activity then an Intent instance should be used at
+        // this point to represent the configured view. (This is because of Android mechanics
+        // - the OS is responsible for instantiating activities, through intents, so it doesn't
+        // make sense for the container to instantiate an activity). Intents, if needed, can
+        // be instantiated for the container by an object factory.
+
+        if( view instanceof ViewController ) {
+            showViewUsingActivityType( view, ViewControllerActivity.class );
+        }
+        else if( view instanceof ViewFragment ) {
+            showViewUsingActivityType( view, ViewFragmentActivity.class );
+        }
+        else if( view instanceof Fragment ) {
+            showViewUsingActivityType( view, FragmentActivity.class );
+        }
+        else if( view instanceof Intent ) {
+            androidContext.startActivity( (Intent)view );
+        }
+        else {
+            Log.w(Tag, String.format("Unable to display view of type %s", view.getClass() ) );
+        }
+        /* Following code left here as an example of why it doesn't make sense for the
+           container to instantiate Activities as view instances - the instance is discarded
+           at this point, an intent is created instead which requests the OS to start the
+           activity.
+        else if( view instanceof Activity ) {
+            Intent intent = new Intent( androidContext, Activity.class );
+            intent.addFlags( Intent.FLAG_ACTIVITY_NEW_TASK );
+            androidContext.startActivity( intent );
+        }
+        */
     }
 
     /**

@@ -304,13 +304,16 @@ public class CompoundURI {
 
     // BRACKETED_URI ::= '[' PLAIN_URI ']'
     private boolean parseBracketedURI(String input, ASTNode ast) {
-        if( input.charAt( 0 ) == '[' ) {
+        if( firstChar( input ) == '[' ) {
             input = input.substring( 1 );
             if( parseURI( input, ast ) ) {
                 input = ast.__trailing;
-                if( input.charAt( 0 ) == ']') {
+                if( firstChar( input ) == ']') {
                     ast.__trailing = input.substring( 1 );
                     return true;
+                }
+                else {
+                    ast.recordError("Missing closing ]", input );
                 }
             }
         }
@@ -324,7 +327,7 @@ public class CompoundURI {
 
     // ALIAS ::= '~' NAME ( '|' FORMAT )?
     private boolean parseAlias(String input, ASTNode ast) {
-        if( input.charAt( 0 ) == '~' ) {
+        if( firstChar( input ) == '~' ) {
             input = input.substring( 1 );
             if( parseName( input, ast ) ) {
                 input = ast.__trailing;
@@ -343,12 +346,12 @@ public class CompoundURI {
     private boolean parseURI(String input, ASTNode ast) {
         if( parseScheme( input, ast ) ) {
             input = ast.__trailing;
-            if( input.charAt( 0 ) == ':' ) {
+            if( firstChar( input ) == ':' ) {
                 input = input.substring( 1 );
                 if( parseName( input, ast ) ) {
                     input = ast.__trailing;
                 }
-                if( input.charAt( 0 ) == '#' ) {
+                if( firstChar( input ) == '#' ) {
                     input = input.substring( 1 );
                     if( parseFragment( input, ast ) ) {
                         input = ast.__trailing;
@@ -373,7 +376,7 @@ public class CompoundURI {
 
     // Match any word characters
     private boolean parseScheme(String input, ASTNode ast) {
-        String[] groups = Regex.matches("^(\\\\w+)(.*)$", input );
+        String[] groups = Regex.matches("^(\\w+)(.*)$", input );
         if( groups != null && groups.length > 2 ) {
             ast.scheme = groups[1];
             ast.__trailing = groups[2];
@@ -406,15 +409,16 @@ public class CompoundURI {
 
     // PARAMETERS ::= '+' PARAM_NAME ( '@' URI | '=' LITERAL ) PARAMETERS*
     private boolean parseParameters(String input, ASTNode ast) {
-        if( input.charAt( 0 ) == '+' ) {
+        if( firstChar( input ) == '+' ) {
             input = input.substring( 1 );
             if( parseParamName( input, ast ) ) {
                 input = ast.__trailing;
-                if( input.charAt( 0 ) == '@' ) {
+                char prefix = firstChar( input );
+                if( prefix == '@' ) {
                     input = input.substring( 1 );
                     return parseCompoundURI( input, ast );
                 }
-                else if( input.charAt( 0 ) == '=' ) {
+                else if( prefix == '=' ) {
                     input = input.substring( 1 );
                     if( parseParamLiteral( input, ast ) ) {
                         // Convert the literal value to the AST for a string scheme URI.
@@ -434,7 +438,7 @@ public class CompoundURI {
 
     // // Match | followed by any format characters or kv ~ -
     private boolean parseFormat(String input, ASTNode ast) {
-        if( input.charAt( 0 ) == '|' ) {
+        if( firstChar( input ) == '|' ) {
             input = input.substring( 1 );
             String[] groups = Regex.matches("^([\\w_~-]*)(.*)$", input );
             if( groups != null && groups.length > 2 ) {
@@ -466,6 +470,14 @@ public class CompoundURI {
             return true;
         }
         return false;
+    }
+
+    /**
+     * Return the first character in a string.
+     * Handles null and empty strings, returning 0x00 instead.
+     */
+    static final char firstChar(final String s) {
+        return s != null && s.length() > 0 ? s.charAt( 0 ) : 0x00;
     }
 
 }

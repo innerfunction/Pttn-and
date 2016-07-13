@@ -205,7 +205,7 @@ public class Configuration {
         this.r = androidContext.getResources();
         // Search the configuration data for any parameter values, and move any found to a separate map.
         Map<String,Object> params = new HashMap<>();
-        for(String key : data.keySet() ) {
+        for( String key : data.keySet() ) {
             if( key.startsWith("$") ) {
                 params.put( key, data.get( key ) );
                 data.remove( key );

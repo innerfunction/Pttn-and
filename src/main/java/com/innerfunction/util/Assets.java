@@ -37,7 +37,7 @@ public class Assets {
 
     public Assets(Context context) {
         this.assetManager = context.getAssets();
-        this.assetNamesByPath = new HashMap<String,Set<String>>();
+        this.assetNamesByPath = new HashMap<>();
     }
 
     /** Open an input stream on a named asset. */
@@ -68,11 +68,11 @@ public class Assets {
         if( assetNames == null ) {
             try {
                 String[] assets = this.assetManager.list( path );
-                assetNames = new HashSet<String>( Arrays.asList( assets ) );
+                assetNames = new HashSet<>( Arrays.asList( assets ) );
             }
             catch(IOException e) {
                 Log.e(Tag, "Listing assets", e );
-                assetNames = new HashSet<String>();
+                assetNames = new HashSet<>();
             }
             this.assetNamesByPath.put( path, assetNames );
         }
