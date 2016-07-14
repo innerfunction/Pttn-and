@@ -15,6 +15,7 @@ package com.innerfunction.q;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ArrayBlockingQueue;
 
 /**
  * Created by jloriente on 17/03/2016.
@@ -87,6 +88,19 @@ public class Q {
         return obj instanceof Promise;
     };
 
+    /**
+     * A class used by the Promise.sync() method for communicating promise results between threads.
+     */
+    static class ResultOrException<T> {
+        T result;
+        Exception exception;
+        ResultOrException(T result) {
+            this.result = result;
+        }
+        ResultOrException(Exception e) {
+            this.exception = e;
+        }
+    }
 
     public static class Promise<T> {
 
@@ -274,25 +288,29 @@ public class Q {
          * @return
          */
         public <R> Promise<R> then(ICallback<T, R> cb) {
-            Promise<R> next = new Promise<R>();
-            if (resolved) {
+            Promise<R> next = new Promise<>();
+            if( resolved ) {
                 // Current promise is already resolved, so immediately invoke the callback.
                 try {
-                    if (cb instanceof Callback<?, ?>) {
+                    if( cb instanceof Callback<?, ?> ) {
                         next.resolve(((Callback<T, R>) cb).result(result));
-                    } else if (cb instanceof AsyncCallback<?, ?>) {
+                    }
+                    else if( cb instanceof AsyncCallback<?, ?> ) {
                         next.resolve(((AsyncCallback<T, R>) cb).result(result));
                     }
-                } catch (Exception e) {
+                }
+                catch(Exception e) {
                     next.reject(e);
                 }
-            } else if (rejected) {
+            }
+            else if( rejected ) {
                 // If the current promise is already rejected then pass the error onto the
                 // next promise.
-                next.reject(error);
-            } else {
+                next.reject( error );
+            }
+            else {
                 // Promise is neither resolved nor rejected, copy the callback for later usage.
-                continuation = new Continuation<T, R>(cb, next);
+                continuation = new Continuation<>( cb, next );
             }
             return next;
         }
@@ -304,14 +322,47 @@ public class Q {
          * @return
          */
         public Promise<T> error(ErrorCallback cb) {
-            if (rejected) {
-                cb.error(error);
-            } else if (!resolved) {
+            if( rejected ) {
+                cb.error( error );
+            }
+            else if( !resolved ) {
                 errCallback = cb;
             }
             return this;
         }
 
+        /**
+         * Convert an asynchronous promise into a synchronous, blocking method.
+         * Blocks the current thread until the promise is resolved. Throws an exception if the
+         * promise is rejected.
+         * Returns or throws immediately if the promise is already resolved or rejected.
+         */
+        public T sync() throws Exception {
+            // Create a blocking queue for communicating the result from the execution thread
+            // back to the current thread.
+            final ArrayBlockingQueue<ResultOrException<T>> queue = new ArrayBlockingQueue<>( 1 );
+            // Add the result to the queue when this promise resolves...
+            this.then( new Callback<T, Void>() {
+                public Void result(T result) {
+                    queue.add( new ResultOrException<>( result ) );
+                    return null;
+                }
+            });
+            // ...or add the exception to the queue if the promise fails.
+            this.error( new ErrorCallback() {
+                public void error(Exception e) {
+                    queue.add( new ResultOrException<T>( e ) );
+                }
+            });
+            // Read the result from the queue - this call will block until the promise resolves.
+            ResultOrException<T> maybeResult = queue.take();
+            // If the result contains an exception then throw.
+            if( maybeResult.exception != null ) {
+                throw maybeResult.exception;
+            }
+            // Otherwise return the result.
+            return maybeResult.result;
+        }
     }
 
 }
