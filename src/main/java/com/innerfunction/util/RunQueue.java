@@ -45,7 +45,7 @@ public class RunQueue extends LinkedBlockingQueue<Runnable> {
     }
 
     public boolean dispatch(Runnable runnable) {
-        boolean ok = false;
+        boolean ok = true;
         try {
             put( runnable );
         }

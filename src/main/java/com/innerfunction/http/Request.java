@@ -87,7 +87,7 @@ public abstract class Request {
             // TODO Some of these connection settings should be configured via properties on the client.
             connection.setConnectTimeout( 5000 );
             connection.setReadTimeout( 5000 );
-            connection.setDoOutput( true );
+            connection.setDoInput( true );
             addCookies( connection );
             if( headers != null ) {
                 for( String key : headers.keySet() ) {
@@ -95,7 +95,7 @@ public abstract class Request {
                 }
             }
             if( body != null ) {
-                connection.setDoInput(true);
+                connection.setDoOutput( true ); // NOTE This call forces the request method to POST
                 connection.setFixedLengthStreamingMode( body.length );
                 BufferedOutputStream out = new BufferedOutputStream( connection.getOutputStream() );
                 out.write( body );
