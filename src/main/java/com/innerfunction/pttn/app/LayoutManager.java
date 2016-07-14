@@ -23,6 +23,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -34,7 +35,7 @@ public class LayoutManager {
 
     private Fragment fragment;
     private Context context;
-    private Map<String,Object> viewComponents;
+    private Map<String,Object> viewComponents = new HashMap<>();
     private String layoutName;
     private View layout;
 

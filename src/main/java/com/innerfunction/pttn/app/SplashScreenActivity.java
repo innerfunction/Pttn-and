@@ -61,7 +61,7 @@ public class SplashScreenActivity extends Activity {
             @Override
             public void run() {
                 AppContainer appContainer = AppContainer.getAppContainer();
-                if( appContainer != null && appContainer.isStarted() ) {
+                if( appContainer != null && appContainer.isRunning() ) {
                     appContainer.showRootView();
                 }
                 else {

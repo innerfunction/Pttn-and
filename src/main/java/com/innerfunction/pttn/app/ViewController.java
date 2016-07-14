@@ -190,8 +190,17 @@ public class ViewController extends FrameLayout implements MessageReceiver, Mess
         // If the fragment has a layout setting then inflate it and extract any view components.
         LayoutInflater inflater = activity.getLayoutInflater();
         View view = layoutManager.inflate( inflater, this );
-        if( view != null && backgroundColor > -1 ) {
-            view.setBackgroundColor( backgroundColor );
+        if( view != null ) {
+            if( backgroundColor > -1 ) {
+                view.setBackgroundColor( backgroundColor );
+            }
+            // Add the view as (the sole) child of the view controller.
+            FrameLayout.LayoutParams layoutParams
+                = new FrameLayout.LayoutParams( FrameLayout.LayoutParams.MATCH_PARENT,
+                                                FrameLayout.LayoutParams.MATCH_PARENT );
+            view.setLayoutParams( layoutParams );
+            removeAllViewsInLayout();
+            addView( view );
         }
         return view;
     }

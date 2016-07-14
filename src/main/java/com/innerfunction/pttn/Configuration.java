@@ -27,6 +27,7 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
+import android.net.ConnectivityManager;
 
 import com.innerfunction.uri.Resource;
 import com.innerfunction.uri.URIHandler;
@@ -96,8 +97,8 @@ public class Configuration {
     private URIHandler uriHandler;
     /**
      * The configuration's data context.
-     * Used as the data context for templated values. A configuration supports two types of templated
-     * values:
+     * Used as the data context for templated values. A configuration supports two types of
+     * templated values:
      * <ul>
      *     <li>String template values, indicated by property values prefixed with ?;</li>
      *     <li>Configuration template values, indicated by property values prefixed with $.</li>
@@ -152,19 +153,10 @@ public class Configuration {
      * The configuration parent is an empty configuration. Use this constructor for configuration
      * templates.
      * @param data      The configuration data.
+     * @param context   An Android context object.
      */
-    public Configuration(Object data) {
-        this( data, new Configuration() );
-    }
-
-    /**
-     * Create a configuration using data provided by a resource.
-     * @param resource  A resource containing configuration data.
-     * @param parent    The parent resource.
-     */
-    @SuppressWarnings("unchecked")
-    protected Configuration(Resource resource, Configuration parent) {
-        this( resource.asJSONData(), parent );
+    public Configuration(Object data, Context context) {
+        this( data, new Configuration( context ) );
     }
 
     /**
@@ -173,7 +165,9 @@ public class Configuration {
      * to be extended with additional data. An empty configuration lacks certain key properties
      * - e.g. a URI handler - so isn't fully functional.
      */
-    private Configuration() {
+    private Configuration(Context androidContext) {
+        this.androidContext = androidContext;
+        this.conversions = TypeConversions.instanceForContext( androidContext );
         this.data = new HashMap<>();
         this.context = new HashMap<>();
     }
@@ -356,18 +350,35 @@ public class Configuration {
                 Object bareValue = value;
 
                 if( !(value instanceof Configuration) ) {
+
+                    Resource valueRsc = null;
+                    // If value is a resource then try converting to JSON data.
+                    if( value instanceof Resource ) {
+                        valueRsc = (Resource)value;
+                        value = valueRsc.asJSONData();
+                    }
+
                     // If value is a list then convert to a list backed map.
                     if( value instanceof List ) {
                         value = new ListBackedMap( (List)value );
                     }
+
                     // If value isn't already a configuration, but is a map then construct a new
                     // config using its values.
                     if( value instanceof Map && androidContext != null ) {
-                        value = new Configuration( value, this );
-                    }
-                    // Else if value is a resource, then construct a new config using the resource...
-                    else if( value instanceof Resource ) {
-                        value = new Configuration( (Resource)value, this );
+                        Configuration configValue = new Configuration( value, this );
+                        // NOTE When the configuration data is sourced from a resource, then the
+                        // following properties need to be different from when the data is found
+                        // directly in the configuration:
+                        // * root: The resource defines a new context for # refs, so root needs to
+                        //   point to the new config.
+                        // * uriHandler: The resource's handler needs to be used, so that any
+                        //   relative URIs within the resource data resolve correctly.
+                        if( valueRsc != null ) {
+                            configValue.root = configValue;
+                            configValue.uriHandler = valueRsc.getURIHandler();
+                        }
+                        value = configValue;
                     }
                     // Else the value can't be resolved to a configuration, so return null.
                     else {
@@ -662,7 +673,7 @@ public class Configuration {
             hierarchy.add( current );
         }
         // Build a single unified configuration from the hierarchy of configs.
-        Configuration result = new Configuration(); // Start with an empty config.
+        Configuration result = new Configuration( androidContext ); // Start with an empty config.
         // Process the hierarchy in reverse order (i.e. from most distant ancestor to current config).
         Collections.reverse( hierarchy );
         for( Configuration config : hierarchy ) {

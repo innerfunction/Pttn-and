@@ -256,14 +256,14 @@ public class Container implements ConfigurationData, Service, MessageReceiver, M
             Class objClass = Class.forName( className );
             Object instance = null;
             // Try constructing with a single android Context argument.
-            instance = constructWithArgument( objClass, androidContext );
+            instance = constructWithArgument( objClass, Context.class, androidContext );
             // Try constructing with a single Configuration argument.
             if( instance == null ) {
-                instance = constructWithArgument( objClass, configuration );
-            }
-            // Try constructing with a no-args constructor.
-            if( instance == null ) {
-                instance = objClass.newInstance();
+                instance = constructWithArgument( objClass, Configuration.class, configuration );
+                // Try constructing with a no-args constructor.
+                if( instance == null ) {
+                    instance = objClass.newInstance();
+                }
             }
             doPostInstantiation( instance );
             return instance;
@@ -282,16 +282,16 @@ public class Container implements ConfigurationData, Service, MessageReceiver, M
      * Looks for a single argument constructor on the specified class, accepting an argument
      * the same type as the 'arg' parameter.
      * @param objClass  The class being instantiated.
-     * @param arg       A constructor method argument.
+     * @param argClass  The class of the constructor method argument.
+     * @param arg       The constructor method argument value.
      * @return The newly constructed object, or null if the class doesn't have a matching
      * constructor.
      * @throws InstantiationException
      * @throws IllegalAccessException
      * @throws InvocationTargetException
      */
-    private Object constructWithArgument(Class objClass, Object arg) throws InstantiationException, IllegalAccessException, InvocationTargetException {
+    private Object constructWithArgument(Class objClass, Class argClass, Object arg) throws InstantiationException, IllegalAccessException, InvocationTargetException {
         try {
-            Class argClass = arg.getClass();
             Constructor constructor = objClass.getConstructor( argClass );
             if( constructor != null ) {
                 return constructor.newInstance( arg );
@@ -517,6 +517,11 @@ public class Container implements ConfigurationData, Service, MessageReceiver, M
      */
     public void recordPendingValueObjectConfiguration(Object objectKey, Configuration configuration) {
         pendingValueObjectConfigs.put( objectKey, configuration );
+    }
+
+    /** Test if the container is started. */
+    public boolean isRunning() {
+        return running;
     }
 
     // Service interface

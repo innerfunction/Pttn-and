@@ -49,7 +49,9 @@ public class PttnApplication extends Application {
             }
             // Configure and start the app container.
             this.appContainer = AppContainer.getAppContainer( getApplicationContext() );
+            //android.os.Debug.startMethodTracing("semo-config-cycle");
             appContainer.loadConfiguration( configurationURI );
+            //android.os.Debug.stopMethodTracing();
             appContainer.startService();
         }
         catch(Exception e) {

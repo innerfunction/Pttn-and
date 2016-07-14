@@ -87,8 +87,6 @@ public class AppContainer extends Container {
      * PttnActivity) then this will be null.
      */
     private PttnActivity currentActivity;
-    /** A flag indicating that the container has fully started. */
-    private boolean started = false;
 
     public AppContainer(Context context) {
         super( context, StandardURIHandler.getInstance( context ) );
@@ -125,17 +123,6 @@ public class AppContainer extends Container {
 
     public void setAliases(Map<String,String> aliases) {
         uriHandler.setAliases( aliases );
-    }
-
-    /** Test if the container is fully started. */
-    public boolean isStarted() {
-        return started;
-    }
-
-    @Override
-    public void startService() {
-        super.startService();
-        started = true;
     }
 
     /**
@@ -220,9 +207,11 @@ public class AppContainer extends Container {
         super.configureWith( configuration );
 
         // Map any additional schemes to the URI handler.
-        for( String schemeName : schemes.keySet() ) {
-            URIScheme scheme = schemes.get( schemeName );
-            uriHandler.addHandlerForScheme( schemeName, scheme );
+        if( schemes != null ) {
+            for( String schemeName : schemes.keySet() ) {
+                URIScheme scheme = schemes.get( schemeName );
+                uriHandler.addHandlerForScheme( schemeName, scheme );
+            }
         }
     }
 
@@ -235,7 +224,7 @@ public class AppContainer extends Container {
 
         Resources r = androidContext.getResources();
 
-        Map<String,Object> values = new HashMap<String,Object>();
+        Map<String,Object> values = new HashMap<>();
         DisplayMetrics dm = r.getDisplayMetrics();
         String density;
         switch( dm.densityDpi ) {
@@ -246,8 +235,8 @@ public class AppContainer extends Container {
         case DisplayMetrics.DENSITY_XXHIGH: density = "xxhdpi"; break;
         default:                            density = "hdpi";
         }
-        Map<String,Object> platformValues = new HashMap<String,Object>();
-        platformValues.put("name", "and");
+        Map<String,Object> platformValues = new HashMap<>();
+        platformValues.put( "name", "and");
         platformValues.put( "display", density );
         platformValues.put( "defaultDisplay", "hdpi");
         platformValues.put( "full", "and-"+density);
@@ -288,7 +277,7 @@ public class AppContainer extends Container {
             }
         }
 
-        Map<String,Object> localeValues = new HashMap<String,Object>();
+        Map<String,Object> localeValues = new HashMap<>();
         localeValues.put("id", locale.toString());
         localeValues.put( "lang", locale.getLanguage() );
         localeValues.put( "variant", locale.getVariant() );

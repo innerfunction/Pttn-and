@@ -1,5 +1,8 @@
 package com.innerfunction.pttn;
 
+import android.util.Log;
+import android.util.LruCache;
+
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -20,6 +23,8 @@ import java.util.Map;
  */
 public class Property {
 
+    static final String Tag = Property.class.getSimpleName();
+
     /** The property name, e.g. backgroundColor. */
     private String name;
     /** The property type class. */
@@ -30,8 +35,39 @@ public class Property {
     private Method getter;
 
     private Property(String baseName, Map<String,Method> methods) {
+        // PROFILING NOTE The string operations in this method - up to 5 separate strings are
+        // constructed - incur a significant CPU overhead, so a single string builder is used to
+        // generate them all.
+        // NOTE Ideally in the code below, the string builder could be used as a map key without
+        // first converting to string; but the string builder implementation's hashCode and equals
+        // methods do not support this behaviour; consider whether worthwhile implementing a
+        // string builder subclass that does support this. (Note that StringBuilder is final, so
+        // a complete new class would be necessary).
+        StringBuilder sb = new StringBuilder();
+        sb.append("set");
+        sb.append( baseName );
+        this.setter = methods.get( sb.toString() );
+        this.type = setter.getParameterTypes()[0];
+        // Try to find a getter.
+        sb.replace( 0, 1, "g"); // e.g. [s]etXxx -> [g]etXxx
+        getter = methods.get( sb.toString() );
+        if( getter == null && type == Boolean.class ) {
+            sb.replace( 0, 3, "is"); // e.g. [get]Xxx -> [is]Xxx
+            getter = methods.get( sb.toString() );
+            if( getter == null ) {
+                sb.replace( 0, 2, "has"); // e.g. [is]Xxx -> [has]Xxx
+                getter = methods.get( sb.toString() );
+                sb.delete( 0, 3 ); // remove 'has'
+            }
+            else sb.delete( 0, 2 ); // remove 'is'
+        }
+        else sb.delete( 0, 3 ); // remove 'get'
+        // By this point, all prefixes have been removed and sb should contain just baseName.
         // Convert the base name, in format Xxx, to the property name in format xxx
         // e.g. BackgroundColor -> backgroundColor
+        sb.replace( 0, 1, baseName.substring( 0, 1 ).toLowerCase() );
+        this.name = sb.toString();
+        /*
         this.name = baseName.substring( 0, 1 ).toLowerCase()+baseName.substring( 1 );
         this.setter = methods.get("set"+baseName );
         this.type = setter.getParameterTypes()[0];
@@ -42,6 +78,7 @@ public class Property {
                 getter = methods.get("has"+baseName );
             }
         }
+        */
     }
 
     /** Constructor for use by Property subclasses. */
@@ -128,6 +165,15 @@ public class Property {
     }
 
     /**
+     * A cache of object properties by class name.
+     * Used to cache the results of getPropertiesForObject(..). The Class.getMethods() call can be
+     * CPU intensive; however, it is not desirable to cache all results for all classes as this
+     * could swap CPU overhead for memory overhead. Instead, an LRU cache with a smallish size (of
+     * 40 items) is kept.
+     */
+    static final LruCache<Class,Map<String,Property>> ObjectPropertiesByClass = new LruCache<>( 40 );
+
+    /**
      * Get the configurable properties for an object.
      * Returns a map of Property instances keyed by property name.
      * @param object    The object whose properties are needed.
@@ -135,24 +181,34 @@ public class Property {
      */
     public static Map<String,Property> getPropertiesForObject(Object object) {
         Class<?> cl = object.getClass();
-        // Build a map of all the class' methods, and a list of property base names.
-        Map<String,Method> methods = new HashMap<>();
-        List<String> baseNames = new ArrayList<>();
-        for( Method method : cl.getMethods() ) {
-            String methodName = method.getName();
-            if( methodName.startsWith("set") ) {
-                Class[] argTypes = method.getParameterTypes();
-                if( argTypes.length == 1 ) {
-                    baseNames.add( methodName.substring( 3 ) );
+        // Check for a cached result.
+        Map<String,Property> properties = ObjectPropertiesByClass.get( cl );
+        if( properties == null ) {
+            // Cache miss.
+            Log.d( Tag, String.format("getPropertiesForObject(%s) cache miss", cl.getCanonicalName()));
+            // Build a map of all the class' methods, and a list of property base names.
+            Map<String, Method> methods = new HashMap<>();
+            List<String> baseNames = new ArrayList<>();
+            for( Method method : cl.getMethods() ) {
+                String methodName = method.getName();
+                if( methodName.startsWith( "set" ) ) {
+                    Class[] argTypes = method.getParameterTypes();
+                    if( argTypes.length == 1 ) {
+                        baseNames.add( methodName.substring( 3 ) );
+                    }
                 }
+                methods.put( methodName, method );
             }
-            methods.put( methodName, method );
-        }
-        // Generate a map of properties.
-        Map<String,Property> properties = new HashMap<>();
-        for( String baseName : baseNames ) {
-            Property property = new Property( baseName, methods );
-            properties.put( property.name, property );
+            // Generate a map of properties.
+            properties = new HashMap<>();
+            for( String baseName : baseNames ) {
+                Property property = new Property( baseName, methods );
+                properties.put( property.name, property );
+            }
+            // Add result to cache.
+            synchronized( ObjectPropertiesByClass ) {
+                ObjectPropertiesByClass.put( cl, properties );
+            }
         }
         return properties;
     }

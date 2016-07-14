@@ -16,8 +16,10 @@ package com.innerfunction.pttn.app;
 import android.os.Build;
 import android.transition.Fade;
 import android.transition.TransitionManager;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.FrameLayout;
 
 import com.innerfunction.pttn.R;
 
@@ -37,36 +39,46 @@ public class ViewControllerActivity extends PttnActivity<ViewController> {
     @Override
     public void onStart() {
         super.onStart();
-        viewController.changeState( ViewController.State.Started );
+        if( viewController != null ) {
+            viewController.changeState( ViewController.State.Started );
+        }
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        viewController.changeState( ViewController.State.Running );
+        if( viewController != null ) {
+            viewController.changeState( ViewController.State.Running );
+        }
     }
 
     @Override
     public void onPause() {
-        viewController.changeState( ViewController.State.Paused );
+        if( viewController != null ) {
+            viewController.changeState( ViewController.State.Paused );
+        }
         super.onPause();
     }
 
     @Override
     public void onStop() {
-        viewController.changeState( ViewController.State.Stopped );
+        if( viewController != null ) {
+            viewController.changeState( ViewController.State.Stopped );
+        }
         super.onStop();
     }
 
     @Override
     public void onDestroy() {
-        viewController.changeState( ViewController.State.Destroyed );
+        if( viewController != null ) {
+            viewController.changeState( ViewController.State.Destroyed );
+        }
         super.onDestroy();
     }
 
     @Override
     public void onBackPressed() {
-        if( viewController.onBackPressed() ) {
+        if( viewController == null || viewController.onBackPressed() ) {
             super.onBackPressed();
         }
     }
@@ -76,7 +88,7 @@ public class ViewControllerActivity extends PttnActivity<ViewController> {
         viewController.onAttach( this );
         // Add the view controller.
         View mainView = findViewById( R.id.main );
-        if( mainView != null ) {
+        if( mainView instanceof ViewGroup ) {
             ViewGroup parentView = (ViewGroup)mainView.getParent();
             if( parentView != null ) {
                 // Animate transition to the view controller, if the Android version supports it.
@@ -92,6 +104,9 @@ public class ViewControllerActivity extends PttnActivity<ViewController> {
                 parentView.removeView( mainView );
                 parentView.addView( viewController, idx );
             }
+        }
+        else {
+            Log.w(Tag, "Main view placeholder in activity layout must be instance of ViewGroup");
         }
         // Record the current view.
         this.viewController = viewController;

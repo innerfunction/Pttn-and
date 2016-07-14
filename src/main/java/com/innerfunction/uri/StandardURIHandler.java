@@ -18,6 +18,7 @@ import android.util.Log;
 
 import com.innerfunction.util.Assets;
 import com.innerfunction.util.Files;
+import com.innerfunction.util.Maps;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -62,16 +63,7 @@ public class StandardURIHandler implements URIHandler {
     private StandardURIHandler(StandardURIHandler handler, CompoundURI uri) {
         this.schemeHandlers = handler.schemeHandlers;
         this.assets = handler.assets;
-        this.schemeContexts = new HashMap<>( handler.schemeContexts );
-        schemeContexts.put( uri.getScheme(), uri );
-    }
-
-    /** Constructor used to build copies of handlers with modified scheme contexts. */
-    private StandardURIHandler(StandardURIHandler handler, String schemeName, URIScheme scheme) {
-        this.schemeHandlers = new HashMap<>( handler.schemeHandlers );
-        schemeHandlers.put( schemeName, scheme );
-        this.assets = handler.assets;
-        this.schemeContexts = handler.schemeContexts;
+        this.schemeContexts = Maps.extend( handler.schemeContexts, uri.getScheme(), uri );
     }
 
     /**
@@ -229,7 +221,8 @@ public class StandardURIHandler implements URIHandler {
      */
     @Override
     public URIHandler replaceURIScheme(String schemeName, URIScheme scheme) {
-        return new StandardURIHandler( this, schemeName, scheme );
+        schemeHandlers.put( schemeName, scheme );
+        return this;
     }
 
     /**

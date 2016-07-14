@@ -52,7 +52,9 @@ public abstract class PttnActivity<T> extends AppCompatActivity {
         // TODO Check here for Intent.ACTION_MAIN.equals( intent.getAction() )
         // TODO (Is this sufficient, or should also test for category == LAUNCHER?)
         // TODO And then set viewUUID to something that will identify the root view to the container
+        /* TODO Following code moved to onCreate; confirm this can be completely removed.
         viewUUID = intent.getStringExtra( IntentActions.ViewUUID.name() );
+        */
     }
 
     @Override
@@ -63,6 +65,10 @@ public abstract class PttnActivity<T> extends AppCompatActivity {
 
         // TODO Assuming here that if the activity is being recreated then viewUUID will have been
         // TODO recovered by an onRestoreInstanceState(...) method call
+
+        if( viewUUID == null ) {
+            viewUUID = getIntent().getStringExtra( IntentActions.ViewUUID.name() );
+        }
 
         // Check for a container instantiated view.
         if( viewUUID != null ) {

@@ -34,12 +34,14 @@ public class ObjectConfigurer {
     private Class collectionMemberTypeHint;
     /** The key path to the object's configuration. */
     private String keyPath;
-    /** A flag indicating whether the object being configured is a collection. */
+    /** A flag indicating that the object being configured is a collection. */
     private boolean isCollection;
+    /** A flag indicating that the object being configured is a container. */
+    private boolean isContainer;
     /** Internal metrics: Number of properties (objects and primitives) configured. */
-    private int configuredPropertyCount;
+    private int configuredPropertyCount = 0;
     /** Internal metrics: Number of objects (i.e non-primitives) configured. */
-    private int configuredObjectCount;
+    private int configuredObjectCount = 1;
 
     /**
      * Initialize the configurer with the object to configure.
@@ -64,7 +66,7 @@ public class ObjectConfigurer {
     public ObjectConfigurer(Container container) {
         this( container, container, "");
         this.collectionMemberTypeHint = Object.class;
-        this.isCollection = true;
+        this.isContainer = true;
     }
 
     /** Return the object being configured. */
@@ -375,24 +377,45 @@ public class ObjectConfigurer {
      */
     private Property getPropertyInfo(String propName) {
         Property property = properties.get( propName );
-        if( property == null && isCollection ) {
-            // Create a property subclass suitable for reading/writing to Map entries.
-            // TODO Should this code be move to somewhere else, e.g. Property?
-            // TODO Note that this arrangement supports a dual-mode when accessing properties of
-            // TODO a collection instance - (1) actual properties of the object, with getter/setter
-            // TODO methods; and (2) properties as named entries of the collection object.
-            property = new Property( propName, collectionMemberTypeHint ) {
-                public Type[] getGenericParameterTypeInfo() {
-                    return null;
-                }
-                public boolean set(Object object, Object value) {
-                    ((Map)object).put( getName(), value );
-                    return true;
-                }
-                public Object get(Object object) {
-                    return ((Map)object).get( getName() );
-                }
-            };
+        if( property == null ) {
+            if( isCollection ) {
+                // Create a property subclass suitable for reading/writing to Map entries.
+                // TODO Should this code be move to somewhere else, e.g. Property?
+                // TODO Note that this arrangement supports a dual-mode when accessing properties of
+                // TODO a collection instance - (1) actual properties of the object, with getter/setter
+                // TODO methods; and (2) properties as named entries of the collection object.
+                property = new Property( propName, collectionMemberTypeHint ) {
+                    @Override
+                    public Type[] getGenericParameterTypeInfo() {
+                        return null;
+                    }
+                    @Override
+                    public boolean set(Object object, Object value) {
+                        ((Map)object).put( getName(), value );
+                        return true;
+                    }
+                    @Override
+                    public Object get(Object object) {
+                        return ((Map)object).get( getName() );
+                    }
+                };
+            }
+            else if( isContainer ) {
+                property = new Property( propName, collectionMemberTypeHint ) {
+                    @Override
+                    public Type[] getGenericParameterTypeInfo() {
+                        return null;
+                    }
+                    @Override
+                    public boolean set(Object object, Object value) {
+                        return false;
+                    }
+                    @Override
+                    public Object get(Object object) {
+                        return ((Container)object).getNamed( getName() );
+                    }
+                };
+            }
         }
         return property;
     }
