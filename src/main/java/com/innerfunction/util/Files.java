@@ -154,21 +154,25 @@ public class Files {
     /**
      * Read a JSON file.
      * @param file      The file to read from.
-     * @return An object representing the parsed file contents.
+     * @return An object representing the parsed file contents, or null if the file isn't found or
+     * contains no data.
      */
     public static Object readJSON(File file) {
-        return JSONValue.parse( readString( file ) );
+        String json = readString( file );
+        return json != null ? JSONValue.parse( json ) : null;
     }
 
     /**
      * Read JSON from an input stream.
      * @param in        The stream to read from.
      * @param name      A name (e.g. filename) associated with the stream; used for logging.
-     * @return An object representing the parsed stream contents.
+     * @return An object representing the parsed stream contents, or null if the input stream
+     * contains no data.
      * @throws ParseException   If the stream doesn't contain valid JSON.
      */
     public static Object readJSON(InputStream in, String name) {
-        return JSONValue.parse( readString( in, name ) );
+        String json = readString( in, name );
+        return json != null ? JSONValue.parse( json ) : null;
     }
 
     /**
