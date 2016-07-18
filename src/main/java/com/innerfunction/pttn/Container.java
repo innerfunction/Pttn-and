@@ -205,7 +205,7 @@ public class Container implements ConfigurationData, Service, MessageReceiver, M
      */
     public Object instantiateObjectWithConfiguration(Configuration configuration, String identifier) {
         Object object = null;
-        String className = configuration.getValueAsString( "*and-class" );
+        String className = configuration.getValueAsString("*and-class");
         if( className == null ) {
             String type = configuration.getValueAsString("*type");
             if( type != null ) {

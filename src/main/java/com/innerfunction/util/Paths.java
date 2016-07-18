@@ -27,7 +27,7 @@ public class Paths {
     public static String dirname(String path) {
         String[] ps = parts( path );
         StringBuilder sb = new StringBuilder();
-        if( path.charAt( 0 ) == '/' ) {
+        if( path.length() > 0 && path.charAt( 0 ) == '/' ) {
             sb.append('/');
         }
         for( int i = 0, c = 0; i < ps.length - 1; i++ ) {

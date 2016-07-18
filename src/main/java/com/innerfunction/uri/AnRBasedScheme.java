@@ -52,7 +52,7 @@ public class AnRBasedScheme extends FileBasedScheme {
         // Leading slashes on an asset name will cause problems when resolving the asset file, so
         // strip them from the name.
         String name = uri.getName();
-        if( name.charAt( 0 ) == '/' ) {
+        if( name.length() > 0 && name.charAt( 0 ) == '/' ) {
             name = name.substring( 1 );
         }
         int resourceID = getResourceIDForName( name );

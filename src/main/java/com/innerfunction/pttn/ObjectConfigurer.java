@@ -31,7 +31,7 @@ public class ObjectConfigurer {
      * If the object being configured is a collection (i.e. a dictionary or array) then
      * this var contains the type hint for its members.
      */
-    private Class collectionMemberTypeHint;
+    private Class collectionMemberTypeHint = Object.class;
     /** The key path to the object's configuration. */
     private String keyPath;
     /** A flag indicating that the object being configured is a collection. */
@@ -65,7 +65,6 @@ public class ObjectConfigurer {
      */
     public ObjectConfigurer(Container container) {
         this( container, container, "");
-        this.collectionMemberTypeHint = Object.class;
         this.isContainer = true;
     }
 
@@ -221,7 +220,6 @@ public class ObjectConfigurer {
                         if( value == null ) {
                             value = property.get( object );
                         }
-                        // If value is a collection then we need a mutable copy before progressing.
                         if( value != null ) {
                             // Apply configuration proxy wrapper, if any defined.
                             value = IOCProxyLookup.applyConfigurationProxyWrapper( value );

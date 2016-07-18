@@ -101,7 +101,7 @@ public class Property {
     }
 
     public String getTypeClassName() {
-        return type.getClass().getCanonicalName();
+        return type.getCanonicalName();
     }
 
     /**

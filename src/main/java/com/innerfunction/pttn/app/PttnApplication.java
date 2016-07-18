@@ -15,6 +15,8 @@ public class PttnApplication extends Application {
 
     static final String Tag = PttnApplication.class.getSimpleName();
 
+    static final boolean TraceEnabled = false;
+
     /**
      * A URI specifying the location of the app container configuration.
      * Defaults to a path resolving to the file at assets/pttn/config.json.
@@ -49,9 +51,13 @@ public class PttnApplication extends Application {
             }
             // Configure and start the app container.
             this.appContainer = AppContainer.getAppContainer( getApplicationContext() );
-            //android.os.Debug.startMethodTracing("semo-config-cycle");
+            if( TraceEnabled) {
+                android.os.Debug.startMethodTracing("semo-trace");
+            }
             appContainer.loadConfiguration( configurationURI );
-            //android.os.Debug.stopMethodTracing();
+            if( TraceEnabled ) {
+                android.os.Debug.stopMethodTracing();
+            }
             appContainer.startService();
         }
         catch(Exception e) {

@@ -78,9 +78,9 @@ public class FileBasedScheme implements RelativeURIScheme {
     public CompoundURI resolveAgainst(CompoundURI uri, CompoundURI reference) {
         // If URI name doesn't begin with / then it is a relative URI.
         String name = uri.getName();
-        if( name.charAt( 0 ) != '/' ) {
-            File contextDir = new File( Paths.dirname( reference.getName() ) );
-            String absPath = new File( contextDir, name ).getAbsolutePath();
+        if( name.length() > 0 && name.charAt( 0 ) != '/' ) {
+            String contextDir = Paths.dirname( reference.getName() );
+            String absPath = Paths.join( contextDir, name );
             uri = uri.copyOfWithName( absPath );
         }
         return uri;
