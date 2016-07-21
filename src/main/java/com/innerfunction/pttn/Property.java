@@ -82,14 +82,6 @@ public class Property {
         */
     }
 
-    /** Constructor for use by Property subclasses. */
-    /*
-    protected Property(String name, Class<?> type) {
-        this.name = name;
-        this.type = type;
-    }
-    */
-
     public String getName() {
         return name;
     }
@@ -97,17 +89,6 @@ public class Property {
     public Class<?> getType() {
         return type;
     }
-
-    /** Test whether the property will accept an object value of any type. */
-    /*
-    public boolean isAnyType() {
-        return type == Object.class;
-    }
-
-    public String getTypeClassName() {
-        return type.getCanonicalName();
-    }
-    */
 
     /**
      * Get the generic parameter types for the setter method for a collections property.
@@ -122,24 +103,6 @@ public class Property {
         }
         return new Type[0];
     }
-
-    /**
-     * Test whether the property is assignable from another type.
-     */
-    /*
-    public boolean isAssignableFrom(Class otherType) {
-        return type.isAssignableFrom( otherType );
-    }
-    */
-
-    /**
-     * Test whether the property is a specific type.
-     */
-    /*
-    public boolean isType(Class otherType) {
-        return type == otherType;
-    }
-    */
 
     /**
      * Set the property on an object with the specified value.

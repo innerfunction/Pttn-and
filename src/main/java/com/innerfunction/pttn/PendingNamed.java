@@ -14,6 +14,7 @@
 package com.innerfunction.pttn;
 
 import com.innerfunction.util.KeyPath;
+import static com.innerfunction.pttn.ObjectConfigurer.Properties;
 
 /**
  * A placeholder value used to represent a deferred named value.
@@ -30,13 +31,25 @@ public class PendingNamed {
     private String key;
     /** The key path of the property value on the named object. */
     private String referencePath;
+    /**
+     * The properties of named object.
+     * Used to identify the object and to set its named properties.
+     */
+    private Properties properties;
     /** The object configurer waiting for the pending value. */
     private ObjectConfigurer configurer;
 
-    public void setConfigurer(ObjectConfigurer configurer) {
+    /**
+     * Provide information to the pending named needed to complete the named's configuration.
+     * @param properties    Properties of the
+     * @param configurer
+     */
+    public void setConfigurationContext(Properties properties, ObjectConfigurer configurer) {
+        this.properties = properties;
         this.configurer = configurer;
-        this.objectKey = new ObjectKey( configurer.getObject() );
+        this.objectKey = new ObjectKey( properties.getPropertyOwner() );
     }
+
     /**
      * Test whether the pending has a configurer waiting for the result.
      * Not all pendings are used - some are discarded (e.g. when attempting to resolve a
@@ -53,7 +66,7 @@ public class PendingNamed {
         if( referencePath != null ) {
             value = KeyPath.resolve( referencePath, value );
         }
-        return configurer.injectPropertyValue( value, key );
+        return configurer.injectPropertyValue( key, properties, value );
     }
 
     public Object getObjectKey() {
@@ -61,7 +74,7 @@ public class PendingNamed {
     }
 
     public Object getObject() {
-        return configurer.getObject();
+        return properties.getPropertyOwner();
     }
 
     public void setKey(String key) {

@@ -9,6 +9,7 @@ import org.json.simple.JSONObject;
 
 import java.lang.reflect.Type;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -25,6 +26,8 @@ public class ObjectConfigurer {
 
     /** An object container. */
     private Container container;
+    /** The container's properties. */
+    private Properties containerProperties;
     /** Internal metrics: Number of properties (objects and primitives) configured. */
     private int configuredPropertyCount = 0;
     /** Internal metrics: Number of objects (i.e non-primitives) configured. */
@@ -36,23 +39,37 @@ public class ObjectConfigurer {
      */
     public ObjectConfigurer(Container container) {
         this.container = container;
+        this.containerProperties = new ContainerProperties( container );
     }
 
     /** Perform the container configuration. */
     public void configureWith(Configuration configuration) {
-        Properties properties = new ContainerProperties( container );
-        configure( container, properties, configuration, "" );
+        configure( container, null, configuration, "" );
+    }
+
+    /**
+     * Configure a named object of the container.
+     * @param name          A property name.
+     * @param configuration The container configuration.
+     * @return
+     */
+    public Object configureNamedObject(String name, Configuration configuration) {
+        Object named = buildPropertyValue( name, containerProperties, configuration, "" );
+        if( named != null ) {
+            injectPropertyValue( name, containerProperties, named );
+        }
+        return named;
     }
 
     /**
      * Configure an object.
      * @param object        The object to configure.
-     * @param properties    Information about properties of the object.
+     * @param memberType    Default type for collection members. Can be null for non-collections.
      * @param configuration The object configuration.
      * @param kpPrefix      Key path prefix, i.e. the key path within the container to the object
      *                      being configured. Used for logging purposes.
      */
-    public void configure(Object object, Properties properties, Configuration configuration, String kpPrefix) {
+    public void configure(Object object, Class<?> memberType, Configuration configuration, String kpPrefix) {
         // Start the object configuration.
         if( object instanceof IOCContainerAware ) {
             ((IOCContainerAware)object).beforeIOCConfigure( configuration );
@@ -61,16 +78,22 @@ public class ObjectConfigurer {
         if( object instanceof Configurable ) {
             ((Configurable)object).configure( configuration, container );
         }
-        else for( String name : configuration.getValueNames() ) {
-            String propName = normalizePropertyName( name ); // Check for reserved names.
-            if( propName != null ) {
-                // Build a property value from the configuration.
-                Object value = buildPropertyValue( propName, properties, configuration, kpPrefix );
-                // If property value then inject into the object property.
-                if( value != null ) {
-                    injectPropertyValue( object, propName, properties, value );
+        else {
+            // Resolve a property set for the object about to be configured.
+            Properties properties = getObjectProperties( object, memberType );
+            // Iterate over the each property named in the configuration and try building and then
+            // injecting a property value into the object being configured.
+            for( String name : configuration.getValueNames() ) {
+                String propName = normalizePropertyName( name ); // Check for reserved names.
+                if( propName != null ) {
+                    // Build a property value from the configuration.
+                    Object value = buildPropertyValue( propName, properties, configuration, kpPrefix );
+                    // If property value then inject into the object property.
+                    if( value != null ) {
+                        injectPropertyValue( propName, properties, value );
+                    }
+                    configuredPropertyCount++;
                 }
-                configuredPropertyCount++;
             }
         }
         configuredObjectCount++;
@@ -94,11 +117,15 @@ public class ObjectConfigurer {
      * @param configuration The object configuration; should contain a configuration for the named
      *                      property.
      * @param kpPrefix      The key path of the object being configured.
-     * @return The property value built from the configuration, or null if no value can be resovled.
+     * @return The property value built from the configuration, or null if no value can be resolved.
      */
-    public Object buildPropertyValue(String propName, Properties properties, Configuration configuration, String kpPrefix) {
+    private Object buildPropertyValue(String propName, Properties properties, Configuration configuration, String kpPrefix) {
         Object value = null;
         Class<?> propType = properties.getPropertyType( propName );
+        // If no property type info then can't process any further, return empty handed.
+        if( propType == null ) {
+            return null;
+        }
         // First check for a primitive value. A primitive is any any value whose properties won't
         // be recursively processed by the configurer. This category includes standard Java
         // primitives - Number, String etc.; and other useful types such as Date and Drawable.
@@ -146,25 +173,51 @@ public class ObjectConfigurer {
             }
         }
         // If value is still null then the property is not a primitive or JSON data type. Try to
-        // construct a new value from the supplied configuration.
+        // resolve a new value from the supplied configuration.
+        // The property value is resolved according to the following order or precedence:
+        // 1. A configuration which supplies an instantiation hint - e.g. *type, *and-class or
+        //    *factory - and which successfully yields an object instance always takes precedence
+        //    over other possible values;
+        // 2. Next, any in-place value found by reading from the object property being configured;
+        // 3. Finally, a value created by attempting to instantiate the declared type of the
+        //    property being configured (i.e. the inferred type).
         if( value == null ) {
             // Try reading the property configuration.
+            // TODO The issue here, with e.g. rootView, is that the configuration value resolves
+            // TODO to the object instance we actually need (e.g. in this case, an actual view
+            // TODO instance). What is actually needed here is an object which can represent the
+            // TODO bare value resolved by the config, but which can be easily promoted to a full
+            // TODO configuration if needed; this is very similar to the MaybeConfig in the old
+            // TODO code, although not exactly the same as the configuration is only instantiated
+            // TODO if needed.
+            // TODO Although, is there a concept of 'natural representation' here? i.e. a JSON
+            // TODO object or array value gets returned as a configuration, but other types get
+            // TODO returned as is, unchanged? (i.e. a view is not a config, and a config is not
+            // TODO a view instance).
+            // TODO Alternatively, review the way schemes like new: and make: work; named also.
+            // TODO The complexity here happens because the default assumption is that the config
+            // TODO describes how to build an object graph from scratch; but if some of the objects
+            // TODO in the config are 'pre-built', i.e. because of they are resolved through URI
+            // TODO mechanisms that return a fully built object, then the basic assumptions in this
+            // TODO code need to be modified to allow for that.
             Configuration valueConfig = configuration.getValueAsConfiguration( propName );
             if( valueConfig != null ) {
                 // Try asking the container to build a new object using the configuration. This
                 // will only work if the configuration contains an instantiation hint (e.g. *type,
-                // *factory etc.) and will return a fully-configured non-null object if successful.
+                // *factory etc.) and will return a non-null, fully-configured object if successful.
                 value = container.buildObject( valueConfig, getKeyPath( kpPrefix, propName ) );
                 if( value == null ) {
                     // Couldn't build a value, so see if the object already has a value in-place.
                     value = properties.getPropertyValue( propName );
                     if( value != null ) {
-                        // Apply configuration proxy wrapper, if any defined.
+                        // Apply configuration proxy wrapper, if any defined, to the in-place value.
                         value = IOCProxyLookup.applyConfigurationProxyWrapper( value );
                     }
                     else if( propType != Object.class ) {
-                        // No in-place value, so try inferring an value type from the property
-                        // information, and then try to instantiate the type as the new value.
+                        // No in-place value, so try inferring a value type from the property
+                        // information, and then try to instantiate that type as the new value.
+                        // (Note that the container method will return a configuration proxy for
+                        // those classes which require one.)
                         String className = propType.getCanonicalName();
                         try {
                             value = container.newInstanceForClassNameAndConfiguration( className, valueConfig );
@@ -173,24 +226,19 @@ public class ObjectConfigurer {
                             Log.e( Tag, String.format("Error creating new instance of inferred type %s", className ), e );
                         }
                     }
-                    // Test if we now have a value which is assignable to the property.
-                    if( value != null && propType.isAssignableFrom( value.getClass() ) ) {
-                        // So not configure the value. First gather information on the value's
-                        // properties.
-                        Properties valueProps;
+                    // If we now have either an in-place or inferred type value by this point, then
+                    // continue by configuring the object with its configuration.
+                    if( value != null ) {
+                        // Maps are configured the same as object instances, but properties are
+                        // mapped to map entries instead of properties of the map class.
+                        // Note that by this point, lists are presented as maps (see the
+                        // ListIOCProxy class below).
+                        Class<?> memberType = null;
                         if( value instanceof Map ) {
-                            // Maps are configured the same as object instances, but properties are
-                            // mapped to map entries instead of properties of the map class.
-                            // Note that by this point, lists are presented as maps (see the
-                            // ListIOCProxy class below).
-                            Class<?> inferredType = properties.getMapPropertyValueTypeParameter( propName );
-                            valueProps = new MapProperties( (Map<String,Object>)value, inferredType );
+                            memberType = properties.getMapPropertyValueTypeParameter( propName );
                         }
-                        else {
-                            valueProps = new ObjectProperties( value );
-                        }
-                        // Configure the value.
-                        configure( value, valueProps, valueConfig, getKeyPath( kpPrefix, propName ) );
+                        // Recursively configure the value.
+                        configure( value, memberType, valueConfig, getKeyPath( kpPrefix, propName ) );
                     }
                 }
             }
@@ -200,13 +248,13 @@ public class ObjectConfigurer {
 
     /**
      * Inject a value into an object property.
-     * @param object        The property owner.
      * @param propName      The name of the property being configured.
      * @param properties    Information about the properties of the object being configured.
      * @param value         The value to inject.
      * @return Returns the value injected into the object property.
      */
-    public Object injectPropertyValue(Object object, String propName, Properties properties, Object value) {
+    public Object injectPropertyValue(String propName, Properties properties, Object value) {
+        Object object = properties.getPropertyOwner();
         // Notify object aware values that they are about to be injected into the object under the
         // current property name.
         // NOTE: This happens at this point - instead of after the value injection - so that value
@@ -227,7 +275,7 @@ public class ObjectConfigurer {
             // Container.buildNamedObject()
             PendingNamed pending = (PendingNamed)value;
             pending.setKey( propName );
-            pending.setConfigurer( this );
+            pending.setConfigurationContext( properties, this );
             container.incPendingValueRefCountForPendingObject( pending );
         }
         else if( value != null ) {
@@ -244,8 +292,21 @@ public class ObjectConfigurer {
     }
 
     /**
-     * Normalize a property name by removing any *and- prefix. Returns null for reserved names
-     * (e.g. *type etc.)
+     * Return a set of named properties for an object.
+     */
+    private Properties getObjectProperties(Object object, Class<?> memberType) {
+        if( object == container ) {
+            return containerProperties;
+        }
+        if( object instanceof Map ) {
+            return new MapProperties( (Map<Object,?>)object, memberType );
+        }
+        return new ObjectProperties( object );
+    }
+
+    /**
+     * Normalize a property name by removing any *and- prefix.
+     * Returns null for reserved names (e.g. *type etc.)
      */
     private String normalizePropertyName(String propName) {
         if( propName.charAt( 0 ) == '*' ) {
@@ -271,7 +332,7 @@ public class ObjectConfigurer {
      * @return A new key path.
      */
     private static String getKeyPath(final String prefix, final String name) {
-        return prefix.length() > 0 ? prefix+"."+name : name;
+        return prefix.length() > 0 ? prefix+"."+name : "#"+name;
     }
 
     public int getConfiguredPropertyCount() {
@@ -286,7 +347,9 @@ public class ObjectConfigurer {
      * An interface for presenting information about the configurable properties of an object.
      * @param <T>
      */
-    interface Properties<T> {
+    public interface Properties<T> {
+        /** Get the object whose properties are being represented. */
+        Object getPropertyOwner();
         /** Get type information for a named property. */
         Class<?> getPropertyType(String name);
         /** Get the generic type information for a map value. */
@@ -309,6 +372,10 @@ public class ObjectConfigurer {
         ObjectProperties(Object object) {
             this.object = object;
             this.properties = Property.getPropertiesForObject( object );
+        }
+        @Override
+        public Object getPropertyOwner() {
+            return object;
         }
         @Override
         public Class<?> getPropertyType(String name) {
@@ -349,16 +416,20 @@ public class ObjectConfigurer {
      */
     static class MapProperties<T> implements Properties<T> {
         /** The map which owns the properties. */
-        Map<String,T> map;
+        Map<Object,T> map;
         /**
          * The type to infer for each of the map's properties.
          * This information is inferred from the map's generic type parameters.
          */
         Class<?> inferredMemberType;
 
-        MapProperties(Map<String,T> map, Class<?> inferredMemberType) {
+        MapProperties(Map<Object,T> map, Class<?> inferredMemberType) {
             this.map = map;
             this.inferredMemberType = inferredMemberType;
+        }
+        @Override
+        public Object getPropertyOwner() {
+            return map;
         }
         @Override
         public Class<?> getPropertyType(String name) {
@@ -392,6 +463,10 @@ public class ObjectConfigurer {
             this.container = container;
         }
         @Override
+        public Object getPropertyOwner() {
+            return container;
+        }
+        @Override
         public Class<?> getPropertyType(String name) {
             Class<?> type = super.getPropertyType( name );
             return type != null ? type : Object.class;
@@ -403,17 +478,11 @@ public class ObjectConfigurer {
         @Override
         public Object getPropertyValue(String name) {
             Object value = super.getPropertyValue( name );
-            return value != null ? value : container.getNamed( name );
-        }
-        /*
-        @Override
-        public boolean setPropertyValue(String name, Object value) {
-            if( !super.setPropertyValue( name, value ) ) {
-                container.setNamed( name, value );
+            if( value == null ) {
+                value = container.getNamed( name );
             }
-            return true;
+            return !(value instanceof PendingNamed) ? value : null;
         }
-        */
     }
 
     /**
@@ -436,8 +505,30 @@ public class ObjectConfigurer {
         }
     }
 
+    /**
+     * A configuration proxy for Maps.
+     * The purpose of this proxy is to provide a way to bootstrap a concrete Map instance (e.g.
+     * in this case, a HashMap) from a generic Map property type declaration.
+     */
+    static class MapIOCProxy extends HashMap implements IOCProxy {
+        @Override
+        public void initializeWithValue(Object value) {
+            // This method won't be called in normal operation (it's only used for in-place values,
+            // and if an object already has an in-place map instance then there's no need to
+            // bootstrap a concrete instance).
+            if( value instanceof Map ) {
+                putAll( (Map)value );
+            }
+        }
+        @Override
+        public Object unwrapValue() {
+            return this;
+        }
+    }
+
     static {
-        // Register the List configuration proxy.
+        // Register the List and Map configuration proxies.
         IOCProxyLookup.registerProxyClass( ListIOCProxy.class, "java.util.List");
+        IOCProxyLookup.registerProxyClass( MapIOCProxy.class, "java.util.Map");
     }
 }

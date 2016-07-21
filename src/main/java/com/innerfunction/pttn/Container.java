@@ -311,8 +311,7 @@ public class Container implements ConfigurationData, Service, MessageReceiver, M
      *                      object in logs.
      */
     public void configureObject(Object object, Configuration configuration, String identifier) {
-        ObjectConfigurer configurer = new ObjectConfigurer( object, this, identifier );
-        configurer.configureWith( configuration );
+        containerConfigurer.configure( object, null, configuration, identifier );
     }
 
     /**
@@ -391,7 +390,7 @@ public class Container implements ConfigurationData, Service, MessageReceiver, M
         // Track that we're about to build this name.
         pendingNames.put( name, new ArrayList<PendingNamed>() );
         // Build the object.
-        Object object = containerConfigurer.buildPropertyValue( name, containerConfig );
+        Object object = containerConfigurer.configureNamedObject( name, containerConfig );
         if( object != null ) {
             // Map the named object.
             nameds.put( name, object );

@@ -523,7 +523,7 @@ public class AppContainer extends Container {
      */
     public void showView(Object view) {
 
-        // NOTE on support view types: Pttn supports a number of different view types. The
+        // NOTE on supported view types: Pttn supports a number of different view types. The
         // main type is ViewController, and corresponds most closely to the UIViewController
         // class on iOS. Views can also be represented using Fragments (as the natural native
         // Android view type) but use of Fragments is discouraged where possible, due to the

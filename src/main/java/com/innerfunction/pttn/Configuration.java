@@ -18,16 +18,13 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
-import android.net.ConnectivityManager;
 
 import com.innerfunction.uri.Resource;
 import com.innerfunction.uri.URIHandler;
@@ -42,53 +39,6 @@ import com.innerfunction.util.TypeConversions;
 public class Configuration {
 
     static final String Tag = Configuration.class.getSimpleName();
-
-    /**
-     * An object returned by the Configuration.getValueAsMaybeConfiguration() method.
-     * The class is used to represent configuration values that might themselves be used as
-     * configurations (the point being that it's not known at the point when the method is
-     * called whether they are or not). Objects of this type are used by the ObjectConfigurer
-     * class as an optimization representing intermediate configuration states whilst an
-     * object graph is being built.
-     * @deprecated
-     */
-    public static class Maybe {
-
-        /** The configuration, if any. */
-        private Configuration configuration;
-        /** The underlying configuration data, i.e. the value read from the configuration JSON. */
-        private Object data;
-        /** The underlying data's bare representation. */
-        private Object bare;
-
-        Maybe(Object configuration, Object bare) {
-            if( configuration instanceof Configuration ) {
-                this.configuration = ((Configuration)configuration).normalize();
-            }
-            this.bare = bare;
-            if( bare instanceof Resource ) {
-                this.data = ((Resource)bare).asJSONData();
-            }
-            else {
-                this.data = bare;
-            }
-        }
-
-        public Configuration getConfiguration() {
-            return configuration;
-        }
-
-        public Object getData() {
-            return data;
-        }
-
-        public Object getBare() {
-            if( bare instanceof ListBackedMap ) {
-                return ((ListBackedMap)bare).getList();
-            }
-            return bare;
-        }
-    }
 
     /** The configuration data. */
     private Map<String,Object> data;
@@ -346,9 +296,7 @@ public class Configuration {
         // * Resource instances can be used to perform the requested representation conversion.
         // * Otherwise use the type conversions to resolve the representation.
         if( !"bare".equals( representation ) ) {
-            if( "configuration".equals( representation ) /*|| "maybe-configuration".equals( representation )*/ ) {
-
-                //Object bareValue = value;
+            if( "configuration".equals( representation ) ) {
 
                 if( !(value instanceof Configuration) ) {
 
@@ -386,12 +334,6 @@ public class Configuration {
                         value = null;
                     }
                 }
-                /*
-                // Wrap result in a maybe if that is what was requested.
-                if( "maybe-configuration".equals( representation ) ) {
-                    value = new Maybe( value, bareValue );
-                }
-                */
             }
             else if( value instanceof Resource ) {
                 value = ((Resource)value).asRepresentation( representation );
@@ -538,13 +480,6 @@ public class Configuration {
         Configuration result = getValueAsConfiguration( keyPath );
         return result == null ? defaultValue : result;
     }
-
-    /** Get a value as maybe a configuration. */
-    /*
-    public Maybe getValueAsMaybeConfiguration(String keyPath) {
-        return (Maybe)getValueAs( keyPath, "maybe-configuration");
-    }
-    */
 
     /**
      * Get a configuration value as a list of configuration objects.
