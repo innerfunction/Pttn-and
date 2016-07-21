@@ -50,6 +50,7 @@ public class Configuration {
      * called whether they are or not). Objects of this type are used by the ObjectConfigurer
      * class as an optimization representing intermediate configuration states whilst an
      * object graph is being built.
+     * @deprecated
      */
     public static class Maybe {
 
@@ -345,9 +346,9 @@ public class Configuration {
         // * Resource instances can be used to perform the requested representation conversion.
         // * Otherwise use the type conversions to resolve the representation.
         if( !"bare".equals( representation ) ) {
-            if( "configuration".equals( representation ) || "maybe-configuration".equals( representation ) ) {
+            if( "configuration".equals( representation ) /*|| "maybe-configuration".equals( representation )*/ ) {
 
-                Object bareValue = value;
+                //Object bareValue = value;
 
                 if( !(value instanceof Configuration) ) {
 
@@ -385,11 +386,12 @@ public class Configuration {
                         value = null;
                     }
                 }
-
+                /*
                 // Wrap result in a maybe if that is what was requested.
                 if( "maybe-configuration".equals( representation ) ) {
                     value = new Maybe( value, bareValue );
                 }
+                */
             }
             else if( value instanceof Resource ) {
                 value = ((Resource)value).asRepresentation( representation );
@@ -538,9 +540,11 @@ public class Configuration {
     }
 
     /** Get a value as maybe a configuration. */
+    /*
     public Maybe getValueAsMaybeConfiguration(String keyPath) {
         return (Maybe)getValueAs( keyPath, "maybe-configuration");
     }
+    */
 
     /**
      * Get a configuration value as a list of configuration objects.

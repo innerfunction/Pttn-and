@@ -391,7 +391,7 @@ public class Container implements ConfigurationData, Service, MessageReceiver, M
         // Track that we're about to build this name.
         pendingNames.put( name, new ArrayList<PendingNamed>() );
         // Build the object.
-        Object object = containerConfigurer.configureProperty( name, containerConfig );
+        Object object = containerConfigurer.buildPropertyValue( name, containerConfig );
         if( object != null ) {
             // Map the named object.
             nameds.put( name, object );

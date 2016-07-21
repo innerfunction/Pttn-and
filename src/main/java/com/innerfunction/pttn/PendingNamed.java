@@ -15,8 +15,6 @@ package com.innerfunction.pttn;
 
 import com.innerfunction.util.KeyPath;
 
-import java.lang.reflect.Method;
-
 /**
  * A placeholder value used to represent a deferred named value.
  * Deferred names happen when circular dependencies are detected. In such cases, the named
@@ -55,7 +53,7 @@ public class PendingNamed {
         if( referencePath != null ) {
             value = KeyPath.resolve( referencePath, value );
         }
-        return configurer.injectValueIntoProperty( value, key );
+        return configurer.injectPropertyValue( value, key );
     }
 
     public Object getObjectKey() {

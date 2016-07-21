@@ -21,6 +21,10 @@ public class ListBackedMap implements Map<String,Object> {
     /** The list providing the map data. */
     private List<Object> list;
 
+    public ListBackedMap() {
+        this.list = new ArrayList<Object>();
+    }
+
     public ListBackedMap(List<Object> list) {
         this.list = list;
     }

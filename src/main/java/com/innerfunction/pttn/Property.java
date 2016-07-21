@@ -4,6 +4,7 @@ import android.util.Log;
 import android.util.LruCache;
 
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -82,10 +83,12 @@ public class Property {
     }
 
     /** Constructor for use by Property subclasses. */
+    /*
     protected Property(String name, Class<?> type) {
         this.name = name;
         this.type = type;
     }
+    */
 
     public String getName() {
         return name;
@@ -96,6 +99,7 @@ public class Property {
     }
 
     /** Test whether the property will accept an object value of any type. */
+    /*
     public boolean isAnyType() {
         return type == Object.class;
     }
@@ -103,34 +107,39 @@ public class Property {
     public String getTypeClassName() {
         return type.getCanonicalName();
     }
+    */
 
     /**
      * Get the generic parameter types for the setter method for a collections property.
      * For example, for a Map property declared as Map<String,Date>, the generic parameters
      * are [ String, Date ].
-     * Returns null if no generic parameter type info is available.
+     * Returns An empty array if no generic parameter type info is available.
      */
     public Type[] getGenericParameterTypeInfo() {
         Type genericArgType = setter.getGenericParameterTypes()[0];
         if( genericArgType instanceof ParameterizedType ) {
             return ((ParameterizedType)genericArgType).getActualTypeArguments();
         }
-        return null;
+        return new Type[0];
     }
 
     /**
      * Test whether the property is assignable from another type.
      */
+    /*
     public boolean isAssignableFrom(Class otherType) {
         return type.isAssignableFrom( otherType );
     }
+    */
 
     /**
      * Test whether the property is a specific type.
      */
+    /*
     public boolean isType(Class otherType) {
         return type == otherType;
     }
+    */
 
     /**
      * Set the property on an object with the specified value.
@@ -180,15 +189,43 @@ public class Property {
      * @return A map of object properties.
      */
     public static Map<String,Property> getPropertiesForObject(Object object) {
-        Class<?> cl = object.getClass();
+        Class<?> objClass = object.getClass();
         // Check for a cached result.
-        Map<String,Property> properties = ObjectPropertiesByClass.get( cl );
+        Map<String,Property> properties = ObjectPropertiesByClass.get( objClass );
         if( properties == null ) {
             // Cache miss.
-            Log.d( Tag, String.format("getPropertiesForObject(%s) cache miss", cl.getCanonicalName()));
+            Log.d( Tag, String.format("getPropertiesForObject(%s) cache miss", objClass.getCanonicalName()));
             // Build a map of all the class' methods, and a list of property base names.
             Map<String, Method> methods = new HashMap<>();
             List<String> baseNames = new ArrayList<>();
+
+            // Extract public setter methods from the class. The following implementation avoids
+            // the Class.getMethods() method because it is not very efficient - seems to spend a
+            // lot of time detecting and removing duplicate method names.
+            Class<?> hierMember = objClass;
+            while( hierMember != null ) {
+                for( Method method : hierMember.getDeclaredMethods() ) {
+                    int modifiers = method.getModifiers();
+                    // We're only interested in public, non-static methods;
+                    if( Modifier.isPublic( modifiers ) && !Modifier.isStatic( modifiers ) ) {
+                        Class[] paramTypes = method.getParameterTypes();
+                        String methodName = method.getName();
+                        // We're only interested in setters taking one argument.
+                        if( paramTypes.length == 1 && methodName.startsWith("set") ) {
+                            // Only add this method if not previously added (implying that the
+                            // method is overridden in a subclass).
+                            if( !methods.containsKey( methodName ) ) {
+                                baseNames.add( methodName.substring( 3 ) );
+                                methods.put( methodName, method );
+                            }
+                        }
+                    }
+                }
+                // Continue to the superclass.
+                hierMember = hierMember.getSuperclass();
+            }
+
+            /*
             for( Method method : cl.getMethods() ) {
                 String methodName = method.getName();
                 if( methodName.startsWith( "set" ) ) {
@@ -199,6 +236,8 @@ public class Property {
                 }
                 methods.put( methodName, method );
             }
+           */
+
             // Generate a map of properties.
             properties = new HashMap<>();
             for( String baseName : baseNames ) {
@@ -207,7 +246,7 @@ public class Property {
             }
             // Add result to cache.
             synchronized( ObjectPropertiesByClass ) {
-                ObjectPropertiesByClass.put( cl, properties );
+                ObjectPropertiesByClass.put( objClass, properties );
             }
         }
         return properties;
