@@ -271,6 +271,9 @@ public class Container implements ConfigurationData, Service, MessageReceiver, M
         catch(ClassNotFoundException e) {
             Log.e( Tag, String.format("Class not found: %s", className ) );
         }
+        catch(InstantiationException e) {
+            Log.w( Tag, e.getMessage() );
+        }
         catch(Exception e) {
             Log.e( Tag, String.format("Error initializing object of class %s", className ), e );
         }

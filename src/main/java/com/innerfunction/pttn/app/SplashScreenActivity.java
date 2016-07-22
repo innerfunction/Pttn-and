@@ -1,5 +1,6 @@
 package com.innerfunction.pttn.app;
 
+import android.Manifest;
 import android.app.Activity;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
@@ -39,20 +40,27 @@ public class SplashScreenActivity extends Activity {
      */
     private int splashScreenLayout = R.layout.splashscreen_layout;
 
+    public void setSplashDelay(int delay) {
+        this.splashDelay = delay;
+    }
+
+    public int getSplashDelay() {
+        return splashDelay;
+    }
+
+    public void setSplashScreenLayout(int layout) {
+        this.splashScreenLayout = layout;
+    }
+
+    public int getSplashScreenLayout() {
+        return splashScreenLayout;
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate( savedInstanceState );
 
-        // Try reading activity meta-data from the manifest.
-        try {
-            ApplicationInfo ai = getPackageManager().getApplicationInfo( getPackageName(), PackageManager.GET_META_DATA );
-            Bundle bundle = ai.metaData;
-            splashDelay = bundle.getInt("splashScreenDelay", splashDelay );
-            splashScreenLayout = bundle.getInt("splashScreenLayout", splashScreenLayout );
-        }
-        catch(Exception e) {
-            Log.d(Tag, "Reading meta-data", e );
-        }
+        ManifestMetaData.applyTo( this );
 
         setContentView( splashScreenLayout );
 

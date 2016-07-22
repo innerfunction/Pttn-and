@@ -38,9 +38,18 @@ public class PttnApplication extends Application {
         this.configurationURI = configurationURI;
     }
 
+    public void setConfigurationURI(String uri) {
+        this.configurationURI = uri;
+    }
+
+    public String getConfigurationURI() {
+        return configurationURI;
+    }
+
     @Override
     public void onCreate() {
         super.onCreate();
+        ManifestMetaData.applyTo( this );
         try {
             // Enable debugging of webviews via chrome.
             // Taken from https://developer.chrome.com/devtools/docs/remote-debugging#debugging-webviews

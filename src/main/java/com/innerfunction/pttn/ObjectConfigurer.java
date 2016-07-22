@@ -355,7 +355,7 @@ public class ObjectConfigurer {
     /**
      * A class encapsulating information about an object's properties.
      */
-    static class ObjectProperties implements Properties {
+     static class ObjectProperties implements Properties {
         /** The property owner. */
         Object object;
         /** The named properties of the owner. */
