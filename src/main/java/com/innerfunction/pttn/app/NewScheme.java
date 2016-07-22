@@ -26,7 +26,7 @@ public class NewScheme implements URIScheme {
     public Object dereference(CompoundURI uri, Map<String,Object> params) {
         String typeName = uri.getName();
         Configuration config = container.makeConfiguration( params ).normalize();
-        Object result = container.newInstanceForTypeNameAndConfiguration( typeName, config );
+        Object result = container.newInstanceForTypeNameAndConfiguration( typeName, config, false );
         if( result == null ) {
             // If instantiation fails (i.e. because the type name isn't recognized) then try
             // instantiating from class name.

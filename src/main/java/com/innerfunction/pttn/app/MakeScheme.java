@@ -30,7 +30,7 @@ public class MakeScheme implements URIScheme {
         Configuration config = makes.getValueAsConfiguration( uri.getName() );
         if( config != null ) {
             config = config.extendWithParameters( params );
-            result = container.buildObject( config, uri.toString() );
+            result = container.buildObject( config, uri.toString(), false );
         }
         return result;
     }

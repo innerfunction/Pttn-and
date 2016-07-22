@@ -49,7 +49,7 @@ public class IOCObjectFactoryBase<T> implements IOCObjectFactory {
             configuration = configuration.extendWithParameters( parameters );
         }
         // Ask the container to build the object, then return the result.
-        return (T)container.buildObject( configuration, identifier );
+        return (T)container.buildObject( configuration, identifier, false );
     }
 
     public T buildObject(Configuration configuration, Container container, String identifier) {

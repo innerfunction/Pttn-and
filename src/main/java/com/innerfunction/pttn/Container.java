@@ -165,9 +165,11 @@ public class Container implements ConfigurationData, Service, MessageReceiver, M
      * @param configuration A configuration describing the object to build.
      * @param identifier    An identifier (e.g. the configuration's key path) used identify the
      *                      object in logs.
+     * @param quiet         If true then doesn't log failures. Used when performing speculative
+     *                      instantiations that it is known may fail.
      * @return The instantiated and fully configured object.
      */
-    public Object buildObject(Configuration configuration, String identifier) {
+    public Object buildObject(Configuration configuration, String identifier, boolean quiet) {
         Object object = null;
         if( configuration.hasValue("*factory") ) {
             // The configuration specifies an object factory, so resolve the factory object and
@@ -178,14 +180,14 @@ public class Container implements ConfigurationData, Service, MessageReceiver, M
                 doPostInstantiation( object );
                 doPostConfiguration( object );
             }
-            else {
+            else if( !quiet ) {
                 Log.e( Tag, String.format("Building %s, invalid factory class '%s'",
                     identifier, factory.getClass() ) );
             }
         }
         else {
             // Try instantiating object from type or class info.
-            object = instantiateObjectWithConfiguration( configuration, identifier );
+            object = instantiateObjectWithConfiguration( configuration, identifier, quiet );
             if( object != null ) {
                 // Configure the resolved object.
                 configureObject( object, configuration, identifier );
@@ -201,21 +203,23 @@ public class Container implements ConfigurationData, Service, MessageReceiver, M
      *                      object instance.
      * @param identifier    An identifier (e.g. the configuration's key path) used identify the
      *                      object in logs.
+     * @param quiet         If true then doesn't log failures. Used when performing speculative
+     *                      instantiations that it is known may fail.
      * @return A newly instantiated object.
      */
-    public Object instantiateObjectWithConfiguration(Configuration configuration, String identifier) {
+    public Object instantiateObjectWithConfiguration(Configuration configuration, String identifier, boolean quiet) {
         Object object = null;
         String className = configuration.getValueAsString("*and-class");
         if( className == null ) {
             String type = configuration.getValueAsString("*type");
             if( type != null ) {
                 className = types.getValueAsString( type );
-                if( className == null ) {
+                if( className == null && !quiet ) {
                     Log.e( Tag, String.format("Instantiating %s, no class name found for type %s",
                         identifier, type ) );
                 }
             }
-            else {
+            else if( !quiet ) {
                 Log.e( Tag, String.format("Instantiating %s, Component configuration missing *type or *and-class property",
                     identifier ) );
             }
@@ -231,10 +235,12 @@ public class Container implements ConfigurationData, Service, MessageReceiver, M
      * Looks for a classname in the set of registered types, and then returns the result of calling
      * the newInstanceForClassNameAndConfiguration() method.
      */
-    public Object newInstanceForTypeNameAndConfiguration(String typeName, Configuration configuration) {
+    public Object newInstanceForTypeNameAndConfiguration(String typeName, Configuration configuration, boolean quiet) {
         String className = types.getValueAsString( typeName );
         if( className == null ) {
-            Log.e( Tag, String.format( "No classname found for type %s", typeName ) );
+            if( !quiet ) {
+                Log.e( Tag, String.format( "No classname found for type %s", typeName ) );
+            }
             return null;
         }
         return newInstanceForClassNameAndConfiguration( className, configuration );

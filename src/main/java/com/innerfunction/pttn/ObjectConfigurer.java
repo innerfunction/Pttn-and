@@ -197,7 +197,7 @@ public class ObjectConfigurer {
                 // Try asking the container to build a new object using the configuration. This
                 // will only work if the configuration contains an instantiation hint (e.g. *type,
                 // *factory etc.) and will return a non-null, fully-configured object if successful.
-                value = container.buildObject( valueConfig, getKeyPath( kpPrefix, propName ) );
+                value = container.buildObject( valueConfig, getKeyPath( kpPrefix, propName ), true );
                 if( value == null ) {
                     // Couldn't build a value, so see if the object already has a value in-place.
                     value = properties.getPropertyValue( propName );
