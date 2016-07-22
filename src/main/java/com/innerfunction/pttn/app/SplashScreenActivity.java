@@ -1,12 +1,8 @@
 package com.innerfunction.pttn.app;
 
-import android.Manifest;
 import android.app.Activity;
-import android.content.pm.ApplicationInfo;
-import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Handler;
-import android.util.Log;
 
 import com.innerfunction.pttn.R;
 
