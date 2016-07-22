@@ -253,7 +253,7 @@ public class AppContainer extends Container {
         // the first locale on the list is used as the default.
         if( configuration.hasValue("supportedLocales") ) {
             @SuppressWarnings("unchecked")
-            List<String> assetLocales = (List<String>)configuration.getValue("supportedLocales");
+            List<String> assetLocales = (List<String>)configuration.getRawValue("supportedLocales");
             if( assetLocales.size() > 0 && !assetLocales.contains( locale.toString() ) ) {
                 // Attempt to find a matching locale.
                 // Always assigns the first item on the list (as the default option); if a later
@@ -279,9 +279,9 @@ public class AppContainer extends Container {
 
         Map<String,Object> localeValues = new HashMap<>();
         localeValues.put("id", locale.toString());
-        localeValues.put( "lang", locale.getLanguage() );
-        localeValues.put( "variant", locale.getVariant() );
-        values.put( "locale", localeValues );
+        localeValues.put("lang", locale.getLanguage() );
+        localeValues.put("variant", locale.getVariant() );
+        values.put("locale", localeValues );
 
         // Access to localized resources through a Map interface.
         values.put("i18n", new I18nMap( androidContext ) );

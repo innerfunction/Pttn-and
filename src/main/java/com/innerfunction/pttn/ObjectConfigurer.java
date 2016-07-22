@@ -169,12 +169,17 @@ public class ObjectConfigurer {
                 // or JSONArray types, as appropriate. This is intended as an optimization -
                 // particularly when initializing a property with a large-ish data set - as
                 // the configurer will not attempt to further process the configuration data.
-                value = configuration.getValue( propName );
+                value = configuration.getValueAsJSONData( propName );
             }
         }
         // If value is still null then the property is not a primitive or JSON data type. Try to
         // resolve a new value from the supplied configuration.
-        // The property value is resolved according to the following order or precedence:
+        // The configuration may contain a mixture of object definitions and fully instantiated
+        // objects. The configuration's 'natural' representation will distinguish between these,
+        // return a Configuration instance for object definitions and the actual object instance
+        // otherwise.
+        // When an object definition is returned, the property value is resolved according to the
+        // following order of precedence:
         // 1. A configuration which supplies an instantiation hint - e.g. *type, *and-class or
         //    *factory - and which successfully yields an object instance always takes precedence
         //    over other possible values;
@@ -182,26 +187,13 @@ public class ObjectConfigurer {
         // 3. Finally, a value created by attempting to instantiate the declared type of the
         //    property being configured (i.e. the inferred type).
         if( value == null ) {
-            // Try reading the property configuration.
-            // TODO The issue here, with e.g. rootView, is that the configuration value resolves
-            // TODO to the object instance we actually need (e.g. in this case, an actual view
-            // TODO instance). What is actually needed here is an object which can represent the
-            // TODO bare value resolved by the config, but which can be easily promoted to a full
-            // TODO configuration if needed; this is very similar to the MaybeConfig in the old
-            // TODO code, although not exactly the same as the configuration is only instantiated
-            // TODO if needed.
-            // TODO Although, is there a concept of 'natural representation' here? i.e. a JSON
-            // TODO object or array value gets returned as a configuration, but other types get
-            // TODO returned as is, unchanged? (i.e. a view is not a config, and a config is not
-            // TODO a view instance).
-            // TODO Alternatively, review the way schemes like new: and make: work; named also.
-            // TODO The complexity here happens because the default assumption is that the config
-            // TODO describes how to build an object graph from scratch; but if some of the objects
-            // TODO in the config are 'pre-built', i.e. because of they are resolved through URI
-            // TODO mechanisms that return a fully built object, then the basic assumptions in this
-            // TODO code need to be modified to allow for that.
-            Configuration valueConfig = configuration.getValueAsConfiguration( propName );
-            if( valueConfig != null ) {
+            // Fetch the configuration value's natural representation.
+            value = configuration.getNaturalValue( propName );
+            if( value instanceof Configuration ) {
+                // The natural value contains a (potential) object definition, so attempt to
+                // resolve the value from it.
+                Configuration valueConfig = (Configuration)value;
+
                 // Try asking the container to build a new object using the configuration. This
                 // will only work if the configuration contains an instantiation hint (e.g. *type,
                 // *factory etc.) and will return a non-null, fully-configured object if successful.

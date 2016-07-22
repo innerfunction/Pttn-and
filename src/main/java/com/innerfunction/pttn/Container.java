@@ -172,7 +172,7 @@ public class Container implements ConfigurationData, Service, MessageReceiver, M
         if( configuration.hasValue("*factory") ) {
             // The configuration specifies an object factory, so resolve the factory object and
             // attempt using it to instantiate the object.
-            Object factory = configuration.getValue("*factory");
+            Object factory = configuration.getRawValue("*factory");
             if( factory instanceof IOCObjectFactory ) {
                 object = ((IOCObjectFactory)factory).buildObject( configuration, this, identifier );
                 doPostInstantiation( object );

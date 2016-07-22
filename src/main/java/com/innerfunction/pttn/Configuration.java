@@ -40,6 +40,9 @@ public class Configuration {
 
     static final String Tag = Configuration.class.getSimpleName();
 
+    /** Supported configuration data representations. */
+    public enum Representation { Raw, Natural, String, Number, Boolean, Date, Image, URL, Resource, Data, JSONData, Configuration }
+
     /** The configuration data. */
     private Map<String,Object> data;
     /** The root configuration. Used to resolve # value references. */
@@ -200,6 +203,91 @@ public class Configuration {
     }
 
     /**
+     * An object used to modify values as key paths are resolved on the configuration.
+     */
+    private KeyPath.Modifier keyPathModifier = new KeyPath.Modifier<Representation>() {
+        /**
+         * Modify property owners before performing a lookup.
+         * Convert intermediate Resource values to their data representation.
+         */
+        public Object modifyObject(String key, Object object, Representation representation) {
+            if (object instanceof Resource) {
+                return ((Resource) object).asJSONData();
+            }
+            return object;
+        }
+        /**
+         * Modify property values by examining value prefixes.
+         */
+        public Object modifyValue(String key, Object value, Representation representation) {
+            if( value instanceof String ) {
+                String valueStr = (String)value;
+                char prefix = 0x0;
+                if( valueStr.length() > 1 ) {
+                    prefix = valueStr.charAt(0);
+                }
+                // First, attempt resolving any context references. If these in turn resolve
+                // to a $ or # prefixed value, then they will be resolved in the following
+                // code.
+                if( prefix == '$' ) {
+                    value = context.get( valueStr );
+                    // If the resolved value is also a string then continue to the following
+                    // modifier prefixes; otherwise return the value.
+                    if( value instanceof String ) {
+                        valueStr = (String)value;
+                        if( valueStr.length() > 1 ) {
+                            prefix = valueStr.charAt(0);
+                        }
+                        else {
+                            prefix = 0x00; // Null prefix.
+                        };
+                    }
+                    else {
+                        valueStr = null;
+                        prefix = 0x00;
+                    }
+                }
+                // Evaluate any string beginning with ? as a string template.
+                if( prefix == '?' ) {
+                    valueStr = StringTemplate.render( valueStr, context );
+                    // Check for a new prefix.
+                    if( valueStr.length() > 1 ) {
+                        prefix = valueStr.charAt( 0 );
+                    }
+                    else {
+                        prefix = 0x00;
+                    }
+                }
+                // String values beginning with @ are internal URI references, so dereference the URI.
+                if( prefix == '@' ) {
+                    String uri = valueStr.substring( 1 );
+                    value = uriHandler.dereference( uri );
+                }
+                // Any string values starting with a '#' are potential path references to
+                // other properties on the root configuration. Attempt to resolve these; if
+                // they don't resolve the return the original value.
+                else if( prefix == '#' ) {
+                    value = root.getValueAs( valueStr.substring( 1 ), representation );
+                    if( value == null ) {
+                        value = valueStr;
+                    }
+                }
+                // A backtick prefix is used to escape any other prefixes; simply remove
+                // from the value and return the remainder.
+                else if( prefix == '`' ) {
+                    value = valueStr.substring( 1 );
+                }
+                // Else no recognized prefix, so return the string value (which note may
+                // have been generated from a string template by this stage).
+                else if( valueStr != null ) {
+                    value = valueStr;
+                }
+            }
+            return value;
+        }
+    };
+
+    /**
      * Resolve a configuration value.
      * Recognizes value prefixes and performs the appropriate operation. Converts the final value to
      * the required representation.
@@ -208,138 +296,63 @@ public class Configuration {
      * @return Returns the value at key path, with the appropriate conversion applied; or returns
      * null if no value is found.
      */
-    public Object getValueAs(String keyPath, final String representation) {
-        Object value = KeyPath.resolve( keyPath, data, new KeyPath.Modifier() {
-            /**
-             * Modify property owners before performing a lookup.
-             * Convert intermediate Resource values to their data representation.
-             */
-            public Object modifyObject(String key, Object object) {
-                if (object instanceof Resource) {
-                    return ((Resource) object).asJSONData();
+    public Object getValueAs(String keyPath, Representation representation) {
+        Object value = KeyPath.resolve( keyPath, data, representation, keyPathModifier );
+        // Convert the resolved value to the required representation:
+        // * raw: The resolved value is return unchanged.
+        // * configuration: Map or List values will be converted, otherwise null is returned;
+        // * natural: Map or List values will be promoted to configurations, otherwise the
+        //   value is returned unchanged;
+        // * all other representations are passed to TypeConversions.
+        switch( representation ) {
+        case Raw:
+            break;
+        case Configuration:
+        case Natural:
+            // If value isn't already a configuration then try promoting to one.
+            if( !(value instanceof Configuration) ) {
+
+                Object dataValue = value;
+                Resource valueRsc = null;
+                // If value is a resource then try converting to JSON data.
+                if( value instanceof Resource ) {
+                    valueRsc = (Resource)value;
+                    dataValue = valueRsc.asJSONData();
                 }
-                return object;
-            }
-            /**
-             * Modify property values by examining value prefixes.
-             */
-            public Object modifyValue(String key, Object value) {
-                if( value instanceof String ) {
-                    String valueStr = (String)value;
-                    char prefix = 0x0;
-                    if( valueStr.length() > 1 ) {
-                        prefix = valueStr.charAt(0);
-                    }
-                    // First, attempt resolving any context references. If these in turn resolve
-                    // to a $ or # prefixed value, then they will be resolved in the following
-                    // code.
-                    if( prefix == '$' ) {
-                        value = context.get( valueStr );
-                        // If the resolved value is also a string then continue to the following
-                        // modifier prefixes; otherwise return the value.
-                        if( value instanceof String ) {
-                            valueStr = (String)value;
-                            if( valueStr.length() > 1 ) {
-                                prefix = valueStr.charAt(0);
-                            }
-                            else {
-                                prefix = 0x00; // Null prefix.
-                            };
-                        }
-                        else {
-                            valueStr = null;
-                            prefix = 0x00;
-                        }
-                    }
-                    // Evaluate any string beginning with ? as a string template.
-                    if( prefix == '?' ) {
-                        valueStr = StringTemplate.render( valueStr, context );
-                        // Check for a new prefix.
-                        if( valueStr.length() > 1 ) {
-                            prefix = valueStr.charAt( 0 );
-                        }
-                        else {
-                            prefix = 0x00;
-                        }
-                    }
-                    // String values beginning with @ are internal URI references, so dereference the URI.
-                    if( prefix == '@' ) {
-                        String uri = valueStr.substring( 1 );
-                        value = uriHandler.dereference( uri );
-                    }
-                    // Any string values starting with a '#' are potential path references to
-                    // other properties on the root configuration. Attempt to resolve these; if
-                    // they don't resolve the return the original value.
-                    else if( prefix == '#' ) {
-                        value = root.getValueAs( valueStr.substring( 1 ), representation );
-                        if( value == null ) {
-                            value = valueStr;
-                        }
-                    }
-                    // A backtick prefix is used to escape any other prefixes; simply remove
-                    // from the value and return the remainder.
-                    else if( prefix == '`' ) {
-                        value = valueStr.substring( 1 );
-                    }
-                    // Else no recognized prefix, so return the string value (which note may
-                    // have been generated from a string template by this stage).
-                    else if( valueStr != null ) {
-                        value = valueStr;
-                    }
+
+                // If value is a list then convert to a list backed map.
+                if( dataValue instanceof List ) {
+                    dataValue = new ListBackedMap( (List)dataValue );
                 }
-                return value;
-            }
-        });
-        // Perform type conversions according to the requested representation.
-        // * 'bare' representations don't need to be converted.
-        // * 'configuration' reprs can be constructed from dictionary instances or resources.
-        // * Resource instances can be used to perform the requested representation conversion.
-        // * Otherwise use the type conversions to resolve the representation.
-        if( !"bare".equals( representation ) ) {
-            if( "configuration".equals( representation ) ) {
 
-                if( !(value instanceof Configuration) ) {
-
-                    Resource valueRsc = null;
-                    // If value is a resource then try converting to JSON data.
-                    if( value instanceof Resource ) {
-                        valueRsc = (Resource)value;
-                        value = valueRsc.asJSONData();
+                // If value isn't already a configuration, but is a map then construct a new
+                // config using its values.
+                if( dataValue instanceof Map && androidContext != null ) {
+                    Configuration configValue = new Configuration( dataValue, this );
+                    // NOTE When the configuration data is sourced from a resource, then the
+                    // following properties need to be different from when the data is found
+                    // directly in the configuration:
+                    // * root: The resource defines a new context for # refs, so root needs to
+                    //   point to the new config.
+                    // * uriHandler: The resource's handler needs to be used, so that any
+                    //   relative URIs within the resource data resolve correctly.
+                    if( valueRsc != null ) {
+                        configValue.root = configValue;
+                        configValue.uriHandler = valueRsc.getURIHandler();
                     }
-
-                    // If value is a list then convert to a list backed map.
-                    if( value instanceof List ) {
-                        value = new ListBackedMap( (List)value );
-                    }
-
-                    // If value isn't already a configuration, but is a map then construct a new
-                    // config using its values.
-                    if( value instanceof Map && androidContext != null ) {
-                        Configuration configValue = new Configuration( value, this );
-                        // NOTE When the configuration data is sourced from a resource, then the
-                        // following properties need to be different from when the data is found
-                        // directly in the configuration:
-                        // * root: The resource defines a new context for # refs, so root needs to
-                        //   point to the new config.
-                        // * uriHandler: The resource's handler needs to be used, so that any
-                        //   relative URIs within the resource data resolve correctly.
-                        if( valueRsc != null ) {
-                            configValue.root = configValue;
-                            configValue.uriHandler = valueRsc.getURIHandler();
-                        }
-                        value = configValue;
-                    }
-                    // Else the value can't be resolved to a configuration, so return null.
-                    else {
-                        value = null;
-                    }
+                    value = configValue;
+                }
+                // Else the value can't be resolved to a configuration; return null if a
+                // configuration representation was required; keep the resolved value for
+                // natural representations.
+                else if( Representation.Configuration == representation ) {
+                    value = null;
                 }
             }
-            else if( value instanceof Resource ) {
-                value = ((Resource)value).asRepresentation( representation );
-            }
-            else if( !"json".equals( representation ) ) {
-                value = conversions.asRepresentation( value, representation );
+            break;
+        default:
+            if( value instanceof Resource ) {
+                value = ((Resource)value).asRepresentation( representation.toString() );
             }
         }
         return value;
@@ -347,7 +360,7 @@ public class Configuration {
 
     /** Test if a non-null configuration value exists at the specified key path. */
     public boolean hasValue(String keyPath) {
-        return getValueAs( keyPath, "bare" ) != null;
+        return getValueAs( keyPath, Representation.Raw ) != null;
     }
 
     /** Get a configuration value as a string. */
@@ -357,7 +370,7 @@ public class Configuration {
 
     /** Get a configuration value as a string. */
     public String getValueAsString(String keyPath, String defaultValue) {
-        String value = (String)getValueAs( keyPath, "string");
+        String value = (String)getValueAs( keyPath, Representation.String );
         return value == null ? defaultValue : value;
     }
 
@@ -382,7 +395,7 @@ public class Configuration {
 
     /** Get a configuration value as a number. */
     public Number getValueAsNumber(String keyPath, Number defaultValue) {
-        Number value = (Number)getValueAs( keyPath, "number");
+        Number value = (Number)getValueAs( keyPath, Representation.Number );
         return value == null ? defaultValue : value;
     }
 
@@ -393,7 +406,7 @@ public class Configuration {
 
     /** Get a configuration value as a boolean. */
     public Boolean getValueAsBoolean(String keyPath, Boolean defaultValue) {
-        Boolean value = (Boolean)getValueAs( keyPath, "boolean");
+        Boolean value = (Boolean)getValueAs( keyPath, Representation.Boolean );
         return value == null ? defaultValue : value;
     }
 
@@ -404,23 +417,23 @@ public class Configuration {
 
     /** Get a configuration value as a date. */
     public Date getValueAsDate(String keyPath, Date defaultValue) {
-        Date value = (Date)getValueAs( keyPath, "date");
+        Date value = (Date)getValueAs( keyPath, Representation.Date );
         return value == null ? defaultValue : value;
     }
 
     /** Get a configuration value as an external URL. */
     public URI getValueAsURL(String keyPath) {
-        return (URI)getValueAs( keyPath, "url");
+        return (URI)getValueAs( keyPath, Representation.URL );
     }
 
     /** Get a configuration value as a byte array. */
     public byte[] getValueAsData(String keyPath) {
-        return (byte[])getValueAs( keyPath, "data");
+        return (byte[])getValueAs( keyPath, Representation.Data );
     }
 
     /** Get a configuration value as an image drawable. */
     public Drawable getValueAsImage(String keyPath) {
-        return (Drawable)getValueAs( keyPath, "image");
+        return (Drawable)getValueAs( keyPath, Representation.Image );
     }
 
     /** Get a configuration value as a colour. */
@@ -436,12 +449,26 @@ public class Configuration {
 
     /** Get a configuration value as an internal resource. */
     public Resource getValueAsResource(String keyPath) {
-        return (Resource)getValueAs( keyPath, "resource");
+        return (Resource)getValueAs( keyPath, Representation.Resource );
     }
 
-    /** Get a configuration value in its bare (i.e. default) representation, with no conversions applied. */
-    public Object getValue(String keyPath) {
-        return getValueAs( keyPath, "bare");
+    /** Get a configuration value as parsed JSON data. */
+    public Object getValueAsJSONData(String keyPath) {
+        return getValueAs( keyPath, Representation.JSONData );
+    }
+
+    /** Get a configuration value in its raw (i.e. default) representation, with no conversions applied. */
+    public Object getRawValue(String keyPath) {
+        return getValueAs( keyPath, Representation.Raw );
+    }
+
+    /**
+     * Get a configuration value in its natural representation.
+     * This will promote JSON data values to full configurations, but return other representations
+     * unchanged.
+     */
+    public Object getNaturalValue(String keyPath) {
+        return getValueAs( keyPath, Representation.Natural );
     }
 
     /** Return a list of the top-level value names in the configuration data. */
@@ -453,9 +480,10 @@ public class Configuration {
      * An enumeration of value types.
      * The enumerated types correspond to the standard JSON types.
      */
-    public enum ValueType { Object, List, String, Number, Boolean, Undefined };
+//    public enum ValueType { Object, List, String, Number, Boolean, Undefined };
 
     /** Get the type of a configuration value. */
+    /*
     public ValueType getValueType(String keyPath) {
         Object value = getValueAs( keyPath, "json");
         if( value == null )             return ValueType.Undefined;
@@ -465,10 +493,11 @@ public class Configuration {
         if( value instanceof List )     return ValueType.List;
         return ValueType.Object;
     }
+    */
 
     /** Get a configuration value as a configuration object. */
     public Configuration getValueAsConfiguration(String keyPath) {
-        Configuration value = (Configuration)getValueAs( keyPath, "configuration");
+        Configuration value = (Configuration)getValueAs( keyPath, Representation.Configuration );
         if( value != null ) {
             value = value.normalize();
         }
@@ -491,10 +520,13 @@ public class Configuration {
     @SuppressLint("DefaultLocale")
     public List<Configuration> getValueAsConfigurationList(String keyPath) {
         List<Configuration> result = new ArrayList<>();
-        Object value = getValue( keyPath );
+        /*
+        Object value = getRawValue( keyPath );
         if( !(value instanceof List) ) {
-            value = getValueAs( keyPath, "json");
+            value = getValueAsJSONData( keyPath );
         }
+        */
+        Object value = getValueAsJSONData( keyPath );
         if( value instanceof List ) {
             @SuppressWarnings("rawtypes")
             List values = (List)value;
@@ -516,7 +548,7 @@ public class Configuration {
      */
     public Map<String,Configuration> getValueAsConfigurationMap(String keyPath) {
         Map<String,Configuration> result = new HashMap<>();
-        Object value = getValue( keyPath );
+        Object value = getValueAsJSONData( keyPath );
         if( value instanceof Map ) {
             @SuppressWarnings("rawtypes")
             Map values = (Map)value;
@@ -580,7 +612,7 @@ public class Configuration {
      */
     public Configuration flatten() {
         Configuration result = this;
-        Configuration mixin = getValueAsConfiguration( "*config" );
+        Configuration mixin = getValueAsConfiguration("*config");
         if( mixin != null ) {
             result = mixinConfiguration( mixin );
         }

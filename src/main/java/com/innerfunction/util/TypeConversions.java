@@ -295,31 +295,32 @@ public class TypeConversions {
      * - default (returns the unchanged value).
      */
     public Object asRepresentation(Object value, String name) {
-        if("string".equals( name ) ) {
+        name = name.toLowerCase();
+        if( "string".equals( name ) ) {
             return asString( value );
         }
-        if("number".equals( name ) ) {
+        if( "number".equals( name ) ) {
             return asNumber( value );
         }
-        if("boolean".equals( name ) ) {
+        if( "boolean".equals( name ) ) {
             return asBoolean( value );
         }
-        if("date".equals( name ) ) {
+        if( "date".equals( name ) ) {
             return asDate( value );
         }
-        if("url".equals( name ) ) {
+        if( "url".equals( name ) ) {
             return asURL( value );
         }
-        if("data".equals( name ) ) {
+        if( "data".equals( name ) ) {
             return asData( value );
         }
-        if("image".equals( name ) ) {
+        if( "image".equals( name ) ) {
             return asImage( value );
         }
-        if("json".equals( name ) ) {
+        if( "jsondata".equals( name ) || "json".equals( name ) ) {
             return asJSONData( value );
         }
-        if("default".equals( name ) ) {
+        if( "default".equals( name ) ) {
             return value;
         }
         return null;

@@ -29,22 +29,24 @@ public class KeyPath {
     /**
      * An interface allowing on-the-fly modification of values found along a key path.
      */
-    public interface Modifier {
+    public interface Modifier<T> {
         /**
          * Modify the object that a key will be resolved on.
          * @param key       The current key.
          * @param object    The current object.
+         * @param context   An optional object providing context information. Can be null.
          * @return The object that key should be resolved on. Can be null, in which case no object
          * resolution will be done.
          */
-        public Object modifyObject(String key, Object object);
+        public Object modifyObject(String key, Object object, T context);
         /**
          * Modify the value found mapped to a key.
          * @param key       The key used to lookup the value.
          * @param value     The value to modify. Can be null.
+         * @param context   An optional object providing context information. Can be null.
          * @return The modified value. Can be null.
          */
-        public Object modifyValue(String key, Object value);
+        public Object modifyValue(String key, Object value, T context);
     }
 
     /**
@@ -66,13 +68,26 @@ public class KeyPath {
      *                  Can be null, in which case no modifications are done.
      * @return The resolved value, or null if the value can't be resolved.
      */
-    public static Object resolve(String keyPath, Object rootValue, Modifier modifier) {
+    public static <T> Object resolve(String keyPath, Object rootValue, Modifier<T> modifier) {
+        return resolve( keyPath, rootValue, null, modifier );
+    }
+
+    /**
+     * Resolve a key path on a root object.
+     * @param keyPath   The key path to resolve.
+     * @param rootValue The root object.
+     * @param context   An optional object providing context information. Can be null.
+     * @param modifier  An object used to modify objects and values as the key path is resolved.
+     *                  Can be null, in which case no modifications are done.
+     * @return The resolved value, or null if the value can't be resolved.
+     */
+    public static <T> Object resolve(String keyPath, Object rootValue, T context, Modifier<T> modifier) {
         String[] keys = keyPath.split("\\.");
         int i = 0;
         Object value = rootValue;
         while( value != null && i < keys.length ) {
             if( modifier != null ) {
-                value = modifier.modifyObject( keys[i], value );
+                value = modifier.modifyObject( keys[i], value, context );
             }
             if( value instanceof Map) {
                 // Attempt to read the next value using the key as the map key.
@@ -92,7 +107,7 @@ public class KeyPath {
                 value = null;
             }
             if( modifier != null ) {
-                value = modifier.modifyValue( keys[i], value );
+                value = modifier.modifyValue( keys[i], value, context );
             }
             i++;
         }
