@@ -3,6 +3,7 @@ package com.innerfunction.pttn;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.util.Log;
+import android.util.LruCache;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -112,6 +113,7 @@ public class ObjectConfigurer {
 
     /**
      * Try to build a property value from its configuration.
+     * TODO: Rename this to 'resolvePropertyValue' - because sometimes in-place values are returned.
      * @param propName      The name of the property being built.
      * @param properties    The set of properties of the object being configured.
      * @param configuration The object configuration; should contain a configuration for the named
@@ -121,11 +123,60 @@ public class ObjectConfigurer {
      */
     private Object buildPropertyValue(String propName, Properties properties, Configuration configuration, String kpPrefix) {
         Object value = null;
+
         Class<?> propType = properties.getPropertyType( propName );
         // If no property type info then can't process any further, return empty handed.
         if( propType == null ) {
             return null;
         }
+
+        // First, check to see if the property belongs to one of the standard types used to
+        // represent primitive configurable values. These values are different to other
+        // non-primitive types, in that (1) it's generally possible to convert values between them,
+        // and (2) the code won't recursively perform any additional configuration on the values.
+        switch( getStandardTypeForClass( propType ) ) {
+        case Boolean:
+            value = configuration.getValueAsBoolean( propName );
+            break;
+        case Number:
+            Number number = configuration.getValueAsNumber( propName );
+            if( propType == Integer.class ) {
+                value = number.intValue();
+            }
+            else if( propType == Float.class ) {
+                value = number.floatValue();
+            }
+            else if( propType == Double.class ) {
+                value = number.doubleValue();
+            }
+            else {
+                value = number;
+            }
+            break;
+        case String:
+            value = configuration.getValueAsString( propName );
+            break;
+        case Date:
+            value = configuration.getValueAsDate( propName );
+            break;
+        case Drawable:
+            value = configuration.getValueAsImage( propName );
+            break;
+        case Color:
+            value = configuration.getValueAsColor( propName );
+            break;
+        case Configuration:
+            value = configuration.getValueAsConfiguration( propName );
+            break;
+        case JSONData:
+            // Properties which require raw JSON data need to be declared using the JSONObject
+            // or JSONArray types, as appropriate. This is intended as an optimization -
+            // particularly when initializing a property with a large-ish data set - as
+            // the configurer will not attempt to further process the configuration data.
+            value = configuration.getValueAsJSONData( propName );
+            break;
+        }
+    /*
         // First check for a primitive value. A primitive is any any value whose properties won't
         // be recursively processed by the configurer. This category includes standard Java
         // primitives - Number, String etc.; and other useful types such as Date and Drawable.
@@ -172,6 +223,7 @@ public class ObjectConfigurer {
                 value = configuration.getValueAsJSONData( propName );
             }
         }
+        */
         // If value is still null then the property is not a primitive or JSON data type. Try to
         // resolve a new value from the supplied configuration.
         // The configuration may contain a mixture of object definitions and fully instantiated
@@ -325,6 +377,65 @@ public class ObjectConfigurer {
      */
     private static String getKeyPath(final String prefix, final String name) {
         return prefix.length() > 0 ? prefix+"."+name : "#"+name;
+    }
+
+    /**
+     * A cache of classes to standard types.
+     * Used to cache the results of getStandardTypeForClass(..).
+     */
+    static final LruCache<Class,StandardTypes> StandardTypesByClass = new LruCache<>( 50 );
+
+    /** Enumeration of standard configuration types. */
+    public enum StandardTypes { Boolean, Number, String, Date, Drawable, Color, Configuration, JSONData, Other };
+
+    /**
+     * Get the standard type value for a class.
+     * The standard types are an optimization to the core configuration cycle. Before each property
+     * is configured, the configurer checks whether the property type is one of the standard
+     * primitive types (listed above). This potentially requires multiple isAssignableFrom() tests,
+     * which this code attempts to optimize by cacheing the test result for each class.
+     * NOTE: Need for this code should be reviewed; it's contribution to the performance of the
+     * configuration code is probably minimal; on the other hand, it maybe? contributes to code
+     * readability.
+     */
+    static final StandardTypes getStandardTypeForClass(Class<?> clss) {
+        StandardTypes stdType = StandardTypesByClass.get( clss );
+        if( stdType == null ) {
+            if( clss == Object.class ) {
+                stdType = StandardTypes.Other;
+            }
+            else if( clss.isAssignableFrom( Boolean.class ) ) {
+                stdType = StandardTypes.Boolean;
+            }
+            else if( clss.isAssignableFrom( Number.class ) ) {
+                stdType = StandardTypes.Number;
+            }
+            else if( clss.isAssignableFrom( String.class ) ) {
+                stdType = StandardTypes.String;
+            }
+            else if( clss.isAssignableFrom( Date.class ) ) {
+                stdType = StandardTypes.Date;
+            }
+            else if( clss.isAssignableFrom( Drawable.class ) ) {
+                stdType = StandardTypes.Drawable;
+            }
+            else if( clss.isAssignableFrom( Color.class ) ) {
+                stdType = StandardTypes.Color;
+            }
+            else if( clss.isAssignableFrom( Configuration.class ) ) {
+                stdType = StandardTypes.Configuration;
+            }
+            else if( clss == JSONObject.class || clss == JSONArray.class ) {
+                stdType = StandardTypes.JSONData;
+            }
+            else {
+                stdType = StandardTypes.Other;
+            }
+            synchronized( StandardTypesByClass ) {
+                StandardTypesByClass.put( clss, stdType );
+            }
+        }
+        return stdType;
     }
 
     public int getConfiguredPropertyCount() {

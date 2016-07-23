@@ -1,0 +1,100 @@
+------------------------------------------------------------------------------
+This document contains a description of how property values are resolved
+during a Pttn configuration cycle.
+
+A configuration is a JSON object graph which can be considered a 
+representation of the final object graph that will be within the container
+after it loads and processes the configuration. However, there is not always a
+strict 1-to-1 correlation between the configuration and the final graph; and
+the configuration does not completely dictate to the container the final form
+of the result; rather, as will be seen below, the resulting object graph is the
+result of a dialog between the objects that make up the result and the
+configuration.
+
+The configuration process starts with the root object (generally, the container
+itself) and recursively repeats for each sub-object in the graph being built.
+
+The configuration process for each object always starts with the configurer
+asking the configuration for a list of the property names it has for the
+current object. The configurer then iterates over this list, skipping or
+rewriting reserved names as necessary, and checking for the rest whether the
+current object has a matching property of the same name. If there is no match
+then nothing more can be done. When there is a match, the configurer then
+attempts to resolve a value for the property from the configuration.
+
+The first step in the property value resolution process is to check the
+property type, and then to see if this is one of the standard configuration
+types. The standard types are 'primitive' types, for two reasons: Firstly,
+in most cases, it is possible to convert between the types; so e.g. a
+string value in the configuration may be used to represent a boolean, number,
+date or other value. Secondly, the configurer will never attempt to recusively
+configure a primitive value; it simply resolves it from the configuration and
+then moves on to the next property.
+
+If the current property is a standard type then the configurer requests a
+value of the appropriate type from the configuration. The configuration will
+attempt to return a value, applying standard type conversions as needed, and
+if it succeeds then the resulting value is injected into the object property
+and the configurer continues on to the next property.
+
+If the current property isn't a standard type, or if the configuration failed
+to return an appropriate value, then the process moves onto the next step. In
+this step, the configurer asks the container to give it whatever value is has
+for the named property; this is the so-called 'natural' configuration value.
+It is important to realise at this stage that the configuration may contain
+a mixture of both primitive values, object descriptors (i.e. configurations)
+and fully instantiated objects (which typically come about as a result of
+values specified using the new: or make: URI schemes). The natural
+configuration value of a primitive or fully instantiated object is that value
+or object, whilst the natual representation of an object descriptor is a
+configuration object.
+
+So when the configurer requests a property's natural value from the
+configuration, if it gets back anything except another configuration then it
+assumes that the value returned is the final property value. If on the other
+hand it gets a configuration then it knows that more work is still needed
+before the final value is resolved, and it continues on to the next step.
+
+In the next step, the configurer has a configuration for the required value,
+it just needs to figure out what to do with it. The first thing it attempts
+is to ask the container to build a new object using the configuration. This
+will only succeed if the configuration contains an instantiation hint - e.g.
+a *type, *and-class or *factory property. If it does, then the container 
+will return a fully instantiated and configured object to the configurer,
+which can then be used as the final property value. On the other hand, if
+this fails then the container will return null and the configurer will
+continue to the next step.
+
+So next, the configurer will check to see whether the property of the object
+being configured already has a value (the so-called 'in-place' value). If it
+does, then the configurer will use the current configuration to configure that
+value, and that value becomes the final property value. (Note that it is not
+necessary for all object properties to have both getters and setters. A
+property only has to have a setter to be considered a property; properties
+without getters will simply skip this step).
+
+If there is no in-place value then the final thing the configurer can try to
+do is instantiate a new object using the type information for the property
+it has available. This may not always succeed (e.g. if the property type is
+an interface or non-instantiable class) but if it does then the new instance
+is configured and used as the final property value. This part of the process
+is called 'type inferrence'.
+
+If all of the proceeding steps fail then the configurer is unable to resolve
+a value for the property, and so nothing will be injected into the property.
+
+The key thing about this process is that the configuration largely dictates 
+what happens when it contains realised values (as primitives or instantiated
+objects), or when it contains configurations with clear instantiation hints.
+However, the process becomes more fluid in cases where configurations don't
+contain type information, and the properties on the object being configured
+control to some extent what happens in those cases.
+
+The above process, with minor changes, can also be used to configure List
+and Map collections. The main difference is in the way type inferrence
+works when configuring a collection; here, the generic type parameters of
+the collection are used to provide information about the default type of
+the collection's members. The other difference (particularly when
+configuring a map) is that property names are mapped to map entries,
+rather than to actual object properties of the map instance.
+

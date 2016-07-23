@@ -35,6 +35,12 @@ public class Property {
     /** The property's getter method. Can be null. */
     private Method getter;
 
+    /**
+     * Create a new property.
+     * @param baseName  The capitalized property name, without a get or set prefix; e.g. PropName.
+     * @param methods   A map of all accessible methods defined for the associated class, keyed
+     *                  by method name.
+     */
     private Property(String baseName, Map<String,Method> methods) {
         // PROFILING NOTE The string operations in this method - up to 5 separate strings are
         // constructed - incur a significant CPU overhead, so a single string builder is used to
@@ -141,9 +147,9 @@ public class Property {
      * Used to cache the results of getPropertiesForObject(..). The Class.getMethods() call can be
      * CPU intensive; however, it is not desirable to cache all results for all classes as this
      * could swap CPU overhead for memory overhead. Instead, an LRU cache with a smallish size (of
-     * 40 items) is kept.
+     * 50 items) is kept.
      */
-    static final LruCache<Class,Map<String,Property>> ObjectPropertiesByClass = new LruCache<>( 40 );
+    static final LruCache<Class,Map<String,Property>> ObjectPropertiesByClass = new LruCache<>( 50 );
 
     /**
      * Get the configurable properties for an object.
