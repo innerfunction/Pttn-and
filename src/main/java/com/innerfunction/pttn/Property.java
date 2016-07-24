@@ -121,7 +121,7 @@ public class Property {
         }
         catch(Exception e) {
             // Unable to set value.
-            Log.w(Tag, String.format("Setting %s", name ), e.getCause() );
+            Log.e(Tag, String.format("Setting %s", name ), e.getCause() );
         }
         return false;
     }

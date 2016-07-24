@@ -236,21 +236,26 @@ public class ViewController extends FrameLayout implements MessageReceiver, Mess
     protected List<ViewController> getChildViewControllers() {
         return childViewControllers;
     }
-
+/*
+    TODO Review and confirm that following code isn't needed - it's the responsibility of view
+    TODO controller containers to ensure all children are added to the hierarchy.
     @Override
     protected void onAttachedToWindow() {
         super.onAttachedToWindow();
-        // See if a view controller parent exists.
-        ViewParent parent = this;
-        while( (parent = parent.getParent()) != null ) {
-            if( parent instanceof ViewController ) {
-                this.parentViewController = (ViewController)parent;
-                parentViewController.addChildViewController( this );
-                break;
+        // If no view controller parent already set then try looking for one in the view
+        // hierarchy.
+        if( parentViewController == null ) {
+            ViewParent parent = this;
+            while( (parent = parent.getParent()) != null ) {
+                if( parent instanceof ViewController ) {
+                    this.parentViewController = (ViewController)parent;
+                    parentViewController.addChildViewController( this );
+                    break;
+                }
             }
         }
     }
-
+*/
     @Override
     public void onDetachedFromWindow() {
         super.onDetachedFromWindow();
