@@ -21,7 +21,7 @@ import android.util.Log;
 import com.innerfunction.pttn.R;
 
 /**
- * Created by juliangoacher on 26/04/16.
+ * Attached by juliangoacher on 26/04/16.
  */
 public abstract class PttnActivity<T> extends AppCompatActivity {
 

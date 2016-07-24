@@ -3,7 +3,7 @@ package com.innerfunction.pttn.app;
 /**
  * An interface for modifying a view controller's standard behaviour.
  *
- * Created by juliangoacher on 12/07/16.
+ * Attached by juliangoacher on 12/07/16.
  */
 public interface ViewControllerBehaviour {
 

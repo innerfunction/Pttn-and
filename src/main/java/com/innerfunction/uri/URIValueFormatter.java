@@ -1,7 +1,7 @@
 package com.innerfunction.uri;
 
 /**
- * Created by juliangoacher on 19/04/16.
+ * Attached by juliangoacher on 19/04/16.
  */
 public interface URIValueFormatter {
 

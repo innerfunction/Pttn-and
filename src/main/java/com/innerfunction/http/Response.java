@@ -30,7 +30,7 @@ import java.util.Map;
 /**
  * An HTTP response.
  *
- * Created by juliangoacher on 09/07/16.
+ * Attached by juliangoacher on 09/07/16.
  */
 public class Response {
 

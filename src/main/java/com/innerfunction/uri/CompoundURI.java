@@ -41,7 +41,7 @@ import java.util.Map;
  *         LITERAL ::= (name characters)+
  *          FORMAT ::= (name characters)+
  *
- * Created by juliangoacher on 25/03/16.
+ * Attached by juliangoacher on 25/03/16.
  */
 public class CompoundURI {
 

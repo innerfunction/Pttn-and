@@ -17,7 +17,7 @@ import java.util.Map;
 
 /**
  *  * A message sent between two components within a container.
- * Created by juliangoacher on 29/03/16.
+ * Attached by juliangoacher on 29/03/16.
  */
 public class Message {
 

@@ -22,7 +22,7 @@ import com.innerfunction.pttn.R;
  * An activity class for displaying standard fragments which have been instantiated by the app
  * container.
  *
- * Created by juliangoacher on 19/05/16.
+ * Attached by juliangoacher on 19/05/16.
  */
 public class FragmentActivity extends PttnActivity<Fragment> {
 

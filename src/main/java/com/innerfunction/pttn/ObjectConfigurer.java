@@ -19,7 +19,7 @@ import java.util.Map;
  * Performs mapping of configuration values to object properties. Instantiates objects from
  * configurations and injects property values.
  *
- * Created by juliangoacher on 15/04/16.
+ * Attached by juliangoacher on 15/04/16.
  */
 public class ObjectConfigurer {
 
@@ -283,6 +283,11 @@ public class ObjectConfigurer {
                         }
                         // Recursively configure the value.
                         configure( value, memberType, valueConfig, getKeyPath( kpPrefix, propName ) );
+                    }
+                    // If we get this far without a value then try returning the raw configuration
+                    // data.
+                    else {
+                        value = valueConfig.getData();
                     }
                 }
             }

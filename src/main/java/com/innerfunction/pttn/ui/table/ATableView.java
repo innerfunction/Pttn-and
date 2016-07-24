@@ -21,7 +21,7 @@ import com.nakardo.atableview.protocol.ATableViewDataSource;
 
 /**
  * Additions to the base ATableView class.
- * Created by juliangoacher on 05/05/16.
+ * Attached by juliangoacher on 05/05/16.
  */
 public class ATableView extends com.nakardo.atableview.view.ATableView {
 

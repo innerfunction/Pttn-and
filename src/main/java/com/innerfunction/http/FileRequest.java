@@ -23,7 +23,7 @@ import java.net.MalformedURLException;
 /**
  * An HTTP request which returns a file.
  *
- * Created by juliangoacher on 09/07/16.
+ * Attached by juliangoacher on 09/07/16.
  */
 public class FileRequest extends Request {
 

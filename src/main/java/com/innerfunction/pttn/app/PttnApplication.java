@@ -9,7 +9,7 @@ import android.webkit.WebView;
 /**
  * Standard Pttn application class.
  *
- * Created by juliangoacher on 12/07/16.
+ * Attached by juliangoacher on 12/07/16.
  */
 public class PttnApplication extends Application {
 

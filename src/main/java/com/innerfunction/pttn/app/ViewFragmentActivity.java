@@ -20,7 +20,7 @@ import com.innerfunction.pttn.R;
 /**
  * Used to display view fragments created by the app container.
  *
- * Created by juliangoacher on 26/04/16.
+ * Attached by juliangoacher on 26/04/16.
  */
 public class ViewFragmentActivity extends PttnActivity<ViewFragment> {
 

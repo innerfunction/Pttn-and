@@ -27,7 +27,7 @@ import com.innerfunction.pttn.R;
  * The default app container activity.
  * Used to display view controller instances.
  *
- * Created by juliangoacher on 19/05/16.
+ * Attached by juliangoacher on 19/05/16.
  */
 public class ViewControllerActivity extends PttnActivity<ViewController> {
 

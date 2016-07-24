@@ -35,7 +35,7 @@ import java.util.Map;
  * The object's properties may be configured using other built objects, or using references
  * to named objects contained by the container.
  *
- * Created by juliangoacher on 28/03/16.
+ * Attached by juliangoacher on 28/03/16.
  */
 public class Container implements ConfigurationData, Service, MessageReceiver, MessageRouter {
 

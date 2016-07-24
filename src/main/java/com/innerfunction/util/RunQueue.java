@@ -19,7 +19,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 /**
  * A queue for running tasks on a background thread.
- * Created by juliangoacher on 07/05/16.
+ * Attached by juliangoacher on 07/05/16.
  */
 public class RunQueue extends LinkedBlockingQueue<Runnable> {
 

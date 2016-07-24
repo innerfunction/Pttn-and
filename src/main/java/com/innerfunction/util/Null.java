@@ -18,7 +18,7 @@ package com.innerfunction.util;
  * Android equivalent of the NSNull class in Objective-C. Useful as a placeholder for null
  * values within collections that don't support null value references.
  *
- * Created by juliangoacher on 15/05/16.
+ * Attached by juliangoacher on 15/05/16.
  */
 public class Null {
 

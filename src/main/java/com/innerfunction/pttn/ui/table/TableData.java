@@ -37,7 +37,7 @@ import com.nakardo.atableview.foundation.NSIndexPath;
 
 /**
  * Data source for table views.
- * Created by juliangoacher on 05/05/16.
+ * Attached by juliangoacher on 05/05/16.
  */
 @SuppressLint("DefaultLocale")
 @SuppressWarnings("rawtypes")
@@ -362,33 +362,34 @@ public class TableData {
     }
 
     public Drawable loadImage(String imageName, Drawable defaultImage) {
+        if( imageName == null ) {
+            return null;
+        }
         Drawable result = ImageCache.get( imageName );
         if( result == null ) {
-            if( imageName != null ) {
-                // Image names beginning with '@' are URI references to the image.
-                if( imageName.startsWith("@") && uriHandler != null ) {
-                    // TODO Note that currently the URI handler is set by the table view *only* when
-                    // TODO the table data is loaded from a URI which dereferences to a resource;
-                    // TODO To fix, the uriHandler should default to the global handler initially.
-                    String imageURI = imageName.substring( 1 );
-                    Object imageRsc = uriHandler.dereference( imageURI );
-                    if( imageRsc instanceof Resource ) {
-                        result = ((Resource)imageRsc).asImage();
-                    }
-                    else if( imageRsc instanceof Drawable ) {
-                        result = (Drawable)imageRsc;
-                    }
-                    else {
-                        Log.w( Tag, String.format("Image resource not found: %s", imageURI ) );
-                    }
+            // Image names beginning with '@' are URI references to the image.
+            if( imageName.startsWith("@") && uriHandler != null ) {
+                // TODO Note that currently the URI handler is set by the table view *only* when
+                // TODO the table data is loaded from a URI which dereferences to a resource;
+                // TODO To fix, the uriHandler should default to the global handler initially.
+                String imageURI = imageName.substring( 1 );
+                Object imageRsc = uriHandler.dereference( imageURI );
+                if( imageRsc instanceof Resource ) {
+                    result = ((Resource)imageRsc).asImage();
+                }
+                else if( imageRsc instanceof Drawable ) {
+                    result = (Drawable)imageRsc;
                 }
                 else {
-                    result = typeConversions.asImage( imageName );
+                    Log.w( Tag, String.format("Image resource not found: %s", imageURI ) );
                 }
             }
-            if( result != null ) {
-                ImageCache.put( imageName, result );
+            else {
+                result = typeConversions.asImage( imageName );
             }
+        }
+        if( result != null ) {
+            ImageCache.put( imageName, result );
         }
         if( result == null ) {
             result = defaultImage;

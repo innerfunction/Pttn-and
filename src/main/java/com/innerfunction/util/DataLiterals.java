@@ -7,7 +7,7 @@ import java.util.Map;
 
 /**
  * A class useful for describing map and list data literals in code.
- * Created by juliangoacher on 29/05/16.
+ * Attached by juliangoacher on 29/05/16.
  */
 public class DataLiterals {
 

@@ -8,7 +8,7 @@ import java.util.Map;
 /**
  * Lookup map of configuration proxies keyed by class name.
  * Classes without a registered proxy get an IOCProxyLookup.NullEntry entry.
- * Created by juliangoacher on 29/03/16.
+ * Attached by juliangoacher on 29/03/16.
  */
 public class IOCProxyLookup {
 

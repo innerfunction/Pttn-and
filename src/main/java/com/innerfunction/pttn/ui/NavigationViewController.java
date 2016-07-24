@@ -33,7 +33,7 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * Created by juliangoacher on 19/05/16.
+ * Attached by juliangoacher on 19/05/16.
  */
 public class NavigationViewController extends ViewController {
 
@@ -108,7 +108,10 @@ public class NavigationViewController extends ViewController {
     @Override
     public View onCreateView(Activity activity) {
         this.layout = (ViewGroup)super.onCreateView( activity );
-        return this.layout;
+        for( ViewController child : getChildViewControllers() ) {
+            layout.addView( child );
+        }
+        return layout;
     }
 
     @Override
@@ -131,14 +134,13 @@ public class NavigationViewController extends ViewController {
     public void setViews(List<ViewController> newViews) {
         // Remove all current views from the controller.
         for( ViewController view : views ) {
-            layout.removeView( view );
+            removeChildViewController( view );
         }
         this.views.clear();
         // Add all new views to the controller and stack.
         for( ViewController view : newViews ) {
-            view.changeState( State.Started );
             view.setVisibility( INVISIBLE );
-            layout.addView( view );
+            addChildViewController( view );
             views.push( view );
         }
         // Ensure that the top view is visible and matches this view's state.
@@ -156,7 +158,7 @@ public class NavigationViewController extends ViewController {
         topView.setVisibility( INVISIBLE );
         topView.changeState( State.Paused );
         // Add the new view and change to current state.
-        layout.addView( newView );
+        addChildViewController( newView );
         newView.changeState( getState() );
         // Update stack.
         views.push( newView );
@@ -172,7 +174,7 @@ public class NavigationViewController extends ViewController {
             if( Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP ) {
                 TransitionManager.beginDelayedTransition( layout, NavigateBackTransition );
             }
-            layout.removeView( poppedView );
+            removeChildViewController( poppedView );
             // Resume the next view.
             topView = views.getTopView();
             topView.setVisibility( VISIBLE );
@@ -194,7 +196,7 @@ public class NavigationViewController extends ViewController {
             for( int i = viewCount - 1; i > 0; i-- ) {
                 ViewController view = views.get( i );
                 view.changeState( State.Paused );
-                layout.removeView( view );
+                removeChildViewController( view );
             }
             // The root view is now the top view...
             topView = views.getTopView();
@@ -205,6 +207,22 @@ public class NavigationViewController extends ViewController {
             popped = true;
         }
         return popped;
+    }
+
+    @Override
+    public void addChildViewController(ViewController child) {
+        super.addChildViewController( child );
+        if( layout != null ) {
+            layout.addView( child );
+        }
+    }
+
+    @Override
+    public void removeChildViewController(ViewController child) {
+        super.removeChildViewController( child );
+        if( layout != null ) {
+            layout.removeView( child );
+        }
     }
 
     @Override

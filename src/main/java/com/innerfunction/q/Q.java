@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 
 /**
- * Created by jloriente on 17/03/2016.
+ * Attached by jloriente on 17/03/2016.
  *
  */
 public class Q {

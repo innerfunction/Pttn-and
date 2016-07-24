@@ -41,13 +41,13 @@ import java.util.Map;
  * TODO -most controller; LayoutManager could be extended so that each nested view controller has
  * TODO a reference to its parent view controller.
  *
- * Created by juliangoacher on 17/05/16.
+ * Attached by juliangoacher on 17/05/16.
  */
 public class ViewController extends FrameLayout implements MessageReceiver, MessageRouter {
 
     static final String Tag = ViewController.class.getSimpleName();
 
-    public enum State { Instantiated, Created, Started, Running, Paused, Stopped, Destroyed }
+    public enum State { Instantiated, Attached, Started, Running, Paused, Stopped, Destroyed }
 
     /** The view's current lifecycle state. */
     protected State state = State.Instantiated;
@@ -91,16 +91,19 @@ public class ViewController extends FrameLayout implements MessageReceiver, Mess
         case Instantiated:
             Log.e( Tag, "Can't transition to the Instantiated state");
             break;
-        case Created:
+        case Attached:
             if( state == State.Instantiated ) {
-                state = State.Created;
+                for( ViewController child : childViewControllers ) {
+                    child.changeState( State.Attached );
+                }
+                state = State.Attached;
             }
-            else if( state != State.Created ) {
+            else if( state != State.Attached ) {
                 Log.e( Tag, String.format("Illegal state change: %s -> %s", state, newState ) );
             }
             break;
         case Started:
-            if( state == State.Created || state == State.Stopped ) {
+            if( state == State.Attached || state == State.Stopped ) {
                 for( ViewController child : childViewControllers ) {
                     child.changeState( State.Started );
                 }
@@ -112,7 +115,7 @@ public class ViewController extends FrameLayout implements MessageReceiver, Mess
             }
             break;
         case Running:
-            if( state == State.Created || state == State.Stopped ) {
+            if( state == State.Attached || state == State.Stopped ) {
                 changeState( State.Started );
             }
             if( state == State.Started || state == State.Paused ) {
@@ -131,7 +134,10 @@ public class ViewController extends FrameLayout implements MessageReceiver, Mess
             }
             break;
         case Paused:
-            if( state == State.Running ) {
+            if( state == State.Attached ) {
+                changeState( State.Started );
+            }
+            if( state == State.Started || state == State.Running ) {
                 for( ViewController child : childViewControllers ) {
                     child.changeState( State.Paused );
                 }
@@ -143,10 +149,10 @@ public class ViewController extends FrameLayout implements MessageReceiver, Mess
             }
             break;
         case Stopped:
-            if( state == State.Running ) {
+            if( state.ordinal() < State.Paused.ordinal() ) {
                 changeState( State.Paused );
             }
-            if( state == State.Started || state == State.Paused ) {
+            if( state == State.Paused ) {
                 for( ViewController child : childViewControllers ) {
                     child.changeState( State.Stopped );
                 }
@@ -158,7 +164,7 @@ public class ViewController extends FrameLayout implements MessageReceiver, Mess
             }
             break;
         case Destroyed:
-            if( state != State.Destroyed && state != State.Stopped ) {
+            if( state.ordinal() < State.Stopped.ordinal() ) {
                 changeState( State.Stopped );
             }
             if( state == State.Stopped ) {
@@ -168,7 +174,7 @@ public class ViewController extends FrameLayout implements MessageReceiver, Mess
                 onDestroy();
                 state = State.Destroyed;
             }
-            else {
+            else if( state != State.Destroyed ) {
                 Log.e( Tag, String.format("Illegal state change: %s -> %s", state, newState ) );
             }
             break;
@@ -178,12 +184,15 @@ public class ViewController extends FrameLayout implements MessageReceiver, Mess
     public void onAttach(Activity activity) {
         this.activity = activity;
         this.view = onCreateView( activity );
+        for( ViewController child : childViewControllers ) {
+            child.onAttach( activity );
+        }
         // TODO Should this only apply for the top-most view controller?
         // TODO If so, is this the bast place to put the code?
         if( hideTitleBar ) {
             activity.getActionBar().hide();
         }
-        changeState( State.Created );
+        changeState( State.Attached );
     }
 
     public View onCreateView(Activity activity) {
@@ -212,11 +221,20 @@ public class ViewController extends FrameLayout implements MessageReceiver, Mess
     protected void addChildViewController(ViewController child) {
         if( !childViewControllers.contains( child ) ) {
             childViewControllers.add( child );
+            if( activity != null ) {
+                child.onAttach( activity );
+            }
         }
     }
 
     protected void removeChildViewController(ViewController child) {
-        childViewControllers.remove( child );
+        if( child != null ) {
+            childViewControllers.remove( child );
+        }
+    }
+
+    protected List<ViewController> getChildViewControllers() {
+        return childViewControllers;
     }
 
     @Override

@@ -16,7 +16,7 @@ package com.innerfunction.pttn.ui.table;
 import java.util.Map;
 
 /**
- * Created by juliangoacher on 05/05/16.
+ * Attached by juliangoacher on 05/05/16.
  */
 public interface TableDataDelegate {
 

@@ -40,7 +40,7 @@ import java.util.Map;
  * TODO Setup caching behaviour, as per https://developer.android.com/reference/android/net/http/HttpResponseCache.html
  * TODO Need to figure out how this will work with the filesystem content cache.
  *
- * Created by juliangoacher on 08/07/16.
+ * Attached by juliangoacher on 08/07/16.
  */
 public class Client {
 

@@ -17,7 +17,7 @@ import android.content.Context;
 
 /**
  * An interface for objects that require a reference to the Android app context.
- * Created by juliangoacher on 05/05/16.
+ * Attached by juliangoacher on 05/05/16.
  */
 public interface IOCContextAware {
 

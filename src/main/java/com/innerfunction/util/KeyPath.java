@@ -22,7 +22,7 @@ import java.util.Map;
  * lookup values in Map instances; keys are converted to integers and used to lookup items in
  * List instances.
  * Values can be modified on the fly by using a Modifier instance.
- * Created by juliangoacher on 26/03/16.
+ * Attached by juliangoacher on 26/03/16.
  */
 public class KeyPath {
 

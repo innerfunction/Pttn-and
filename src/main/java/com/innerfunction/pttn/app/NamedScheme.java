@@ -13,7 +13,7 @@ import java.util.Map;
  * The named: scheme allows named components of the app container to be accessed via URI.
  * The scheme handler forwards requests to the getNamed() method of the app container.
  *
- * Created by juliangoacher on 30/03/16.
+ * Attached by juliangoacher on 30/03/16.
  */
 public class NamedScheme implements URIScheme {
 

@@ -9,7 +9,7 @@ package com.innerfunction.pttn;
  * construct object keys. This class only assumes that any object instance consistently returns the
  * same result when hashCode() is called. This class uses object identify as its equality test,
  * rather than delegating to the object's equals() method.
- * Created by juliangoacher on 29/03/16.
+ * Attached by juliangoacher on 29/03/16.
  */
 public class ObjectKey {
 

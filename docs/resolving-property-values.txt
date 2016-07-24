@@ -73,15 +73,16 @@ necessary for all object properties to have both getters and setters. A
 property only has to have a setter to be considered a property; properties
 without getters will simply skip this step).
 
-If there is no in-place value then the final thing the configurer can try to
+If there is no in-place value then the next thing the configurer can try to
 do is instantiate a new object using the type information for the property
 it has available. This may not always succeed (e.g. if the property type is
 an interface or non-instantiable class) but if it does then the new instance
 is configured and used as the final property value. This part of the process
 is called 'type inferrence'.
 
-If all of the proceeding steps fail then the configurer is unable to resolve
-a value for the property, and so nothing will be injected into the property.
+If all of the proceeding steps fail then the final thing the configurer can
+do is to read the raw configuration data and attempt to inject this into the
+property.
 
 The key thing about this process is that the configuration largely dictates 
 what happens when it contains realised values (as primitives or instantiated

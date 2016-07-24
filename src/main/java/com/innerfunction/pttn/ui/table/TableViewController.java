@@ -45,7 +45,7 @@ import com.nakardo.atableview.view.ATableViewCell;
 
 /**
  * A configurable table view component.
- * Created by juliangoacher on 20/05/16.
+ * Attached by juliangoacher on 20/05/16.
  */
 public class TableViewController extends ViewController implements IOCContainerAware {
 
@@ -99,10 +99,12 @@ public class TableViewController extends ViewController implements IOCContainerA
         if( defaultFactory == null ) {
             defaultFactory = new TableViewCellFactory();
             iocContainer.configureObject( defaultFactory, configuration, "TableViewFragment.defaultFactory");
+            cellFactoriesByDisplayMode.put("default", defaultFactory );
         }
         // Pass a reference to the table data to each cell factory.
         for( String mode : cellFactoriesByDisplayMode.keySet() ) {
             TableViewCellFactory factory = cellFactoriesByDisplayMode.get( mode );
+            factory.setParent( this );
             factory.setTableData( tableData );
         }
     }
@@ -147,6 +149,7 @@ public class TableViewController extends ViewController implements IOCContainerA
                 return factory.heightForRowAtIndexPath( indexPath ).intValue();
             }
         } );
+        addView( tableView );
         return tableView;
     }
 
@@ -226,7 +229,10 @@ public class TableViewController extends ViewController implements IOCContainerA
 
     public void loadContent() {
         List data = null;
-        if( content instanceof List ) {
+        if( content == null ) {
+            Log.w( Tag, "No content specified");
+        }
+        else if( content instanceof List ) {
             data = (List)content;
         }
         else if( content instanceof Resource ) {

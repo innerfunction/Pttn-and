@@ -24,7 +24,7 @@ import com.innerfunction.pttn.app.ViewController;
 import static android.support.v4.view.GravityCompat.*;
 
 /**
- * Created by juliangoacher on 19/05/16.
+ * Attached by juliangoacher on 19/05/16.
  */
 public class SlideViewController extends ViewController {
 
@@ -53,6 +53,8 @@ public class SlideViewController extends ViewController {
     }
 
     public void setSlideView(ViewController slideView) {
+        removeChildViewController( getSlideView() );
+        addChildViewController( slideView );
         layoutManager.setViewComponent("slide", slideView );
     }
 
@@ -61,6 +63,8 @@ public class SlideViewController extends ViewController {
     }
 
     public void setMainView(ViewController mainView) {
+        removeChildViewController( getMainView() );
+        addChildViewController( mainView );
         layoutManager.setViewComponent("main", mainView );
     }
 

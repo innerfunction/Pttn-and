@@ -18,7 +18,7 @@ import com.innerfunction.q.Q;
 /**
  * An interface to be implemented by classes providing HTTP authentication related functionality.
  *
- * Created by juliangoacher on 09/07/16.
+ * Attached by juliangoacher on 09/07/16.
  */
 public interface AuthenticationDelegate {
 

@@ -20,7 +20,7 @@ import java.util.Map;
  * Supports a factory class style which uses a parameterized, partial base configuration which
  * is extended with a configuration provided by the container to yield the full object configuration.
  *
- * Created by juliangoacher on 29/03/16.
+ * Attached by juliangoacher on 29/03/16.
  */
 public class IOCObjectFactoryBase<T> implements IOCObjectFactory {
 

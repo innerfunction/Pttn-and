@@ -31,7 +31,7 @@ import java.util.Map;
  * This scheme is useful only in very particular cases, e.g. where the default resolved representation
  * isn't what is actually needed.
  *
- * Created by juliangoacher on 26/03/16.
+ * Attached by juliangoacher on 26/03/16.
  */
 public class ReprScheme implements URIScheme {
 

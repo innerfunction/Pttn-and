@@ -11,7 +11,7 @@ import com.innerfunction.pttn.Property;
 import java.util.Map;
 
 /**
- * Created by juliangoacher on 22/07/16.
+ * Attached by juliangoacher on 22/07/16.
  */
 public class ManifestMetaData {
 

@@ -38,7 +38,7 @@ import com.nakardo.atableview.view.ATableViewCell.ATableViewCellStyle;
 /**
  * A factory class for generating table view cell instances.
  *
- * Created by juliangoacher on 05/05/16.
+ * Attached by juliangoacher on 05/05/16.
  */
 public class TableViewCellFactory implements IOCContextAware {
 
@@ -53,13 +53,13 @@ public class TableViewCellFactory implements IOCContextAware {
         ATableViewCell decorateCell(ATableViewCell cell, ValueMap data, TableViewCellFactory factory);
     }
 
-    private TableViewFragment parent;
+    private TableViewController parent;
     private TableData tableData;
 
     private CellDecorator decorator;
 
     /** The cell display style. */
-    private String style;
+    private String style = "Style1";
     /** The default main text colour. */
     private int textColor = Color.BLACK;
     /** The default text colour for a selected cell. */
@@ -100,7 +100,7 @@ public class TableViewCellFactory implements IOCContextAware {
         this.pixelRatio = context.getResources().getDisplayMetrics().density;
     }
 
-    public void setParent(TableViewFragment parent) {
+    public void setParent(TableViewController parent) {
         this.parent = parent;
     }
 
@@ -213,22 +213,24 @@ public class TableViewCellFactory implements IOCContextAware {
         cell.setBackgroundColor( rowData.getColor("backgroundColor", backgroundColor ) );
 
         String imageName = rowData.getString("image");
+        Drawable image = null;
+        if( imageName != null ) {
+            Number imageHeight = rowData.getNumber( "imageHeight", this.imageHeight );
+            if( imageHeight == null ) {
+                imageHeight = rowData.getNumber( "height", height );
+            }
+            if( imageHeight.intValue() == 0 ) {
+                imageHeight = DefaultImageHeight;
+            }
+            Number imageWidth = rowData.getNumber( "imageWidth", this.imageWidth );
+            if( imageWidth.intValue() == 0 ) {
+                imageHeight = DefaultImageWidth;
+            }
 
-        Number imageHeight = rowData.getNumber("imageHeight", this.imageHeight );
-        if( imageHeight == null ) {
-            imageHeight = rowData.getNumber("height", height );
-        }
-        if( imageHeight.intValue() == 0 ) {
-            imageHeight = DefaultImageHeight;
-        }
-        Number imageWidth =  rowData.getNumber("imageWidth", this.imageWidth );
-        if( imageWidth.intValue() == 0 ) {
-            imageHeight = DefaultImageWidth;
+            float radius = imageHeight.floatValue() * pixelRatio * 4;
+            image = tableData.loadRoundedImage( imageName, radius );
         }
 
-        float radius = imageHeight.floatValue() * pixelRatio * 4;
-
-        Drawable image = tableData.loadRoundedImage( imageName, radius );
         if( image != null ) {
 
             imageWidth = convertToRealPixels( imageWidth );

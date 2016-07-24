@@ -25,7 +25,7 @@ import java.lang.reflect.Field;
 /**
  * A view for displaying web content.
  *
- * Created by juliangoacher on 19/05/16.
+ * Attached by juliangoacher on 19/05/16.
  */
 public class WebViewController extends ViewController {
 

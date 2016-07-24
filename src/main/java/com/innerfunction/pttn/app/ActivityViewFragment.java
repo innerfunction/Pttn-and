@@ -17,7 +17,7 @@ package com.innerfunction.pttn.app;
  * An interface to be implemented by view fragments which handle certain callbacks from the parent
  * activity.
  *
- * Created by juliangoacher on 04/05/16.
+ * Attached by juliangoacher on 04/05/16.
  */
 public interface ActivityViewFragment {
 

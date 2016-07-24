@@ -27,7 +27,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Created by juliangoacher on 28/04/16.
+ * Attached by juliangoacher on 28/04/16.
  */
 public class LayoutManager {
 

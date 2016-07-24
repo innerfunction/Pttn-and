@@ -16,7 +16,7 @@ package com.innerfunction.pttn;
 /**
  * An interface for routing messages to named targets.
  * Components which contain addressable message targets should implement this interface.
- * Created by juliangoacher on 29/03/16.
+ * Attached by juliangoacher on 29/03/16.
  */
 public interface MessageRouter {
 

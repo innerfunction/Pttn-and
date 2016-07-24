@@ -17,7 +17,7 @@ import java.util.List;
 
 /**
  * An interface for de-referencing compound URIs to their referenced resources or values.
- * Created by juliangoacher on 25/03/16.
+ * Attached by juliangoacher on 25/03/16.
  */
 public interface URIHandler {
 

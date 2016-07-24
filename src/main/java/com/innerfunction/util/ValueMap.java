@@ -17,7 +17,7 @@ import java.util.Map;
 
 /**
  * A wrapper for a Map instance, providing standard type-specific value accessors.
- * Created by juliangoacher on 05/05/16.
+ * Attached by juliangoacher on 05/05/16.
  */
 public class ValueMap {
 

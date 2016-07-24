@@ -43,7 +43,7 @@ import com.nakardo.atableview.view.ATableViewCell;
 
 /**
  * A configurable table view component.
- * Created by juliangoacher on 05/05/16.
+ * Attached by juliangoacher on 05/05/16.
  * @deprecated
  */
 public class TableViewFragment extends ViewFragment implements IOCContainerAware {

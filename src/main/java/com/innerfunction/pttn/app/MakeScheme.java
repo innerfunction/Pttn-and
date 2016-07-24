@@ -14,7 +14,7 @@ import java.util.Map;
  * the makes map. Make configurations can be parameterized, with parameter values provided
  * via the make: URI's parameters.
  *
- * Created by juliangoacher on 30/03/16.
+ * Attached by juliangoacher on 30/03/16.
  */
 public class MakeScheme implements URIScheme {
 

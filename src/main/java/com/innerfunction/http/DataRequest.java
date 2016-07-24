@@ -23,7 +23,7 @@ import java.util.Arrays;
  * An HTTP data request.
  * The data payload in the server response should be small enough to fit in memory.
  *
- * Created by juliangoacher on 09/07/16.
+ * Attached by juliangoacher on 09/07/16.
  */
 public class DataRequest extends Request {
 

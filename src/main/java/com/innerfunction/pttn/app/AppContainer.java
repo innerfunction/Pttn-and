@@ -47,7 +47,7 @@ import java.util.UUID;
 /**
  * An IOC container encapsulating an app's UI and functionality.
  *
- * Created by juliangoacher on 30/03/16.
+ * Attached by juliangoacher on 30/03/16.
  */
 public class AppContainer extends Container {
 

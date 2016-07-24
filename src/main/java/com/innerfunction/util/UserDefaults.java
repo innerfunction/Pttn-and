@@ -23,7 +23,7 @@ import java.util.Map;
 /**
  * A wrapper around a SharedPreferences instance.
  * Named after NSUserDefaults.
- * Created by juliangoacher on 08/07/16.
+ * Attached by juliangoacher on 08/07/16.
  */
 public class UserDefaults {
 

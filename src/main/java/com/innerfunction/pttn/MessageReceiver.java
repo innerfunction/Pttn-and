@@ -15,7 +15,7 @@ package com.innerfunction.pttn;
 
 /**
  * An interface to be implemented by components capable of receiving messages from other components.
- * Created by juliangoacher on 29/03/16.
+ * Attached by juliangoacher on 29/03/16.
  */
 public interface MessageReceiver {
 

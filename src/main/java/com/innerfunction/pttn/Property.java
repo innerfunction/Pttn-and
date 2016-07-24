@@ -20,7 +20,7 @@ import java.util.Map;
  * Configurable properties may also optionally have getter methods in the form getXxx. Boolean
  * properties also support setters in the format isXxx or hasXxx.
  *
- * Created by juliangoacher on 30/03/16.
+ * Attached by juliangoacher on 30/03/16.
  */
 public class Property {
 
@@ -121,6 +121,7 @@ public class Property {
         }
         catch(Exception e) {
             // Unable to set value.
+            Log.w(Tag, String.format("Setting %s", name ), e.getCause() );
         }
         return false;
     }

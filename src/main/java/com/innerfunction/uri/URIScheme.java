@@ -17,7 +17,7 @@ import java.util.Map;
 
 /**
  * An interface implemented by classes which handle URIs in a particular URI scheme.
- * Created by juliangoacher on 25/03/16.
+ * Attached by juliangoacher on 25/03/16.
  */
 public interface URIScheme {
 

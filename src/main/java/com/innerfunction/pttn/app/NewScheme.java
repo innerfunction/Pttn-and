@@ -13,7 +13,7 @@ import java.util.Map;
  * part specified the type or class name of the object to be instantiated. Dependency injection
  * is then performed using the URI's parameters as configuration values.
  *
- * Created by juliangoacher on 30/03/16.
+ * Attached by juliangoacher on 30/03/16.
  */
 public class NewScheme implements URIScheme {
 

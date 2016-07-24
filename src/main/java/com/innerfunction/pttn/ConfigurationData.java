@@ -15,7 +15,7 @@ package com.innerfunction.pttn;
 
 /**
  * An interface providing basic access to configuration data.
- * Created by juliangoacher on 29/03/16.
+ * Attached by juliangoacher on 29/03/16.
  */
 public interface ConfigurationData {
 

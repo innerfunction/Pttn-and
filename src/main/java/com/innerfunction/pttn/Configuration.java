@@ -178,8 +178,11 @@ public class Configuration {
         }
     }
 
-    /** Get the config data. */
-    public Map<String,Object> getData() {
+    /** Get the raw configuration data. */
+    public Object getData() {
+        if( data instanceof ListBackedMap ) {
+            return ((ListBackedMap)data).getList();
+        }
         return data;
     }
 

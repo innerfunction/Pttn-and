@@ -9,7 +9,7 @@ import com.innerfunction.pttn.R;
 /**
  * A basic activity type for displaying a splashscreen before the main app UI loads.
  *
- * Created by juliangoacher on 12/07/16.
+ * Attached by juliangoacher on 12/07/16.
  */
 public class SplashScreenActivity extends Activity {
 

@@ -15,7 +15,7 @@ package com.innerfunction.uri;
 
 /**
  * An interface implemented by URI scheme handlers which also support relative resource URIs.
- * Created by juliangoacher on 25/03/16.
+ * Attached by juliangoacher on 25/03/16.
  */
 public interface RelativeURIScheme extends URIScheme {
 
