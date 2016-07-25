@@ -87,6 +87,10 @@ public class LayoutManager {
         this.viewComponents = viewComponents;
     }
 
+    public void addViewComponent(String name, Object component) {
+        viewComponents.put( name, component );
+    }
+
     public Map<String,Object> getViewComponents() {
         return viewComponents;
     }

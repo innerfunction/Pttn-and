@@ -29,7 +29,7 @@ import com.innerfunction.pttn.R;
  *
  * Attached by juliangoacher on 19/05/16.
  */
-public class ViewControllerActivity extends PttnActivity<ViewController> {
+public class ViewControllerActivity extends PttnActivity<ViewController> implements Chrome {
 
     /**
      * The currently displayed view controller.
@@ -112,4 +112,13 @@ public class ViewControllerActivity extends PttnActivity<ViewController> {
         this.viewController = viewController;
     }
 
+    @Override
+    public void hideTitleBar(boolean hide) {
+        // TODO
+    }
+
+    @Override
+    public void setTitle(String title) {
+        // TODO
+    }
 }

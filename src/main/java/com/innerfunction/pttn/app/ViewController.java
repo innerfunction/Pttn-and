@@ -55,6 +55,8 @@ public class ViewController extends FrameLayout implements MessageReceiver, Mess
     protected LayoutManager layoutManager;
     /** The activity the view is attached to. */
     private Activity activity;
+    /** The app's UI chrome. */
+    private Chrome chrome;
     /** The view's view - i.e. the thing it displays and controls. */
     private View view;
     /** The view controller's parent view controller, if any. */
@@ -183,15 +185,20 @@ public class ViewController extends FrameLayout implements MessageReceiver, Mess
 
     public void onAttach(Activity activity) {
         this.activity = activity;
+        if( activity instanceof Chrome ) {
+            this.chrome = (Chrome)activity;
+        }
+        else {
+            this.chrome = new ActivityChrome( activity );
+        }
         this.view = onCreateView( activity );
         for( ViewController child : childViewControllers ) {
             child.onAttach( activity );
         }
         // TODO Should this only apply for the top-most view controller?
         // TODO If so, is this the bast place to put the code?
-        if( hideTitleBar ) {
-            activity.getActionBar().hide();
-        }
+        chrome.hideTitleBar( hideTitleBar );
+        chrome.setTitle( title );
         changeState( State.Attached );
     }
 
@@ -321,8 +328,8 @@ public class ViewController extends FrameLayout implements MessageReceiver, Mess
 
     public void setTitle(String title) {
         this.title = title;
-        if( title != null ) {
-            activity.getActionBar().setTitle( title );
+        if( chrome != null ) {
+            chrome.setTitle( title );
         }
     }
 
@@ -347,11 +354,23 @@ public class ViewController extends FrameLayout implements MessageReceiver, Mess
     }
 
     public void setViewComponents(Map<String,Object> components) {
+        for( Object component : components.values() ) {
+            if( component instanceof ViewController ) {
+                addChildViewController( (ViewController)component );
+            }
+        }
         layoutManager.setViewComponents( components );
     }
 
     public Map<String,Object> getViewComponents() {
         return layoutManager.getViewComponents();
+    }
+
+    public void addViewComponent(String name, Object component) {
+        if( component instanceof ViewController ) {
+            addChildViewController( (ViewController)component );
+        }
+        layoutManager.addViewComponent( name, component );
     }
 
     public Activity getActivity() {
