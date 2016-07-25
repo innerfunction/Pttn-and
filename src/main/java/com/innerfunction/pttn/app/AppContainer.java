@@ -23,6 +23,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.View;
 
 import com.innerfunction.pttn.Configuration;
 import com.innerfunction.pttn.Container;
@@ -386,7 +387,7 @@ public class AppContainer extends Container {
                     Object messageObj = uriHandler.dereference( uri );
                     if( !(messageObj instanceof Message) ) {
                         // Automatically promote views to 'show' messages.
-                        if( messageObj instanceof Fragment ) {
+                        if( messageObj instanceof View || messageObj instanceof Fragment ) {
                             Map<String, Object> params = new HashMap<>();
                             params.put("view", messageObj );
                             messageObj = new Message("show", params );
@@ -451,10 +452,10 @@ public class AppContainer extends Container {
                 // Message does have target info so looking for a message router.
                 routed = ((MessageRouter)target).routeMessage( message, sender );
             }
-            if (!routed) {
+            if( !routed ) {
                 // Message not routed, so try moving up the view hierarchy.
                 if( target instanceof ViewController ) {
-                    // TODO
+                    target = ((ViewController)target).getParentViewController();
                 }
                 else if( target instanceof Fragment ) {
                     // If target is a fragment then bubble the message up through the fragment

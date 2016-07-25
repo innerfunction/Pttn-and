@@ -100,6 +100,22 @@ public class SlideViewController extends ViewController {
     }
 
     @Override
+    public boolean onBackPressed() {
+        // If drawer is open then close drawer.
+        if( drawerLayout.isDrawerOpen( slidePosition ) ) {
+            closeDrawer();
+            return false;
+        }
+        // Else if main view then delegate to it.
+        ViewController mainView = getMainView();
+        if( mainView != null ) {
+            return mainView.onBackPressed();
+        }
+        // Else don't process back button.
+        return true;
+    }
+
+    @Override
     public boolean routeMessage(Message message, Object sender) {
         boolean routed = false;
         if( message.hasTarget("slide") ) {

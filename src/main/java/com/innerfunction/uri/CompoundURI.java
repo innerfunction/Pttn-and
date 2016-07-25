@@ -103,11 +103,13 @@ public class CompoundURI {
         this.name = ast.name;
         this.fragment = ast.fragment;
         this.format = ast.format;
-        for( ASTNode param_ast : ast.parameters ) {
-            String paramName = param_ast.param_name;
-            if( paramName != null ) {
-                CompoundURI paramValue = new CompoundURI( param_ast );
-                parameters.put( paramName, paramValue );
+        if( ast.parameters != null ) {
+            for( ASTNode param_ast : ast.parameters ) {
+                String paramName = param_ast.param_name;
+                if( paramName != null ) {
+                    CompoundURI paramValue = new CompoundURI( param_ast );
+                    parameters.put( paramName, paramValue );
+                }
             }
         }
     }

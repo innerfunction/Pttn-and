@@ -139,13 +139,11 @@ public class NavigationViewController extends ViewController {
         this.views.clear();
         // Add all new views to the controller and stack.
         for( ViewController view : newViews ) {
-            view.setVisibility( INVISIBLE );
             addChildViewController( view );
             views.push( view );
         }
-        // Ensure that the top view is visible and matches this view's state.
+        // Ensure that the top view matches this view's state.
         topView = views.getTopView();
-        topView.setVisibility( VISIBLE );
         topView.changeState( getState() );
     }
 
@@ -154,8 +152,7 @@ public class NavigationViewController extends ViewController {
         if( Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP ) {
             TransitionManager.beginDelayedTransition( layout, NavigateForwardTransition );
         }
-        // Hide and pause the current top view.
-        topView.setVisibility( INVISIBLE );
+        // Pause the current top view.
         topView.changeState( State.Paused );
         // Add the new view and change to current state.
         addChildViewController( newView );
@@ -177,7 +174,6 @@ public class NavigationViewController extends ViewController {
             removeChildViewController( poppedView );
             // Resume the next view.
             topView = views.getTopView();
-            topView.setVisibility( VISIBLE );
             topView.changeState( getState() );
         }
         return poppedView;
@@ -200,7 +196,6 @@ public class NavigationViewController extends ViewController {
             }
             // The root view is now the top view...
             topView = views.getTopView();
-            topView.setVisibility( VISIBLE );
             topView.changeState( getState() );
             // Remove discarded items from the navigation stack.
             views.trim( 1 );
@@ -235,8 +230,8 @@ public class NavigationViewController extends ViewController {
     public boolean receiveMessage(Message message, Object sender) {
         if( message.hasName("show") ) {
             Object view = message.getParameter("view");
-            if( view instanceof Fragment ) {
-                if("reset".equals( message.getParameter("navigation") ) ) {
+            if( view instanceof ViewController ) {
+                if( "reset".equals( message.getParameter("navigation") ) ) {
                     setViews( Arrays.asList( (ViewController)view ) );
                 }
                 else {

@@ -151,13 +151,16 @@ public class Configuration {
      */
     private void initialize() {
         this.r = androidContext.getResources();
-        // Search the configuration data for any parameter values, and move any found to a separate map.
+        // Search the configuration data for any parameter values, add any found to a separate map.
         Map<String,Object> params = new HashMap<>();
         for( String key : data.keySet() ) {
             if( key.startsWith("$") ) {
                 params.put( key, data.get( key ) );
-                data.remove( key );
             }
+        }
+        // Remove parameter values from the data map.
+        for( String key : params.keySet() ) {
+            data.remove( key );
         }
         // Add param values to the context.
         if( params.size() > 0 ) {

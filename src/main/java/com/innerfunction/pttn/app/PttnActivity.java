@@ -80,6 +80,7 @@ public abstract class PttnActivity<T> extends AppCompatActivity {
                 Log.e( Tag, String.format( "View instance for %s is not the correct type", viewUUID ) );
             }
         }
+
     }
 
     @Override

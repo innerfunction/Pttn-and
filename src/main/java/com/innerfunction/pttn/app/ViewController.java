@@ -221,6 +221,7 @@ public class ViewController extends FrameLayout implements MessageReceiver, Mess
     protected void addChildViewController(ViewController child) {
         if( !childViewControllers.contains( child ) ) {
             childViewControllers.add( child );
+            child.parentViewController = this;
             if( activity != null ) {
                 child.onAttach( activity );
             }
@@ -229,7 +230,9 @@ public class ViewController extends FrameLayout implements MessageReceiver, Mess
 
     protected void removeChildViewController(ViewController child) {
         if( child != null ) {
+            child.changeState( State.Stopped );
             childViewControllers.remove( child );
+            child.parentViewController = null;
         }
     }
 
