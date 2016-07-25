@@ -18,6 +18,7 @@ import android.util.Log;
 
 import com.innerfunction.uri.Resource;
 import com.innerfunction.uri.StandardURIHandler;
+import com.innerfunction.util.Property;
 import com.innerfunction.util.TypeConversions;
 
 import java.lang.reflect.Constructor;

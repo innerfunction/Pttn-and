@@ -62,6 +62,11 @@ public class TableData {
         }
     };
 
+    /** Interface for wrapping table data filter predicates. */
+    public interface FilterPredicate {
+        boolean testRow(Map row);
+    }
+
     /** The table data. May represent either grouped or non-grouped data. */
     private List data;
     /** The visible table data, i.e. after a filter has been applied. */
@@ -279,11 +284,6 @@ public class TableData {
             }
         }
         return size;
-    }
-
-    /** Interface for wrapping table data filter predicates. */
-    public interface FilterPredicate {
-        boolean testRow(Map row);
     }
 
     @SuppressWarnings("unchecked")

@@ -114,7 +114,14 @@ public class TableViewController extends ViewController implements IOCContainerA
         super.onCreateView( activity );
         ATableViewStyle style = "Grouped".equals( tableStyle ) ? ATableViewStyle.Grouped : ATableViewStyle.Plain;
         tableView = new ATableView( style, activity );
-        tableView.setDataSource( new ATableViewDataSource() {
+        tableView.setDataSource( makeDataSource() );
+        tableView.setDelegate( makeDelegate() );
+        addView( tableView );
+        return tableView;
+    }
+
+    protected ATableViewDataSource makeDataSource() {
+        return new ATableViewDataSource() {
             @Override
             public int numberOfSectionsInTableView(com.nakardo.atableview.view.ATableView tableView) {
                 return tableData.getSectionCount();
@@ -132,8 +139,11 @@ public class TableViewController extends ViewController implements IOCContainerA
                 TableViewCellFactory factory = getCellFactoryForIndexPath( indexPath );
                 return factory.resolveCellForTable( tableView, indexPath, this );
             }
-        });
-        tableView.setDelegate( new ATableViewDelegate() {
+        };
+    }
+
+    protected ATableViewDelegate makeDelegate() {
+        return new ATableViewDelegate() {
             @Override
             public void didSelectRowAtIndexPath(com.nakardo.atableview.view.ATableView tableView, NSIndexPath indexPath) {
                 ValueMap rowData = tableData.getRowDataForIndexPath( indexPath );
@@ -148,9 +158,7 @@ public class TableViewController extends ViewController implements IOCContainerA
                 TableViewCellFactory factory = getCellFactoryForIndexPath( indexPath );
                 return factory.heightForRowAtIndexPath( indexPath ).intValue();
             }
-        } );
-        addView( tableView );
-        return tableView;
+        };
     }
 
     @Override

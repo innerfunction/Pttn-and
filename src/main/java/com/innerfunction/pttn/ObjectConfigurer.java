@@ -18,6 +18,8 @@ import android.graphics.drawable.Drawable;
 import android.util.Log;
 import android.util.LruCache;
 
+import com.innerfunction.util.Property;
+
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 

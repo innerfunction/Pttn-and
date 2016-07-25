@@ -104,7 +104,13 @@ public class KeyPath {
                 }
             }
             else {
-                value = null;
+                // Try using reflection to read a value from the object.
+                Map<String,Property> properties = Property.getPropertiesForObject( value );
+                Property property = properties.get( keys[i] );
+                if( property != null ) {
+                    value = property.get( value );
+                }
+                else value = null;
             }
             if( modifier != null ) {
                 value = modifier.modifyValue( keys[i], value, context );

@@ -64,6 +64,8 @@ public class StandardURIHandler implements URIHandler {
         this.schemeHandlers = handler.schemeHandlers;
         this.assets = handler.assets;
         this.schemeContexts = Maps.extend( handler.schemeContexts, uri.getScheme(), uri );
+        this.formats = handler.formats;
+        this.aliases = handler.aliases;
     }
 
     /**

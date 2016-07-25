@@ -11,7 +11,7 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License
-package com.innerfunction.pttn;
+package com.innerfunction.util;
 
 import android.util.Log;
 import android.util.LruCache;
@@ -51,10 +51,13 @@ public class Property {
     /**
      * Create a new property.
      * @param baseName  The capitalized property name, without a get or set prefix; e.g. PropName.
-     * @param methods   A map of all accessible methods defined for the associated class, keyed
-     *                  by method name.
+     * @param setters   A map of all accessible setter methods defined for the associated class,
+     *                  keyed by method name.
+     * @param getters   A map of all accessible getter methods defined for the associated class,
+     *                  keyed by method name. Note that not all setters are required to have
+     *                  getters; getters without a corresponding setter are ignored.
      */
-    private Property(String baseName, Map<String,Method> methods) {
+    private Property(String baseName, Map<String,Method> setters, Map<String,Method> getters) {
         // PROFILING NOTE The string operations in this method - up to 5 separate strings are
         // constructed - incur a significant CPU overhead, so a single string builder is used to
         // generate them all.
@@ -66,17 +69,17 @@ public class Property {
         StringBuilder sb = new StringBuilder();
         sb.append("set");
         sb.append( baseName );
-        this.setter = methods.get( sb.toString() );
+        this.setter = setters.get( sb.toString() );
         this.type = setter.getParameterTypes()[0];
         // Try to find a getter.
         sb.replace( 0, 1, "g"); // e.g. [s]etXxx -> [g]etXxx
-        getter = methods.get( sb.toString() );
+        getter = getters.get( sb.toString() );
         if( getter == null && type == Boolean.class ) {
             sb.replace( 0, 3, "is"); // e.g. [get]Xxx -> [is]Xxx
-            getter = methods.get( sb.toString() );
+            getter = getters.get( sb.toString() );
             if( getter == null ) {
                 sb.replace( 0, 2, "has"); // e.g. [is]Xxx -> [has]Xxx
-                getter = methods.get( sb.toString() );
+                getter = getters.get( sb.toString() );
                 sb.delete( 0, 3 ); // remove 'has'
             }
             else sb.delete( 0, 2 ); // remove 'is'
@@ -178,8 +181,10 @@ public class Property {
         if( properties == null ) {
             // Cache miss.
             Log.d( Tag, String.format("getPropertiesForObject(%s) cache miss", objClass.getCanonicalName()));
-            // Build a map of all the class' methods, and a list of property base names.
-            Map<String, Method> methods = new HashMap<>();
+            // Build a map of all the class' setter & getter methods, and a list of property base
+            // names.
+            Map<String, Method> setters = new HashMap<>();
+            Map<String, Method> getters = new HashMap<>();
             List<String> baseNames = new ArrayList<>();
 
             // Extract public setter methods from the class. The following implementation avoids
@@ -193,13 +198,24 @@ public class Property {
                     if( Modifier.isPublic( modifiers ) && !Modifier.isStatic( modifiers ) ) {
                         Class[] paramTypes = method.getParameterTypes();
                         String methodName = method.getName();
-                        // We're only interested in setters taking one argument.
+                        // We're only interested in setters taking one argument
                         if( paramTypes.length == 1 && methodName.startsWith("set") ) {
                             // Only add this method if not previously added (implying that the
                             // method is overridden in a subclass).
-                            if( !methods.containsKey( methodName ) ) {
+                            if( !setters.containsKey( methodName ) ) {
                                 baseNames.add( methodName.substring( 3 ) );
-                                methods.put( methodName, method );
+                                setters.put( methodName, method );
+                            }
+                        }
+                        // Else build a map of potential getters.
+                        else if( paramTypes.length == 0
+                            && (methodName.startsWith("get")
+                            ||  methodName.startsWith("is")
+                            ||  methodName.startsWith("has")) ) {
+                            // Only add this method if not previously added (implying that the
+                            // method is overridden in a subclass).
+                            if( !getters.containsKey( methodName ) ) {
+                                getters.put( methodName, method );
                             }
                         }
                     }
@@ -224,7 +240,7 @@ public class Property {
             // Generate a map of properties.
             properties = new HashMap<>();
             for( String baseName : baseNames ) {
-                Property property = new Property( baseName, methods );
+                Property property = new Property( baseName, setters, getters );
                 properties.put( property.name, property );
             }
             // Add result to cache.

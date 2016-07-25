@@ -19,7 +19,7 @@ import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.util.Log;
 
-import com.innerfunction.pttn.Property;
+import com.innerfunction.util.Property;
 
 import java.util.Map;
 
