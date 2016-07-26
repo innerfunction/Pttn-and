@@ -18,8 +18,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
@@ -346,7 +348,7 @@ public class Configuration {
                         configValue.root = configValue;
                         configValue.uriHandler = valueRsc.getURIHandler();
                     }
-                    value = configValue;
+                    value = configValue.normalize();
                 }
                 // Else the value can't be resolved to a configuration; return null if a
                 // configuration representation was required; keep the resolved value for
@@ -665,13 +667,12 @@ public class Configuration {
     public Configuration configurationWithKeysExcluded(String... keys) {
         Map<String,Object> data = new HashMap<>();
         // Copy non-excluded keys to the new configuration's data.
+        Set<String> excludedKeys = new HashSet<>();
+        Collections.addAll( excludedKeys, keys );
         for( String key : this.data.keySet() ) {
-            for( String excludedKey : keys ) {
-                if( key.equals( excludedKey ) ) {
-                    continue;
-                }
+            if( !excludedKeys.contains( key ) ) {
+                data.put( key, this.data.get( key ) );
             }
-            data.put( key, this.data.get( key ) );
         }
         // Create and return the new configuration.
         return new Configuration( data, this );

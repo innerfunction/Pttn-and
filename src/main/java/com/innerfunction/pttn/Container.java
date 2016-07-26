@@ -240,7 +240,7 @@ public class Container implements ConfigurationData, Service, MessageReceiver, M
         String className = types.getValueAsString( typeName );
         if( className == null ) {
             if( !quiet ) {
-                Log.e( Tag, String.format( "No classname found for type %s", typeName ) );
+                Log.e( Tag, String.format("No classname found for type %s", typeName ) );
             }
             return null;
         }
