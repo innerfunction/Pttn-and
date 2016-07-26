@@ -13,8 +13,10 @@
 // limitations under the License
 package com.innerfunction.pttn;
 
+import android.content.Context;
 import android.util.Log;
 
+import java.lang.reflect.Constructor;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -39,7 +41,18 @@ public class IOCProxyLookup {
         }
 
         /** Instantiate a new proxy instance. */
-        public IOCProxy instantiateProxy() {
+        public IOCProxy instantiateProxy(Context context) {
+            // First check for a constructor accepting a Context arg.
+            try {
+                Constructor constructor = proxyClass.getConstructor( Context.class );
+                return (IOCProxy)constructor.newInstance( context );
+            }
+            catch(NoSuchMethodException e) {
+            }
+            catch(Exception e) {
+                Log.w( Tag, "Error instantiating proxy instance with Context", e );
+            }
+            // Otherwise try instantiating proxy with a no-args constructor.
             try {
                 return (IOCProxy)proxyClass.newInstance();
             }
@@ -54,11 +67,21 @@ public class IOCProxyLookup {
          * @param value An in-place value.
          */
         public IOCProxy instantiateProxyWithValue(Object value) {
-            IOCProxy proxy = instantiateProxy();
-            if( proxy != null ) {
-                proxy.initializeWithValue( value );
+            try {
+                // Try to find a single-arg constructor accepting value as its argument.
+                Constructor<?>[] constructors = proxyClass.getConstructors();
+                Class<?> valueClass = value.getClass();
+                for( Constructor<?> constructor : constructors ) {
+                    Class<?>[] paramTypes = constructor.getParameterTypes();
+                    if( paramTypes.length == 1 && paramTypes[0].isAssignableFrom( valueClass ) ) {
+                        return (IOCProxy)constructor.newInstance( value );
+                    }
+                }
             }
-            return proxy;
+            catch(Exception e) {
+                Log.e( Tag, "Error instantiating proxy instance", e );
+            }
+            return null;
         }
     }
 

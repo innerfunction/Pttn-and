@@ -256,7 +256,7 @@ public class Container implements ConfigurationData, Service, MessageReceiver, M
         // If config proxy available for classname then instantiate proxy instead of new instance.
         IOCProxyLookup.Entry proxyEntry = IOCProxyLookup.lookupConfigurationProxyForClassName( className );
         if( proxyEntry != null ) {
-            return proxyEntry.instantiateProxy();
+            return proxyEntry.instantiateProxy( androidContext );
         }
         // Otherwise continue with class instantiation.
         try {

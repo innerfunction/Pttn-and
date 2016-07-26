@@ -613,13 +613,15 @@ public class ObjectConfigurer {
      * Provides a Map based interface for configuring List instances.
      */
     static class ListIOCProxy extends ListBackedMap implements IOCProxy {
-        @Override
-        public void initializeWithValue(Object value) {
-            if( value instanceof List ) {
-                List list = (List)value;
-                for( int i = 0; i < list.size(); i++ ) {
-                    put( Integer.toString( i ), list.get( i ) );
-                }
+
+        public ListIOCProxy() {
+            super();
+        }
+
+        public ListIOCProxy(List value) {
+            List list = (List)value;
+            for( int i = 0; i < list.size(); i++ ) {
+                put( Integer.toString( i ), list.get( i ) );
             }
         }
         @Override
@@ -634,14 +636,16 @@ public class ObjectConfigurer {
      * in this case, a HashMap) from a generic Map property type declaration.
      */
     static class MapIOCProxy extends HashMap implements IOCProxy {
-        @Override
-        public void initializeWithValue(Object value) {
+
+        public MapIOCProxy() {
+            super();
+        }
+
+        public MapIOCProxy(Map value) {
             // This method won't be called in normal operation (it's only used for in-place values,
             // and if an object already has an in-place map instance then there's no need to
             // bootstrap a concrete instance).
-            if( value instanceof Map ) {
-                putAll( (Map)value );
-            }
+            putAll( value );
         }
         @Override
         public Object unwrapValue() {

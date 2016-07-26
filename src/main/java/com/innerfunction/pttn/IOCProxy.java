@@ -19,20 +19,19 @@ package com.innerfunction.pttn;
  * another class. They are useful for providing standardized configuration APIs which are
  * consistent across platforms; or for providing simplified configuration interfaces for
  * otherwise difficult to configure objects.
- * Configuration proxy classes should be registered using the Container's
- * registerConfigurationProxy method.
+ *
+ * Proxies in general should support instantiation both with or without a proxied value. In the
+ * second case, it is the responsibility of the proxy to instantiate the value which will be
+ * returned by the unwrapValue() method.
+ *
+ * Proxies should declare a constructor with a single argument which can accept the value being
+ * proxied. Proxies should also declare either a no-args constructor, or a constructor accepting
+ * a Context object, for when there is no proxied value.
+ *
+ * Configuration proxy classes should be registered using the Container's registerConfigurationProxy
+ * method.
  */
 public interface IOCProxy {
-
-    /**
-     * Initialize the proxy with a wrapped value.
-     * This method will be called by the container when configuring an in-place value (i.e. a
-     * value already on the object instance before dependency injection starts).
-     * Support for this method is optional, depending on the particularities of the class being
-     * proxied, but in general most proxies should support two modes of operation; (1) where the
-     * value being proxied is new, and (2) where the value being proxied is in-place.
-     */
-    void initializeWithValue(Object value);
 
     /**
      * Unwrap the proxied value.
