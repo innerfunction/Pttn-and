@@ -155,13 +155,13 @@ public class ObjectConfigurer {
             break;
         case Number:
             Number number = configuration.getValueAsNumber( propName );
-            if( propType == Integer.class ) {
+            if( propType == int.class || propType == Integer.class ) {
                 value = number.intValue();
             }
-            else if( propType == Float.class ) {
+            else if( propType == float.class || propType == Float.class ) {
                 value = number.floatValue();
             }
-            else if( propType == Double.class ) {
+            else if( propType == double.class || propType == Double.class ) {
                 value = number.doubleValue();
             }
             else {
@@ -177,14 +177,11 @@ public class ObjectConfigurer {
         case Drawable:
             value = configuration.getValueAsImage( propName );
             break;
-        case Color:
-            value = configuration.getValueAsColor( propName );
-            break;
         case Configuration:
             value = configuration.getValueAsConfiguration( propName );
             break;
         case JSONData:
-            // Properties which require raw JSON data need to be declared using the JSONObject
+            // Properties which require raw JSON should be declared using the JSONObject
             // or JSONArray types, as appropriate. This is intended as an optimization -
             // particularly when initializing a property with a large-ish data set - as
             // the configurer will not attempt to further process the configuration data.
@@ -347,9 +344,21 @@ public class ObjectConfigurer {
             // getPropertyInfo() also handles setting of member items when object is a
             // collection.
             Class<?> propType = properties.getPropertyType( propName );
-            if( propType != null && propType.isAssignableFrom( value.getClass() ) ) {
-                // Standard object property reference.
-                properties.setPropertyValue( propName, value );
+            if( propType != null ) {
+                boolean isAssignableNumeric = false;
+                // Class.isAssignableFrom won't work between primitive numeric values and their
+                // class equivalents (e.g. int.class.isAssignableFrom( Integer.class ) returns
+                // false); however, auto-unboxing will be performed when the setter method is
+                // invoked, so here just need to explicitly check for Integer -> int and similar
+                // assignments.
+                if( value instanceof Number ) {
+                    isAssignableNumeric
+                        = (propType == int.class || propType == float.class || propType == double.class);
+                }
+                if( propType.isAssignableFrom( value.getClass() ) || isAssignableNumeric ) {
+                    // Standard object property reference.
+                    properties.setPropertyValue( propName, value );
+                }
             }
         }
         return value;
@@ -406,7 +415,7 @@ public class ObjectConfigurer {
     static final LruCache<Class,StandardTypes> StandardTypesByClass = new LruCache<>( 50 );
 
     /** Enumeration of standard configuration types. */
-    public enum StandardTypes { Boolean, Number, String, Date, Drawable, Color, Configuration, JSONData, Other };
+    public enum StandardTypes { Boolean, Number, String, Date, Drawable, Configuration, JSONData, Other };
 
     /**
      * Get the standard type value for a class.
@@ -427,7 +436,10 @@ public class ObjectConfigurer {
             else if( clss.isAssignableFrom( Boolean.class ) ) {
                 stdType = StandardTypes.Boolean;
             }
-            else if( clss.isAssignableFrom( Number.class ) ) {
+            else if( Number.class.isAssignableFrom( clss )
+                || clss == int.class
+                || clss == double.class
+                || clss == float.class) {
                 stdType = StandardTypes.Number;
             }
             else if( clss.isAssignableFrom( String.class ) ) {
@@ -438,9 +450,6 @@ public class ObjectConfigurer {
             }
             else if( clss.isAssignableFrom( Drawable.class ) ) {
                 stdType = StandardTypes.Drawable;
-            }
-            else if( clss.isAssignableFrom( Color.class ) ) {
-                stdType = StandardTypes.Color;
             }
             else if( clss.isAssignableFrom( Configuration.class ) ) {
                 stdType = StandardTypes.Configuration;

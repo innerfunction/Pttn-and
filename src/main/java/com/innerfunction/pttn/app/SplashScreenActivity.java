@@ -81,7 +81,7 @@ public class SplashScreenActivity extends Activity {
                 if( appContainer != null && appContainer.isRunning() ) {
                     appContainer.showRootView();
                 }
-                else {
+                else if( !appContainer.isStartFailure() ) {
                     // App container not fully started yet, reschedule the task to try again after
                     // a small additional delay.
                     new Handler().postDelayed( this, 250 );

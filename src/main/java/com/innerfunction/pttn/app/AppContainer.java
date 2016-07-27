@@ -88,6 +88,8 @@ public class AppContainer extends Container {
      * PttnActivity) then this will be null.
      */
     private PttnActivity currentActivity;
+    /** A flag indicating a start failure. */
+    private boolean startFailure;
 
     public AppContainer(Context context) {
         super( context, StandardURIHandler.getInstance( context ) );
@@ -130,53 +132,59 @@ public class AppContainer extends Container {
      * Load the app configuration.
      */
     public void loadConfiguration(Object configSource) {
-        Configuration configuration = null;
-        if( configSource instanceof Configuration ) {
-            // Configuration source is already a configuration.
-            configuration = (Configuration)configSource;
-        }
-        else {
-            // Test if config source specifies a URI.
-            CompoundURI uri = null;
-            if( configSource instanceof CompoundURI ) {
-                uri = (CompoundURI)configSource;
-            }
-            else if( configSource instanceof String ) {
-                try {
-                    uri = CompoundURI.parse( (String)configSource );
-                }
-                catch(URISyntaxException e) {
-                    Log.e( Tag, "Error parsing app container configuration URI", e );
-                    return;
-                }
-            }
-            Object configData = null;
-            if( uri != null ) {
-                // If a configuration source URI has been resolved then attempt loading the
-                // configuration from the URI.
-                Log.i( Tag, String.format("Attempting to load app container configuration from %s", uri ) );
-                configData = uriHandler.dereference( uri );
+        try {
+            Configuration configuration = null;
+            if( configSource instanceof Configuration ) {
+                // Configuration source is already a configuration.
+                configuration = (Configuration)configSource;
             }
             else {
-                configData = configSource;
+                // Test if config source specifies a URI.
+                CompoundURI uri = null;
+                if( configSource instanceof CompoundURI ) {
+                    uri = (CompoundURI)configSource;
+                }
+                else if( configSource instanceof String ) {
+                    try {
+                        uri = CompoundURI.parse( (String)configSource );
+                    }
+                    catch(URISyntaxException e) {
+                        Log.e( Tag, "Error parsing app container configuration URI", e );
+                        return;
+                    }
+                }
+                Object configData = null;
+                if( uri != null ) {
+                    // If a configuration source URI has been resolved then attempt loading the
+                    // configuration from the URI.
+                    Log.i( Tag, String.format( "Attempting to load app container configuration from %s", uri ) );
+                    configData = uriHandler.dereference( uri );
+                }
+                else {
+                    configData = configSource;
+                }
+                // Create configuration from data.
+                if( configData instanceof Resource ) {
+                    configuration = makeConfiguration( configData );
+                    // Use the configuration's URI handler instead from this point on, to ensure
+                    // relative URI's resolve properly and also so that additional URI schemes added
+                    // to this container are available within the configuration.
+                    uriHandler = (StandardURIHandler)configuration.getURIHandler();
+                }
+                else {
+                    configuration = makeConfiguration( configSource );
+                }
             }
-            // Create configuration from data.
-            if( configData instanceof Resource ) {
-                configuration = makeConfiguration( configData );
-                // Use the configuration's URI handler instead from this point on, to ensure
-                // relative URI's resolve properly and also so that additional URI schemes added
-                // to this container are available within the configuration.
-                uriHandler = (StandardURIHandler)configuration.getURIHandler();
+            if( configuration != null ) {
+                configureWith( configuration );
             }
             else {
-                configuration = makeConfiguration( configSource );
+                Log.w( Tag, String.format( "Unable to resolve configuration from %s", configSource ) );
             }
         }
-        if( configuration != null ) {
-            configureWith( configuration );
-        }
-        else {
-            Log.w( Tag, String.format("Unable to resolve configuration from %s", configSource ) );
+        catch(RuntimeException e) {
+            startFailure = true;
+            throw e;
         }
     }
 
@@ -324,6 +332,22 @@ public class AppContainer extends Container {
     public void clearCurrentActivity(PttnActivity activity) {
         if( currentActivity == activity ) {
             currentActivity = null;
+        }
+    }
+
+    /** Test whether there was a failure during container start. */
+    public boolean isStartFailure() {
+        return startFailure;
+    }
+
+    @Override
+    public void startService() {
+        try {
+            super.startService();
+        }
+        catch(RuntimeException e) {
+            startFailure = true;
+            throw e;
         }
     }
 

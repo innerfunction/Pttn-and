@@ -104,6 +104,20 @@ public class TypeConversions {
         if( value instanceof Number ) {
             result = (Number)value;
         }
+        else if( value != null ) {
+            // Try converting value to a string, then parsing the string as a number.
+            String strValue = value.toString();
+            // Assume any string starting with # is a #RRGGBB format value. (Note that Android
+            // doesn't have a proper Color type, so this is necessary to parse color values
+            // in a configuration).
+            if( strValue.startsWith("#") ) {
+                result = Color.parseColor( strValue );
+            }
+            else try {
+                result = Float.parseFloat( strValue );
+            }
+            catch(NumberFormatException e) {}
+        }
         return result;
     }
 

@@ -362,6 +362,9 @@ public class Configuration {
             if( value instanceof Resource ) {
                 value = ((Resource)value).asRepresentation( representation.toString() );
             }
+            else {
+                value = conversions.asRepresentation( value, representation.toString() );
+            }
         }
         return value;
     }
