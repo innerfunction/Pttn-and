@@ -27,9 +27,11 @@ import android.view.View;
 
 import com.innerfunction.pttn.Configuration;
 import com.innerfunction.pttn.Container;
+import com.innerfunction.pttn.IOCProxyLookup;
 import com.innerfunction.pttn.Message;
 import com.innerfunction.pttn.MessageReceiver;
 import com.innerfunction.pttn.MessageRouter;
+import com.innerfunction.pttn.ui.TextViewIOCProxy;
 import com.innerfunction.uri.CompoundURI;
 import com.innerfunction.uri.Resource;
 import com.innerfunction.uri.StandardURIHandler;
@@ -621,6 +623,12 @@ public class AppContainer extends Container {
 
     public static AppContainer getAppContainer() {
         return Instance;
+    }
+
+    static {
+        // Register standard configuration proxies.
+        // TODO: Is there a better place to put this code? Creates a two way dependency between pttn.app and pttn.ui.
+        IOCProxyLookup.registerProxyClass( TextViewIOCProxy.class, android.widget.TextView.class );
     }
 
 }

@@ -101,13 +101,22 @@ public class IOCProxyLookup {
      * @param proxyClass        The proxy class.
      * @param proxiedClassName  The classname of the object being proxied.
      */
-    static void registerProxyClass(Class proxyClass, String proxiedClassName) {
+    public static void registerProxyClass(Class proxyClass, String proxiedClassName) {
         if( proxyClass == null ) {
             Proxies.put( proxiedClassName, NullEntry );
         }
         else {
             Proxies.put( proxiedClassName, new Entry( proxyClass ) );
         }
+    }
+
+    /**
+     * Register a new proxy class.
+     * @param proxyClass        The proxy class.
+     * @param proxiedClass      The class being proxied.
+     */
+    public static void registerProxyClass(Class proxyClass, Class proxiedClass) {
+        registerProxyClass( proxyClass, proxiedClass.getCanonicalName() );
     }
 
     /**

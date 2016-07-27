@@ -17,12 +17,16 @@ import android.graphics.Color;
 import android.graphics.Typeface;
 import android.view.Gravity;
 import android.widget.TextView;
+import android.util.DisplayMetrics;
 
 /**
  * An object providing a standard configuration interface for Android text fields.
  * Created by juliangoacher on 26/07/16.
  */
 public class TextStyle {
+
+    // TODO Need to work out whether there's an actual need for this...
+    static final float FontSizeScale = 1.0f;
 
     enum TextAlignment {
 
@@ -49,7 +53,7 @@ public class TextStyle {
     private String fontName = "sans";
     private float fontSize = 12.0f;
     private int textColor = Color.BLACK;
-    private int backgroundColor = Color.WHITE;
+    private int backgroundColor = Color.TRANSPARENT;
     private TextAlignment textAlign = TextAlignment.LEFT;
     private boolean bold;
     private boolean italic;
@@ -95,7 +99,9 @@ public class TextStyle {
         if( typeface != null ) {
             textView.setTypeface( typeface );
         }
-        textView.setTextSize( fontSize );
+        DisplayMetrics dm = textView.getContext().getResources().getDisplayMetrics();
+        float textSize = fontSize * dm.density * FontSizeScale;
+        textView.setTextSize( (int)textSize );
         textView.setTextColor( textColor );
         textView.setBackgroundColor( backgroundColor );
         textView.setGravity( textAlign.gravity );
