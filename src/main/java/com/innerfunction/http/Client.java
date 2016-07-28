@@ -236,6 +236,9 @@ public class Client {
 
     /** Make a HTTP query string using the values in the specified map. */
     static String makeQueryString(Map<String,Object> params) {
+        if( params == null ) {
+            return "";
+        }
         String[] pairs = new String[params.size()];
         int i = 0;
         for( String key : params.keySet() ) {
