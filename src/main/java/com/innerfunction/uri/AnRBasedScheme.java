@@ -55,7 +55,12 @@ public class AnRBasedScheme extends FileBasedScheme {
         if( name.length() > 0 && name.charAt( 0 ) == '/' ) {
             name = name.substring( 1 );
         }
-        int resourceID = getResourceIDForName( name );
+        // The URI fragment can be used to specify one of the standard Android resource types.
+        // This should not normally be necessary (for example, the code can recognize drawable
+        // resource types from the file extension on the resource name) but sometimes is, e.g.
+        // when referencing a shape drawable in an XML file.
+        String resourceType = uri.getFragment();
+        int resourceID = getResourceIDForName( name, resourceType );
         if( resourceID != 0 ) {
             Log.d(LogTag,String.format("Accessing %s from resources using ID %d", name, resourceID ));
             result = new AnRResource.Res( context, resourceID, uri );
@@ -74,21 +79,23 @@ public class AnRBasedScheme extends FileBasedScheme {
     }
 
     /** Get an Android resource ID for a URI name. */
-    public int getResourceIDForName(String name) {
-        String resourceType = "string";
-        // Derive the resource type from the asset name file extension.
-        String ext = Paths.extname( name );
-        if( ".png".equals( ext ) || ".jpg".equals( ext ) || ".jpeg".equals( ext ) ) {
-            resourceType = "drawable";
+    public int getResourceIDForName(String name, String resourceType) {
+        if( resourceType == null ) {
+            // No resource type specified, try deriving from the asset name file extension.
+            String ext = Paths.extname( name );
+            if( ".png".equals( ext ) || ".jpg".equals( ext ) || ".jpeg".equals( ext ) ) {
+                resourceType = "drawable";
+            }
+            else {
+                resourceType = "string";
+            }
         }
-        // TODO: Support other resource types?
-
         // Build a resource ID by -
         // * stripping any file extension from the asset name;
         // * converting / to __
-        // * converting - to kv
+        // * converting - to _
         // This will convert a name like ep/icons/icon-schedule.png to ep__icons__icon_schedule
-        String resourceID = Paths.stripext( name ).replace("/","__").replace("-","_");
+        String resourceID = Paths.stripext( name ).replace("/", "__").replace("-", "_");
         return this.r.getIdentifier( resourceID, resourceType, packageName );
     }
 }

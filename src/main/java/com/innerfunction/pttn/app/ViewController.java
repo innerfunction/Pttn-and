@@ -382,10 +382,14 @@ public class ViewController extends FrameLayout implements MessageReceiver, Mess
     }
 
     public void setBehaviour(ViewControllerBehaviour behaviour) {
-        this.behaviours.add( behaviour );
+        if( behaviour != null ) {
+            this.behaviours.add( behaviour );
+        }
     }
 
     public void addBehaviour(ViewControllerBehaviour behaviour) {
-        this.behaviours.add( behaviour );
+        if( behaviour != null ) {
+            this.behaviours.add( behaviour );
+        }
     }
 }
