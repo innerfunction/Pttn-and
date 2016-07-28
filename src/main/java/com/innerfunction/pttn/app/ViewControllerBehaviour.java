@@ -13,12 +13,14 @@
 // limitations under the License
 package com.innerfunction.pttn.app;
 
+import com.innerfunction.pttn.MessageReceiver;
+
 /**
  * An interface for modifying a view controller's standard behaviour.
  *
  * Attached by juliangoacher on 12/07/16.
  */
-public interface ViewControllerBehaviour {
+public interface ViewControllerBehaviour extends MessageReceiver {
 
     /** Called when the view controller resumes. */
     void onResume(ViewController view);

@@ -52,7 +52,7 @@ public class Response {
     Response(URL url, HttpURLConnection connection, byte[] body) throws IOException {
         this.url = url.toString();
         this.statusCode = connection.getResponseCode();
-        this.contentEncoding = connection.getContentEncoding();
+        this.contentEncoding = readContentEncoding( connection );
         this.contentType = connection.getContentType();
         this.body = body;
     }
@@ -63,6 +63,11 @@ public class Response {
         this.contentEncoding = connection.getContentEncoding();
         this.contentType = connection.getContentType();
         this.dataFile = dataFile;
+    }
+
+    private String readContentEncoding(HttpURLConnection connection) {
+        String encoding = connection.getContentEncoding();
+        return encoding == null ? "utf-8" : encoding;
     }
 
     public String getRequestURL() {

@@ -150,11 +150,13 @@ public class Q {
                     if (thenCallback instanceof Callback) {
                         R thenResult = ((Callback<T, R>) thenCallback).result(result);
                         next.resolve(thenResult);
-                    } else if (thenCallback instanceof AsyncCallback) {
+                    }
+                    else if (thenCallback instanceof AsyncCallback) {
                         Promise<R> thenResult = ((AsyncCallback<T, R>) thenCallback).result(result);
                         next.resolve(thenResult);
                     }
-                } catch (Exception e) {
+                }
+                catch (Exception e) {
                     next.reject(e);
                 }
             }
@@ -228,7 +230,8 @@ public class Q {
                     if (continuation != null) {
                         continuation.resolve(result);
                     }
-                } catch (Exception e) {
+                }
+                catch (Exception e) {
                     reject(e);
                 }
             }
@@ -254,7 +257,8 @@ public class Q {
                                 Promise.this.reject(e);
                             }
                         });
-                } catch (Exception e) {
+                }
+                catch (Exception e) {
                     reject(e);
                 }
             }
@@ -271,7 +275,8 @@ public class Q {
                 error = e;
                 if (errCallback != null) {
                     errCallback.error(e);
-                } else if (continuation != null) {
+                }
+                else if (continuation != null) {
                     continuation.reject(e);
                 }
             }

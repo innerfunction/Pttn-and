@@ -33,6 +33,7 @@ public class DataRequest extends Request {
 
     @Override
     Response readResponse(HttpURLConnection connection) throws IOException {
+        // TODO See http://stackoverflow.com/a/21534175 for how to deal with exception related to 401 response
         BufferedInputStream in = new BufferedInputStream( connection.getInputStream(), DataBufferSize );
         checkForNetworkSignon( connection );
         byte[] body = new byte[0];
@@ -42,7 +43,7 @@ public class DataRequest extends Request {
                 body = Arrays.copyOf( body, offset + in.available() );
             }
             int read = in.read( body, offset, body.length - offset );
-            if( read > -1 ) {
+            if( read > 0 ) {
                 offset += read;
             }
             else break;

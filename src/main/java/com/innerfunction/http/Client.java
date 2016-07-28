@@ -44,6 +44,8 @@ import java.util.Map;
  */
 public class Client {
 
+    static final String Tag = Client.class.getCanonicalName();
+
     // Setup cookie management.
     static final CookieManager CookieManager = new CookieManager();
     static {
@@ -177,7 +179,7 @@ public class Client {
     }
 
     /** The background queue used to asynchronously submit HTTP requests. */
-    static final RunQueue RequestQueue = new RunQueue();
+    static final RunQueue RequestQueue = new RunQueue( Tag );
 
     /**
      * Send an HTTP request.

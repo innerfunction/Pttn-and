@@ -26,8 +26,10 @@ public class RunQueue extends LinkedBlockingQueue<Runnable> {
     static final String Tag = RunQueue.class.getSimpleName();
 
     private Thread runThread;
+    private String name;
 
-    public RunQueue() {
+    public RunQueue(String name) {
+        this.name = String.format("RQ:%s", name );
         runThread = new Thread(new Runnable() {
             public void run() {
                 while( true ) {
@@ -40,7 +42,7 @@ public class RunQueue extends LinkedBlockingQueue<Runnable> {
                     }
                 }
             }
-        });
+        }, this.name );
         runThread.start();
     }
 

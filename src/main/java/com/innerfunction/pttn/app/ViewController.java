@@ -20,6 +20,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewParent;
 import android.widget.FrameLayout;
+import android.widget.Toast;
 
 import com.innerfunction.pttn.Message;
 import com.innerfunction.pttn.MessageReceiver;
@@ -295,7 +296,23 @@ public class ViewController extends FrameLayout implements MessageReceiver, Mess
 
     @Override
     public boolean receiveMessage(Message message, Object sender) {
-        // iOS code iterates over behaviours; and then checks for "toast" and "show-image" messages.
+        // First try passing message to behaviours.
+        for( ViewControllerBehaviour behaviour : behaviours ) {
+            if( behaviour.receiveMessage( message, sender ) ) {
+                return true;
+            }
+        }
+        // Then check for standard messages.
+        if( message.hasName("toast") ) {
+            String toastMessage = (String)message.getParameter("message");
+            if( toastMessage != null ) {
+                Toast.makeText( getActivity(), toastMessage, Toast.LENGTH_LONG ).show();
+            }
+            return true;
+        }
+        if( message.hasName("show-image") ) {
+            // TODO
+        }
         return false;
     }
 

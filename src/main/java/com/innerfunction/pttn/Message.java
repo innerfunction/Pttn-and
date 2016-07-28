@@ -43,8 +43,14 @@ public class Message {
     }
 
     public Message(String target, String name, Map<String,Object> parameters) {
-        this.target = target;
-        this.targetPath = target.split("\\.");
+        if( target == null ) {
+            this.target = "";
+            this.targetPath = new String[0];
+        }
+        else {
+            this.target = target;
+            this.targetPath = target.split( "\\." );
+        }
         this.name = name;
         this.parameters = parameters;
     }

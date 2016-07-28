@@ -252,7 +252,7 @@ public class TableViewController extends ViewController implements IOCContainerA
             tableData.setURIHandler( rsc.getURIHandler() );
         }
         else {
-            Log.w( Tag, String.format("Unable to set content of type %s", content.getClass() ) );
+            Log.w( Tag, String.format("Unable to load content of type %s", content.getClass() ) );
         }
         if( data != null ) {
             data = formatData( data );
