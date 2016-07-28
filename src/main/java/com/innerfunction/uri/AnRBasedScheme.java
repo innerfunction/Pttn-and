@@ -88,7 +88,7 @@ public class AnRBasedScheme extends FileBasedScheme {
         // * converting / to __
         // * converting - to kv
         // This will convert a name like ep/icons/icon-schedule.png to ep__icons__icon_schedule
-        String resourceID = Paths.stripext( name ).replace("/","__").replace("-","kv");
+        String resourceID = Paths.stripext( name ).replace("/","__").replace("-","_");
         return this.r.getIdentifier( resourceID, resourceType, packageName );
     }
 }

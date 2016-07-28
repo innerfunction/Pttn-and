@@ -345,17 +345,18 @@ public class ObjectConfigurer {
             // collection.
             Class<?> propType = properties.getPropertyType( propName );
             if( propType != null ) {
+                boolean isAssignableBoolean = (propType == boolean.class);
                 boolean isAssignableNumeric = false;
                 // Class.isAssignableFrom won't work between primitive numeric values and their
                 // class equivalents (e.g. int.class.isAssignableFrom( Integer.class ) returns
                 // false); however, auto-unboxing will be performed when the setter method is
                 // invoked, so here just need to explicitly check for Integer -> int and similar
                 // assignments.
-                if( value instanceof Number ) {
+                if( !isAssignableBoolean && value instanceof Number ) {
                     isAssignableNumeric
                         = (propType == int.class || propType == float.class || propType == double.class);
                 }
-                if( propType.isAssignableFrom( value.getClass() ) || isAssignableNumeric ) {
+                if( propType.isAssignableFrom( value.getClass() ) || isAssignableBoolean || isAssignableNumeric ) {
                     // Standard object property reference.
                     properties.setPropertyValue( propName, value );
                 }
@@ -433,7 +434,7 @@ public class ObjectConfigurer {
             if( clss == Object.class ) {
                 stdType = StandardTypes.Other;
             }
-            else if( clss.isAssignableFrom( Boolean.class ) ) {
+            else if( clss == boolean.class || clss.isAssignableFrom( Boolean.class ) ) {
                 stdType = StandardTypes.Boolean;
             }
             else if( Number.class.isAssignableFrom( clss )

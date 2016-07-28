@@ -17,16 +17,14 @@ import android.graphics.Color;
 import android.graphics.Typeface;
 import android.view.Gravity;
 import android.widget.TextView;
-import android.util.DisplayMetrics;
+
+import com.innerfunction.util.Display;
 
 /**
  * An object providing a standard configuration interface for Android text fields.
  * Created by juliangoacher on 26/07/16.
  */
 public class TextStyle {
-
-    // TODO Need to work out whether there's an actual need for this...
-    static final float FontSizeScale = 1.0f;
 
     enum TextAlignment {
 
@@ -99,9 +97,7 @@ public class TextStyle {
         if( typeface != null ) {
             textView.setTypeface( typeface );
         }
-        DisplayMetrics dm = textView.getContext().getResources().getDisplayMetrics();
-        float textSize = fontSize * dm.density * FontSizeScale;
-        textView.setTextSize( (int)textSize );
+        textView.setTextSize( Display.ptToPx( fontSize ) );
         textView.setTextColor( textColor );
         textView.setBackgroundColor( backgroundColor );
         textView.setGravity( textAlign.gravity );

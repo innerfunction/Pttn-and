@@ -27,7 +27,7 @@ public class TextViewIOCProxy implements IOCProxy {
 
     enum KeyboardType {
 
-        DEFAULT( InputType.TYPE_CLASS_TEXT ),
+        DEFAULT( InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_NORMAL ),
         WEB( InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_URI ),
         NUMBER( InputType.TYPE_CLASS_NUMBER ),
         PHONE( InputType.TYPE_CLASS_PHONE ),

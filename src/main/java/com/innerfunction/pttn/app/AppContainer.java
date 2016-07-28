@@ -494,10 +494,11 @@ public class AppContainer extends Container {
                         target = parentFragment;
                     }
                 }
-                // TODO Is there a reliable way to bubble a message from a view up to the
-                // TODO containing fragment? This may require (i) knowing the current activity, and
-                // TODO (ii) asking the activity to ask each fragment it contains whether that
-                // TODO fragment contains the specified view.
+                else if( target instanceof View ) {
+                    // If target is a view then move up to the view parent. This may at some point
+                    // resolve to a MessageRouter, MessageReceiver or ViewController.
+                    target = ((View)target).getParent();
+                }
                 else {
                     // Can't process the message any further, so leave the loop.
                     break;
