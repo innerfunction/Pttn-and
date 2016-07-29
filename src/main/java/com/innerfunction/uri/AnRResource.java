@@ -103,7 +103,7 @@ public class AnRResource extends FileResource {
          */
         @Override
         public Drawable asImage() {
-            return r.getDrawable( resourceID, null );
+            return r.getDrawable( resourceID );
         }
 
     }

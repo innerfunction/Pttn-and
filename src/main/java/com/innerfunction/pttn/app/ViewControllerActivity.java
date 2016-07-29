@@ -37,7 +37,6 @@ public class ViewControllerActivity extends PttnActivity<ViewController> impleme
      * The currently displayed view controller.
      */
     private ViewController viewController;
-
     /**
      * The currently displayed modal view controller.
      */
@@ -105,22 +104,27 @@ public class ViewControllerActivity extends PttnActivity<ViewController> impleme
         if( viewController == view ) {
             return;
         }
+        ViewController.State state = ViewController.State.Attached;
         if( viewController != null ) {
+            state = viewController.getState();
             viewController.changeState( ViewController.State.Stopped );
         }
         this.viewController = view;
         viewController.onAttach( this );
         showView( viewController, ViewTransition.Replace );
+        viewController.changeState( state );
     }
 
     public void showModalView(ViewController view) {
         if( modalViewController != null ) {
             dismissModalView();
         }
-        this.viewController.changeState( ViewController.State.Paused );
+        ViewController.State state = viewController.getState();
+        viewController.changeState( ViewController.State.Paused );
         this.modalViewController = view;
         modalViewController.onAttach( this );
         showView( modalViewController, ViewTransition.ShowModal );
+        modalViewController.changeState( state );
     }
 
     public void dismissModalView() {
