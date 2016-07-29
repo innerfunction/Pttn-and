@@ -18,13 +18,13 @@ import android.content.Context;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewParent;
 import android.widget.FrameLayout;
 import android.widget.Toast;
 
 import com.innerfunction.pttn.Message;
 import com.innerfunction.pttn.MessageReceiver;
 import com.innerfunction.pttn.MessageRouter;
+import com.innerfunction.util.KeyPath;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -324,7 +324,8 @@ public class ViewController extends FrameLayout implements MessageReceiver, Mess
         if( targetName != null ) {
             targetView = getViewComponents().get( targetName );
             if( targetView == null ) {
-                // TODO: Try introspecting on current object for property with targetName
+                // Try introspecting on current object for property with targetName.
+                targetView = KeyPath.resolve( targetName, this );
             }
             if( targetView != null ) {
                 message = message.popTargetHead();
@@ -339,6 +340,19 @@ public class ViewController extends FrameLayout implements MessageReceiver, Mess
             }
         }
         return routed;
+    }
+
+    public void showModalView(ViewController view) {
+        if( activity instanceof ViewControllerActivity ) {
+            ((ViewControllerActivity)activity).showModalView( view );
+        }
+        else Log.w( Tag, "Unable to show modal view, not attached to instance of ViewControllerActivity");
+    }
+
+    public void dismissModalView() {
+        if( activity instanceof ViewControllerActivity ) {
+            ((ViewControllerActivity)activity).dismissModalView();
+        }
     }
 
     // Properties
