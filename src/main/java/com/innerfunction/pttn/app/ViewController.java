@@ -290,6 +290,11 @@ public class ViewController extends FrameLayout implements MessageReceiver, Mess
 
     public void onDestroy() {}
 
+    /**
+     * Notify the view of a back button press.
+     * @return true if the button should be processed as normal; false if the view has processed
+     *         the button press.
+     */
     public boolean onBackPressed() {
         return true;
     }

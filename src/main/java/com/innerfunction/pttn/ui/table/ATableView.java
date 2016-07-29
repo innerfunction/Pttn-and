@@ -18,6 +18,7 @@ import android.util.AttributeSet;
 
 import com.nakardo.atableview.foundation.NSIndexPath;
 import com.nakardo.atableview.protocol.ATableViewDataSource;
+import com.nakardo.atableview.protocol.ATableViewDelegate;
 
 /**
  * Additions to the base ATableView class.
@@ -54,6 +55,12 @@ public class ATableView extends com.nakardo.atableview.view.ATableView {
                 ATableView.this.setSelection( row );
             }
         });
+    }
+
+    public void selectRowAtIndexPath(NSIndexPath indexPath) {
+        ATableViewDelegate delegate = getDelegate();
+        delegate.didSelectRowAtIndexPath( this, indexPath );
+        scrollToRowWithIndexPath( indexPath );
     }
 
 }

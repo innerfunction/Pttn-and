@@ -44,7 +44,7 @@ import java.util.Map;
  */
 public class Client {
 
-    static final String Tag = Client.class.getCanonicalName();
+    static final String Tag = "HTTPClient";
 
     // Setup cookie management.
     static final CookieManager CookieManager = new CookieManager();

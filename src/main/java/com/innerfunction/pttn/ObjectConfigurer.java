@@ -299,7 +299,7 @@ public class ObjectConfigurer {
                     // If we get this far without a value then try returning the raw configuration
                     // data.
                     else {
-                        value = valueConfig.getData();
+                        value = valueConfig.getSourceData();
                     }
                 }
             }

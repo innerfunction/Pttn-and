@@ -87,17 +87,19 @@ public class ViewControllerActivity extends PttnActivity<ViewController> impleme
 
     @Override
     public void onBackPressed() {
-        if( viewController == null || viewController.onBackPressed() ) {
+        if( modalViewController != null ) {
+            if( modalViewController.onBackPressed() ) {
+                // Dismiss the modal if the modal view doesn't process the back button itself.
+                dismissModalView();
+            }
+        }
+        else if( viewController == null || viewController.onBackPressed() ) {
             super.onBackPressed();
         }
     }
 
-    // TODO View handling & state transitions in the code below need more thought. Code in
-    // TODO ViewController.onDetachedFromWindow automatically transitions to Destroy, so e.g.
-    // TODO the main view controller in the code below should go to Destroy when the modal is
-    // TODO displayed; should instead (i) only hide the main view controller when showing the
-    // TODO modal; and (ii) have some mechanism to reset destroyed views if/when reattached?
-    
+    // TODO How does a modal affect the action bar?
+
     @Override
     public void showView(ViewController view) {
         if( viewController == view ) {
@@ -107,6 +109,7 @@ public class ViewControllerActivity extends PttnActivity<ViewController> impleme
             viewController.changeState( ViewController.State.Stopped );
         }
         this.viewController = view;
+        viewController.onAttach( this );
         showView( viewController, ViewTransition.Replace );
     }
 
@@ -116,6 +119,7 @@ public class ViewControllerActivity extends PttnActivity<ViewController> impleme
         }
         this.viewController.changeState( ViewController.State.Paused );
         this.modalViewController = view;
+        modalViewController.onAttach( this );
         showView( modalViewController, ViewTransition.ShowModal );
     }
 
@@ -128,7 +132,6 @@ public class ViewControllerActivity extends PttnActivity<ViewController> impleme
     }
 
     protected void showView(ViewController view, ViewTransition viewTransition) {
-        view.onAttach( this );
         // Add the view controller.
         View mainView = findViewById( R.id.main );
         if( mainView instanceof ViewGroup ) {
@@ -157,9 +160,14 @@ public class ViewControllerActivity extends PttnActivity<ViewController> impleme
                 view.setId( mainView.getId() );
                 // Copy layout params from the main view to the view controller.
                 view.setLayoutParams( mainView.getLayoutParams() );
-                // Remove the current view and replace with the new view.
-                parentView.removeView( mainView );
-                parentView.addView( view, idx );
+                // If replacing current view or hiding modal then remove the current view.
+                if( viewTransition == ViewTransition.Replace || viewTransition == ViewTransition.HideModal ) {
+                    parentView.removeView( mainView );
+                }
+                // If not hiding a modal (i.e. reverting to a previous view) then add the new view.
+                if( viewTransition != ViewTransition.HideModal ) {
+                    parentView.addView( view, idx );
+                }
             }
         }
         else {

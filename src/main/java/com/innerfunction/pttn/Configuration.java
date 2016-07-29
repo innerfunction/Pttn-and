@@ -47,6 +47,8 @@ public class Configuration {
 
     /** The configuration data. */
     private Map<String,Object> data;
+    /** The original data which the configuration data was derived from. */
+    private Object sourceData;
     /** The root configuration. Used to resolve # value references. */
     private Configuration root = this;
     /** A URI handler for dereferencing URIs. */
@@ -124,7 +126,7 @@ public class Configuration {
     private Configuration(Context androidContext) {
         this.androidContext = androidContext;
         this.conversions = TypeConversions.instanceForContext( androidContext );
-        this.data = new HashMap<>();
+        setData( new HashMap<>() );
         this.context = new HashMap<>();
     }
 
@@ -142,6 +144,7 @@ public class Configuration {
         this.conversions = parent.conversions;
         this.androidContext = parent.androidContext;
         this.root = parent.root;
+        this.sourceData = parent.sourceData;
         this.data = Maps.mixin( config.data, mixin.data );
         this.context = Maps.mixin( config.context, mixin.context );
         initialize();
@@ -172,6 +175,7 @@ public class Configuration {
 
     /** Set the configuration data. */
     public void setData(Object data) {
+        this.sourceData = data;
         if( data instanceof String ) {
             data = conversions.asJSONData( data );
         }
@@ -185,10 +189,12 @@ public class Configuration {
 
     /** Get the raw configuration data. */
     public Object getData() {
-        if( data instanceof ListBackedMap ) {
-            return ((ListBackedMap)data).getList();
-        }
         return data;
+    }
+
+    /** Get the configuration's source data. */
+    public Object getSourceData() {
+        return sourceData;
     }
 
     /**
@@ -328,14 +334,10 @@ public class Configuration {
                     dataValue = valueRsc.asJSONData();
                 }
 
-                // If value is a list then convert to a list backed map.
-                if( dataValue instanceof List ) {
-                    dataValue = new ListBackedMap( (List)dataValue );
-                }
-
-                // If value isn't already a configuration, but is a map then construct a new
-                // config using its values.
-                if( dataValue instanceof Map && androidContext != null ) {
+                // If value isn't a configuration by this point then promote to a new config,
+                // providing data is one of the supported types.
+                boolean isConfigDataType = (dataValue instanceof Map) || (dataValue instanceof List);
+                if( isConfigDataType && androidContext != null ) {
                     Configuration configValue = new Configuration( dataValue, this );
                     // NOTE When the configuration data is sourced from a resource, then the
                     // following properties need to be different from when the data is found
@@ -656,11 +658,12 @@ public class Configuration {
         }
         // Build a single unified configuration from the hierarchy of configs.
         Configuration result = new Configuration( androidContext ); // Start with an empty config.
-        // Process the hierarchy in reverse order (i.e. from most distant ancestor to current config).
+        // Process hierarchy in reverse order (i.e. from most distant ancestor to current config).
         Collections.reverse( hierarchy );
         for( Configuration config : hierarchy ) {
             result = result.mixinConfiguration( config );
         }
+        result.sourceData = sourceData;
         result.root = root;
         result.uriHandler = uriHandler;
         return result;

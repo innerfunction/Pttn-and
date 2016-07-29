@@ -121,44 +121,74 @@ public class TableViewController extends ViewController implements IOCContainerA
     }
 
     protected ATableViewDataSource makeDataSource() {
+        // The table view data source is a class i.e. not an interface, so has to be subclassed.
+        // This implementation just forwards requests to the same method on the view controller
+        // instance.
         return new ATableViewDataSource() {
             @Override
             public int numberOfSectionsInTableView(com.nakardo.atableview.view.ATableView tableView) {
-                return tableData.getSectionCount();
+                return TableViewController.this.numberOfSectionsInTableView( tableView );
             }
             @Override
             public int numberOfRowsInSection(com.nakardo.atableview.view.ATableView tableView, int section) {
-                return tableData.getSectionSize( section );
+                return TableViewController.this.numberOfRowsInSection( tableView, section );
             }
             @Override
             public String titleForHeaderInSection(com.nakardo.atableview.view.ATableView tableView, int section) {
-                return tableData.getSectionTitle( section );
+                return TableViewController.this.titleForHeaderInSection( tableView, section );
             }
             @Override
             public ATableViewCell cellForRowAtIndexPath(com.nakardo.atableview.view.ATableView tableView, NSIndexPath indexPath) {
-                TableViewCellFactory factory = getCellFactoryForIndexPath( indexPath );
-                return factory.resolveCellForTable( tableView, indexPath, this );
+                return TableViewController.this.cellForRowAtIndexPath( tableView, indexPath );
             }
         };
     }
 
+    public int numberOfSectionsInTableView(com.nakardo.atableview.view.ATableView tableView) {
+        return tableData.getSectionCount();
+    }
+
+    public int numberOfRowsInSection(com.nakardo.atableview.view.ATableView tableView, int section) {
+        return tableData.getSectionSize( section );
+    }
+
+    public String titleForHeaderInSection(com.nakardo.atableview.view.ATableView tableView, int section) {
+        return tableData.getSectionTitle( section );
+    }
+
+    public ATableViewCell cellForRowAtIndexPath(com.nakardo.atableview.view.ATableView tableView, NSIndexPath indexPath) {
+        TableViewCellFactory factory = getCellFactoryForIndexPath( indexPath );
+        return factory.resolveCellForTable( tableView, indexPath, tableView.getDataSource() );
+    }
+
     protected ATableViewDelegate makeDelegate() {
+        // The table view delegate is a class i.e. not an interface, so has to be subclassed.
+        // This implementation just forwards requests to the same method on the view controller
+        // instance.
         return new ATableViewDelegate() {
             @Override
-            public void didSelectRowAtIndexPath(com.nakardo.atableview.view.ATableView tableView, NSIndexPath indexPath) {
-                ValueMap rowData = tableData.getRowDataForIndexPath( indexPath );
-                String action = rowData.getString("action");
-                if( action != null ) {
-                    AppContainer.getAppContainer().postMessage( action, TableViewController.this );
-                    tableData.clearFilter();
-                }
+            public final void didSelectRowAtIndexPath(final com.nakardo.atableview.view.ATableView tableView, final NSIndexPath indexPath) {
+                TableViewController.this.didSelectRowAtIndexPath( tableView, indexPath );
             }
             @Override
-            public int heightForRowAtIndexPath(com.nakardo.atableview.view.ATableView tableView, NSIndexPath indexPath) {
-                TableViewCellFactory factory = getCellFactoryForIndexPath( indexPath );
-                return factory.heightForRowAtIndexPath( indexPath ).intValue();
+            public final int heightForRowAtIndexPath(final com.nakardo.atableview.view.ATableView tableView, final NSIndexPath indexPath) {
+                return TableViewController.this.heightForRowAtIndexPath( tableView, indexPath );
             }
         };
+    }
+
+    public void didSelectRowAtIndexPath(com.nakardo.atableview.view.ATableView tableView, NSIndexPath indexPath) {
+        ValueMap rowData = tableData.getRowDataForIndexPath( indexPath );
+        String action = rowData.getString("action");
+        if( action != null ) {
+            AppContainer.getAppContainer().postMessage( action, TableViewController.this );
+            tableData.clearFilter();
+        }
+    }
+
+    public int heightForRowAtIndexPath(com.nakardo.atableview.view.ATableView tableView, NSIndexPath indexPath) {
+        TableViewCellFactory factory = getCellFactoryForIndexPath( indexPath );
+        return factory.heightForRowAtIndexPath( indexPath ).intValue();
     }
 
     @Override
@@ -178,6 +208,10 @@ public class TableViewController extends ViewController implements IOCContainerA
                 tableView.scrollToRowWithIndexPath( path );
             }
         }
+    }
+
+    public ATableView getTableView() {
+        return tableView;
     }
 
     public void setTableStyle(String style) {

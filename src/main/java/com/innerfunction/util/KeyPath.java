@@ -135,4 +135,23 @@ public class KeyPath {
         Object value = resolve( keyPath, rootValue );
         return value instanceof Number ? ((Number)value).intValue() : null;
     }
+
+    /**
+     * Resolve a key path reference and return its value as a boolean.
+     */
+    public static final boolean getValueAsBoolean(String keyPath, Object rootValue) {
+        Object value = resolve( keyPath, rootValue );
+        if( value instanceof Boolean ) {
+            return (Boolean)value;
+        }
+        if( value instanceof Number ) {
+            // Any non-zero value is true.
+            return ((Number)value).intValue() != 0;
+        }
+        if( value instanceof String ) {
+            return "true".equals( ((String)value).toLowerCase() );
+        }
+        return false;
+    }
+
 }
