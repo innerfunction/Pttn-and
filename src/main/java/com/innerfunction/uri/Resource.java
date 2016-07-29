@@ -71,11 +71,11 @@ public class Resource {
     }
 
     public CompoundURI getURI() {
-        return this.uri;
+        return uri;
     }
 
     public Context getContext() {
-        return this.context;
+        return context;
     }
 
     public Object asDefault() {
@@ -87,31 +87,50 @@ public class Resource {
     }
 
     public String asString() {
-        return getTypeConversions().asString(this.data);
+        return getTypeConversions().asString( data );
     }
 
     public Number asNumber() {
-        return getTypeConversions().asNumber(this.data);
+        return getTypeConversions().asNumber( data );
     }
 
     public Boolean asBoolean() {
-        return getTypeConversions().asBoolean(this.data);
+        return getTypeConversions().asBoolean( data );
     }
 
     public Object asJSONData() {
-        return getTypeConversions().asJSONData(this.data);
+        return getTypeConversions().asJSONData( data );
     }
 
     public URI asURL() {
-        return getTypeConversions().asURL(this.data);
+        return getTypeConversions().asURL( data );
     }
 
     public Drawable asImage() {
-        return getTypeConversions().asImage(this.data);
+        return getTypeConversions().asImage( data );
     }
 
     public Object asRepresentation(String name) {
-        return getTypeConversions().asRepresentation( this.data, name );
+        name = name.toLowerCase();
+        if( "jsondata".equals( name ) || "json".equals( name ) ) {
+            return asJSONData();
+        }
+        else if( "image".equals( name ) ) {
+            return asImage();
+        }
+        else if( "url".equals( name ) ) {
+            return asURL();
+        }
+        else if( "string".equals( name ) ) {
+            return asString();
+        }
+        else if( "number".equals( name ) ) {
+            return asNumber();
+        }
+        else if( "boolean".equals( name ) ) {
+            return asBoolean();
+        }
+        return getTypeConversions().asRepresentation( data, name );
     }
 
     /**
@@ -123,13 +142,13 @@ public class Resource {
 
     @Override
     public int hashCode() {
-        return this.uri != null ? this.uri.hashCode() : super.hashCode();
+        return uri != null ? uri.hashCode() : super.hashCode();
     }
 
     @Override
     public boolean equals(Object obj) {
         // Two resources are equal if they have the same URI.
-        return (obj instanceof Resource) && this.uri != null && this.uri.equals( ((Resource)obj).uri );
+        return (obj instanceof Resource) && uri != null && uri.equals( ((Resource)obj).uri );
     }
 
     @Override

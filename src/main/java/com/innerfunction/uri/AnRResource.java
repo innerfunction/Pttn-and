@@ -82,12 +82,12 @@ public class AnRResource extends FileResource {
 
         @Override
         public InputStream openInputStream() throws IOException {
-            return this.r.openRawResource( this.resourceID );
+            return r.openRawResource( resourceID );
         }
 
         @Override
         public String asString() {
-            return this.r.getString( this.resourceID );
+            return r.getString( resourceID );
         }
 
         @Override
@@ -98,12 +98,12 @@ public class AnRResource extends FileResource {
 
         /**
          * Fetch this resource's image representation.
-         * Assumes that the resource's string representation is the assetName of an image to be found in the
-         * app's resource bundle.
+         * Assumes that the resource's string representation is the assetName of an image to be
+         * found in the app's resource bundle.
          */
         @Override
         public Drawable asImage() {
-            return this.r.getDrawable( this.resourceID, null );
+            return r.getDrawable( resourceID, null );
         }
 
     }
@@ -133,7 +133,7 @@ public class AnRResource extends FileResource {
                 s = Files.readString( openInputStream(), getAssetName() );
             }
             catch(IOException e) {
-                Log.e(LogTag, String.format("Reading string from %s", getAssetName()), e );
+                Log.e( LogTag, String.format("Reading string from %s", getAssetName()), e );
             }
             return s;
         }
@@ -164,10 +164,10 @@ public class AnRResource extends FileResource {
                 image = Drawable.createFromStream( openInputStream(), getAssetName() );
             }
             catch(FileNotFoundException fnfe) {
-                Log.e(LogTag, String.format("Asset not found: %s", getAssetName() ));
+                Log.e( LogTag, String.format("Asset not found: %s", getAssetName() ));
             }
             catch(IOException ioe) {
-                Log.e(LogTag, String.format("Reading image from %s", getAssetName() ), ioe );
+                Log.e( LogTag, String.format("Reading image from %s", getAssetName() ), ioe );
             }
             return image;
         }
