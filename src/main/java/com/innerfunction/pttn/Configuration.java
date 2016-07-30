@@ -681,7 +681,9 @@ public class Configuration {
             }
         }
         // Create and return the new configuration.
-        return new Configuration( data, this );
+        Configuration result = new Configuration( data, this );
+        result.sourceData = sourceData;
+        return result;
     }
 
     /** Modify this configuration with a set of new values. */
