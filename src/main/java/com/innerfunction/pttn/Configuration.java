@@ -43,7 +43,7 @@ public class Configuration {
     static final String Tag = Configuration.class.getSimpleName();
 
     /** Supported configuration data representations. */
-    public enum Representation { Raw, Natural, String, Number, Boolean, Date, Image, URL, Resource, Data, JSONData, Configuration }
+    public enum Representation { Raw, String, Number, Boolean, Date, Image, URL, Resource, Data, JSONData, Configuration }
 
     /** The configuration data. */
     private Map<String,Object> data;
@@ -217,6 +217,48 @@ public class Configuration {
     }
 
     /**
+     * Promote a value to a configuration.
+     * If the value is already a configuration then it is returned unchanged.
+     * JSON data (objects and arrays) can be promoted to full configurations. Resources which
+     * contain JSON data can also be promoted. All other values cannot be promoted and will
+     * return null.
+     */
+    public Configuration asConfiguration(Object value) {
+        // If value is already a configuration then return as is.
+        if( value instanceof Configuration ) {
+            return (Configuration)value;
+        }
+        // Try to resolve configuration data from the argument.
+        Object dataValue = value;
+        Resource valueRsc = null;
+        // If value is a resource then try converting to JSON data.
+        if( value instanceof Resource ) {
+            valueRsc = (Resource)value;
+            dataValue = valueRsc.asJSONData();
+        }
+        // If value isn't a configuration by this point then promote to a new config,
+        // providing data is one of the supported types.
+        boolean isConfigDataType = (dataValue instanceof Map) || (dataValue instanceof List);
+        if( isConfigDataType && androidContext != null ) {
+            Configuration configValue = new Configuration( dataValue, this );
+            // NOTE When the configuration data is sourced from a resource, then the
+            // following properties need to be different from when the data is found
+            // directly in the configuration:
+            // * root: The resource defines a new context for # refs, so root needs to
+            //   point to the new config.
+            // * uriHandler: The resource's handler needs to be used, so that any
+            //   relative URIs within the resource data resolve correctly.
+            if( valueRsc != null ) {
+                configValue.root = configValue;
+                configValue.uriHandler = valueRsc.getURIHandler();
+            }
+            return configValue.normalize();
+        }
+        // Can't resolve a configuration so return null.
+        return null;
+    }
+
+    /**
      * An object used to modify values as key paths are resolved on the configuration.
      */
     private KeyPath.Modifier keyPathModifier = new KeyPath.Modifier<Representation>() {
@@ -312,56 +354,14 @@ public class Configuration {
      */
     public Object getValueAs(String keyPath, Representation representation) {
         Object value = KeyPath.resolve( keyPath, data, representation, keyPathModifier );
-        // Convert the resolved value to the required representation:
-        // * raw: The resolved value is return unchanged.
-        // * configuration: Map or List values will be converted, otherwise null is returned;
-        // * natural: Map or List values will be promoted to configurations, otherwise the
-        //   value is returned unchanged;
+        // If something other than the raw representation is required then try to convert:
+        // * configuration: See the asConfiguration: method;
         // * all other representations are passed to TypeConversions.
-        switch( representation ) {
-        case Raw:
-            break;
-        case Configuration:
-        case Natural:
-            // If value isn't already a configuration then try promoting to one.
-            if( !(value instanceof Configuration) ) {
-
-                Object dataValue = value;
-                Resource valueRsc = null;
-                // If value is a resource then try converting to JSON data.
-                if( value instanceof Resource ) {
-                    valueRsc = (Resource)value;
-                    dataValue = valueRsc.asJSONData();
-                }
-
-                // If value isn't a configuration by this point then promote to a new config,
-                // providing data is one of the supported types.
-                boolean isConfigDataType = (dataValue instanceof Map) || (dataValue instanceof List);
-                if( isConfigDataType && androidContext != null ) {
-                    Configuration configValue = new Configuration( dataValue, this );
-                    // NOTE When the configuration data is sourced from a resource, then the
-                    // following properties need to be different from when the data is found
-                    // directly in the configuration:
-                    // * root: The resource defines a new context for # refs, so root needs to
-                    //   point to the new config.
-                    // * uriHandler: The resource's handler needs to be used, so that any
-                    //   relative URIs within the resource data resolve correctly.
-                    if( valueRsc != null ) {
-                        configValue.root = configValue;
-                        configValue.uriHandler = valueRsc.getURIHandler();
-                    }
-                    value = configValue.normalize();
-                }
-                // Else the value can't be resolved to a configuration; return null if a
-                // configuration representation was required; keep the resolved value for
-                // natural representations.
-                else if( Representation.Configuration == representation ) {
-                    value = null;
-                }
+        if( Representation.Raw != representation ) {
+            if( Representation.Configuration == representation ) {
+                value = asConfiguration( value );
             }
-            break;
-        default:
-            if( value instanceof Resource ) {
+            else if( value instanceof Resource ) {
                 value = ((Resource)value).asRepresentation( representation.toString() );
             }
             else {
@@ -475,38 +475,10 @@ public class Configuration {
         return getValueAs( keyPath, Representation.Raw );
     }
 
-    /**
-     * Get a configuration value in its natural representation.
-     * This will promote JSON data values to full configurations, but return other representations
-     * unchanged.
-     */
-    public Object getNaturalValue(String keyPath) {
-        return getValueAs( keyPath, Representation.Natural );
-    }
-
     /** Return a list of the top-level value names in the configuration data. */
     public List<String> getValueNames() {
         return new ArrayList<>( data.keySet() );
     }
-
-    /**
-     * An enumeration of value types.
-     * The enumerated types correspond to the standard JSON types.
-     */
-//    public enum ValueType { Object, List, String, Number, Boolean, Undefined };
-
-    /** Get the type of a configuration value. */
-    /*
-    public ValueType getValueType(String keyPath) {
-        Object value = getValueAs( keyPath, "json");
-        if( value == null )             return ValueType.Undefined;
-        if( value instanceof Boolean )  return ValueType.Boolean;
-        if( value instanceof Number )   return ValueType.Number;
-        if( value instanceof String )   return ValueType.String;
-        if( value instanceof List )     return ValueType.List;
-        return ValueType.Object;
-    }
-    */
 
     /** Get a configuration value as a configuration object. */
     public Configuration getValueAsConfiguration(String keyPath) {
@@ -533,12 +505,6 @@ public class Configuration {
     @SuppressLint("DefaultLocale")
     public List<Configuration> getValueAsConfigurationList(String keyPath) {
         List<Configuration> result = new ArrayList<>();
-        /*
-        Object value = getRawValue( keyPath );
-        if( !(value instanceof List) ) {
-            value = getValueAsJSONData( keyPath );
-        }
-        */
         Object value = getValueAsJSONData( keyPath );
         if( value instanceof List ) {
             @SuppressWarnings("rawtypes")
@@ -686,20 +652,6 @@ public class Configuration {
         return result;
     }
 
-    /** Modify this configuration with a set of new values. */
-    /*
-    public void modify(Map<String,Object> data) {
-        // Create a copy of the config's data and then add the new data.
-        this.data = new HashMap<String,Object>( this.data );
-        this.data.putAll( data );
-    }
-*/
-    /** Modify a single value in this configuration's data. */
-    /*
-    public void modify(String name, Object value) {
-        modify( Maps.mapWithEntry( name, value ) );
-    }
-*/
     @Override
     public int hashCode() {
         return data.hashCode() ^ context.hashCode();

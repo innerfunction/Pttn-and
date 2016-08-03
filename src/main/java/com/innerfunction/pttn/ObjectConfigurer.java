@@ -188,55 +188,8 @@ public class ObjectConfigurer {
             value = configuration.getValueAsJSONData( propName );
             break;
         }
-    /*
-        // First check for a primitive value. A primitive is any any value whose properties won't
-        // be recursively processed by the configurer. This category includes standard Java
-        // primitives - Number, String etc.; and other useful types such as Date and Drawable.
-        // The base JSON types - object and array - are also included in this category.
-        if( propType != Object.class ) {
-            if( propType.isAssignableFrom( Boolean.class ) ) {
-                value = configuration.getValueAsBoolean( propName );
-            }
-            else if( propType.isAssignableFrom( Number.class ) ) {
-                Number number = configuration.getValueAsNumber( propName );
-                if( propType == Integer.class ) {
-                    value = number.intValue();
-                }
-                else if( propType == Float.class ) {
-                    value = number.floatValue();
-                }
-                else if( propType == Double.class ) {
-                    value = number.doubleValue();
-                }
-                else {
-                    value = number;
-                }
-            }
-            else if( propType.isAssignableFrom( String.class ) ) {
-                value = configuration.getValueAsString( propName );
-            }
-            else if( propType.isAssignableFrom( Date.class ) ) {
-                value = configuration.getValueAsDate( propName );
-            }
-            else if( propType.isAssignableFrom( Drawable.class ) ) {
-                value = configuration.getValueAsImage( propName );
-            }
-            else if( propType.isAssignableFrom( Color.class ) ) {
-                value = configuration.getValueAsColor( propName );
-            }
-            else if( propType.isAssignableFrom( Configuration.class ) ) {
-                value = configuration.getValueAsConfiguration( propName );
-            }
-            else if( propType == JSONObject.class || propType == JSONArray.class ) {
-                // Properties which require raw JSON data need to be declared using the JSONObject
-                // or JSONArray types, as appropriate. This is intended as an optimization -
-                // particularly when initializing a property with a large-ish data set - as
-                // the configurer will not attempt to further process the configuration data.
-                value = configuration.getValueAsJSONData( propName );
-            }
-        }
-        */
-        // If value is still null then the property is not a primitive or JSON data type. Try to
+
+        // If value is still nil then the property is not a primitive or JSON data type. Try to
         // resolve a new value from the supplied configuration.
         // The configuration may contain a mixture of object definitions and fully instantiated
         // objects. The configuration's 'natural' representation will distinguish between these,
@@ -251,13 +204,12 @@ public class ObjectConfigurer {
         // 3. Finally, a value created by attempting to instantiate the declared type of the
         //    property being configured (i.e. the inferred type).
         if( value == null ) {
-            // Fetch the configuration value's natural representation.
-            value = configuration.getNaturalValue( propName );
-            if( value instanceof Configuration ) {
-                // The natural value contains a (potential) object definition, so attempt to
-                // resolve the value from it.
-                Configuration valueConfig = (Configuration)value;
-
+            // Fetch the raw configuration data.
+            Object rawValue = configuration.getRawValue( propName );
+            // Try converting the raw value to a configuration object.
+            Configuration valueConfig = configuration.asConfiguration( rawValue );
+            // If this works the try using it to resolve an actual property value.
+            if( valueConfig != null ) {
                 // Try asking the container to build a new object using the configuration. This
                 // will only work if the configuration contains an instantiation hint (e.g. *type,
                 // *factory etc.) and will return a non-null, fully-configured object if successful.
@@ -296,12 +248,14 @@ public class ObjectConfigurer {
                         // Recursively configure the value.
                         configure( value, memberType, valueConfig, getKeyPath( kpPrefix, propName ) );
                     }
-                    // If we get this far without a value then try returning the raw configuration
-                    // data.
-                    else {
-                        value = valueConfig.getSourceData();
-                    }
                 }
+            }
+            if( value == null ) {
+                // If still no value at this point then the config either contains a realised value,
+                // or the config data can't be used to resolve a new value.
+                // TODO: Some way to convert raw values directly to required object types?
+                // e.g. ValueConversions.convertValueTo( rawValue, propInfo );
+                value = rawValue;
             }
         }
         return value;
