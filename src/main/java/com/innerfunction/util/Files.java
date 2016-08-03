@@ -31,6 +31,7 @@ import org.json.simple.JSONValue;
 import org.json.simple.parser.ParseException;
 
 import android.content.Context;
+import android.media.audiofx.EnvironmentalReverb;
 import android.os.Environment;
 import android.util.Log;
 
@@ -89,8 +90,12 @@ public class Files {
         try {
             byte[] buffer = new byte[16384];
             int read;
-            while( (read = in.read( buffer )) != -1 ) {
-                result.write( buffer, 0, read );
+            while( true ) {
+                read = in.read( buffer, 0, buffer.length );
+                if( read > 0 ) {
+                    result.write( buffer, 0, read );
+                }
+                else break; // End of stream.
             }
         }
         catch(Exception e) {
@@ -309,8 +314,20 @@ public class Files {
 
     /** Get the directory to use for content caching. */
     public static File getCacheDir(Context context) {
-        // TODO: Should instead use getExternalCacheDir?
-        return context.getExternalFilesDir( Environment.DIRECTORY_DOWNLOADS );
+        File cacheDir = context.getExternalCacheDir();
+        if( cacheDir == null ) {
+            cacheDir = context.getCacheDir();
+        }
+        return cacheDir;
+    }
+
+    /** Get the directory to use for app storage. */
+    public static File getStorageDir(Context context) {
+        File storageDir = context.getExternalFilesDir( null );
+        if( storageDir == null ) {
+            storageDir = context.getFilesDir();
+        }
+        return storageDir;
     }
 
     /**
