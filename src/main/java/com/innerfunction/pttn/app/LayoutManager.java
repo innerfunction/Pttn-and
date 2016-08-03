@@ -169,25 +169,19 @@ public class LayoutManager {
 
     public boolean replaceView(String viewID, View newView) {
         boolean ok = false;
-        View currentView = getView( viewID );
-        if( currentView != null ) {
-            ViewGroup parentView = (ViewGroup)currentView.getParent();
-            if( parentView != null ) {
-                int idx = parentView.indexOfChild( currentView );
-                newView.setId( currentView.getId() );
-                // Copy layout params from the current to the new view.
-                newView.setLayoutParams( currentView.getLayoutParams() );
-                // Remove the current view and replace with the new view.
-                parentView.removeView( currentView );
-                parentView.addView( newView, idx );
-                ok = true;
-            }
-            else {
-                Log.w( Tag, "replaceView(): Failed to resolve parent view group");
-            }
+        FrameLayout frame = getViewFrame( viewID );
+        if( frame != null ) {
+            FrameLayout.LayoutParams layoutParams = new FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.MATCH_PARENT,
+                FrameLayout.LayoutParams.MATCH_PARENT
+            );
+            newView.setLayoutParams( layoutParams );
+            frame.removeAllViews();
+            frame.addView( newView );
+            ok = true;
         }
         else {
-            Log.w( Tag, String.format( "View with ID %s not found in layout", viewID ) );
+            Log.w( Tag, String.format("View frame with ID %s not found in layout %s", viewID, layoutName ) );
         }
         return ok;
     }
@@ -202,6 +196,14 @@ public class LayoutManager {
         int id = r.getIdentifier( viewID, "id", packageName );
         // Find the view in the layout.
         return layout.findViewById( id );
+    }
+
+    protected FrameLayout getViewFrame(String viewID) {
+        View view = getView( viewID );
+        if( view instanceof FrameLayout ) {
+            return (FrameLayout)view;
+        }
+        return null;
     }
 
 }

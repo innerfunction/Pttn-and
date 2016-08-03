@@ -305,6 +305,7 @@ public class Configuration {
                 }
                 // Evaluate any string beginning with ? as a string template.
                 if( prefix == '?' ) {
+                    valueStr = valueStr.substring( 1 );
                     valueStr = StringTemplate.render( valueStr, context );
                     // Check for a new prefix.
                     if( valueStr.length() > 1 ) {
