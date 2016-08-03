@@ -33,7 +33,7 @@ public class SlideViewController extends ViewController {
 
     public SlideViewController(Context context) {
         super( context );
-        setLayout("slide_view_layout");
+        setLayoutName("slide_view_layout");
     }
 
     @Override

@@ -381,11 +381,11 @@ public class ViewController extends FrameLayout implements MessageReceiver, Mess
         return backgroundColor;
     }
 
-    public void setLayout(String layout) {
-        layoutManager.setLayoutName( layout );
+    public void setLayoutName(String layoutName) {
+        layoutManager.setLayoutName( layoutName );
     }
 
-    public String getLayout() {
+    public String getLayoutName() {
         return layoutManager.getLayoutName();
     }
 

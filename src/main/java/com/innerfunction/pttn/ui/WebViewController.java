@@ -73,7 +73,7 @@ public class WebViewController extends ViewController {
 
     public WebViewController(Context context) {
         super( context );
-        setLayout("web_view_layout");
+        setLayoutName("web_view_layout");
     }
 
     public void setShowLoadingSpinner(boolean showLoadingSpinner) {
