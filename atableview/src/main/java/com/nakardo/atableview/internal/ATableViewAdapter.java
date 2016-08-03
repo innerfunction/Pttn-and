@@ -530,7 +530,7 @@ public class ATableViewAdapter extends BaseAdapter {
     public View getView(int position, View convertView, ViewGroup parent) {
         boolean isHeaderRow = isHeaderRow(position);
         boolean isFooterRow = isFooterRow(position);
-        
+
         NSIndexPath indexPath = getIndexPath(position);
         if (isHeaderRow || isFooterRow) {
             ATableViewHeaderFooterCell cell = getReusableHeaderFooterCell(convertView, isFooterRow);

@@ -215,7 +215,10 @@ public class ATableView extends ListView {
 	}
 	
 	public void reloadData() {
-		getInternalAdapter().notifyDataSetChanged();
+		// JG change - copied from https://github.com/dmacosta/ATableView/commit/bb42905d893f76f85e0ff6eb05c390f3ada2602b
+		// Local copy of project seems to be a few commits behind - should just copy the lot?
+		setAdapter(new ATableViewAdapter(this));
+		//getInternalAdapter().notifyDataSetChanged();
 		clearSelectedRows();
 	}
 	

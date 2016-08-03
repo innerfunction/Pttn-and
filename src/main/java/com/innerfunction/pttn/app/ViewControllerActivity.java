@@ -20,8 +20,7 @@ import android.transition.Transition;
 import android.transition.TransitionManager;
 import android.util.Log;
 import android.view.Gravity;
-import android.view.View;
-import android.view.ViewGroup;
+import android.widget.FrameLayout;
 
 import com.innerfunction.pttn.R;
 
@@ -34,52 +33,74 @@ import com.innerfunction.pttn.R;
 public class ViewControllerActivity extends PttnActivity<ViewController> implements Chrome {
 
     /**
+     * The layout which contains the activity view.
+     */
+    private FrameLayout viewContainer;
+    /**
      * The currently displayed view controller.
      */
-    private ViewController viewController;
+    private ViewController activeViewController;
     /**
-     * The currently displayed modal view controller.
+     * The main view controller being displayed by this activity.
+     */
+    private ViewController mainViewController;
+    /**
+     * The currently displayed modal view controller, if any.
      */
     private ViewController modalViewController;
-
+    /** A list of the different types of view transition. */
     enum ViewTransition { Replace, ShowModal, HideModal };
+
+    @Override
+    public void setContentView(int viewID) {
+        super.setContentView( viewID );
+        try {
+            this.viewContainer = (FrameLayout)findViewById( R.id.view_container );
+            if( viewContainer == null ) {
+                Log.w(Tag, "View container not found in activity layout");
+            }
+        }
+        catch(ClassCastException e) {
+            Log.w(Tag, "View container in activity layout must be a FrameLayout");
+        }
+    }
 
     @Override
     public void onStart() {
         super.onStart();
-        if( viewController != null ) {
-            viewController.changeState( ViewController.State.Started );
+        if( activeViewController != null ) {
+            activeViewController.changeState( ViewController.State.Started );
         }
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        if( viewController != null ) {
-            viewController.changeState( ViewController.State.Running );
+        if( activeViewController != null ) {
+            activeViewController.changeState( ViewController.State.Running );
         }
     }
 
     @Override
     public void onPause() {
-        if( viewController != null ) {
-            viewController.changeState( ViewController.State.Paused );
+        if( activeViewController != null ) {
+            activeViewController.changeState( ViewController.State.Paused );
         }
         super.onPause();
     }
 
     @Override
     public void onStop() {
-        if( viewController != null ) {
-            viewController.changeState( ViewController.State.Stopped );
+        if( activeViewController != null ) {
+            activeViewController.changeState( ViewController.State.Stopped );
         }
         super.onStop();
     }
 
     @Override
     public void onDestroy() {
-        if( viewController != null ) {
-            viewController.changeState( ViewController.State.Destroyed );
+        if( activeViewController != null ) {
+            activeViewController.changeState( ViewController.State.Destroyed );
         }
         super.onDestroy();
     }
@@ -92,7 +113,7 @@ public class ViewControllerActivity extends PttnActivity<ViewController> impleme
                 dismissModalView();
             }
         }
-        else if( viewController == null || viewController.onBackPressed() ) {
+        else if( activeViewController == null || activeViewController.onBackPressed() ) {
             super.onBackPressed();
         }
     }
@@ -101,26 +122,39 @@ public class ViewControllerActivity extends PttnActivity<ViewController> impleme
 
     @Override
     public void showView(ViewController view) {
-        if( viewController == view ) {
-            return;
-        }
-        ViewController.State state = ViewController.State.Attached;
-        if( viewController != null ) {
-            state = viewController.getState();
-            viewController.changeState( ViewController.State.Stopped );
-        }
-        this.viewController = view;
-        viewController.onAttach( this );
-        showView( viewController, ViewTransition.Replace );
-        viewController.changeState( state );
-    }
-
-    public void showModalView(ViewController view) {
+        // If a modal is visible then dismiss it.
         if( modalViewController != null ) {
             dismissModalView();
         }
-        ViewController.State state = viewController.getState();
-        viewController.changeState( ViewController.State.Paused );
+        // If the view is already the main view then nothing else to do.
+        if( mainViewController == view ) {
+            return;
+        }
+        // Record the current view controller state, stop the current view.
+        ViewController.State state = null;
+        if( mainViewController != null ) {
+            state = mainViewController.getState();
+            mainViewController.changeState( ViewController.State.Stopped );
+        }
+        // Add the new view to the activity.
+        this.mainViewController = view;
+        mainViewController.onAttach( this );
+        showView( mainViewController, ViewTransition.Replace );
+        // Update the new view's state.
+        if( state != null ) {
+            mainViewController.changeState( state );
+        }
+    }
+
+    public void showModalView(ViewController view) {
+        // If a modal is already visible then dismiss it.
+        if( modalViewController != null ) {
+            dismissModalView();
+        }
+        // Record the current view state, pause the current view.
+        ViewController.State state = mainViewController.getState();
+        mainViewController.changeState( ViewController.State.Paused );
+        // Show the new modal view and update its state.
         this.modalViewController = view;
         modalViewController.onAttach( this );
         showView( modalViewController, ViewTransition.ShowModal );
@@ -130,53 +164,53 @@ public class ViewControllerActivity extends PttnActivity<ViewController> impleme
     public void dismissModalView() {
         if( modalViewController != null ) {
             modalViewController.changeState( ViewController.State.Stopped );
-            showView( viewController, ViewTransition.HideModal );
+            showView( mainViewController, ViewTransition.HideModal );
             this.modalViewController = null;
         }
     }
 
     protected void showView(ViewController view, ViewTransition viewTransition) {
-        // Add the view controller.
-        View mainView = findViewById( R.id.main );
-        if( mainView instanceof ViewGroup ) {
-            ViewGroup parentView = (ViewGroup)mainView.getParent();
-            if( parentView != null ) {
-                // Animate transition to the view controller, if the Android version supports it.
-                if( Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP ) {
-                    Transition transition;
-                    switch( viewTransition ) {
-                    case Replace:
-                        transition = new Fade();
-                        break;
-                    case ShowModal:
-                        transition = new Slide( Gravity.TOP );
-                        break;
-                    case HideModal:
-                        transition = new Slide( Gravity.BOTTOM );
-                        break;
-                    default:
-                        transition = new Fade();
-                    }
-                    TransitionManager.beginDelayedTransition( parentView, transition );
-                }
-                // ViewTransition to the view controller.
-                int idx = parentView.indexOfChild( mainView );
-                view.setId( mainView.getId() );
-                // Copy layout params from the main view to the view controller.
-                view.setLayoutParams( mainView.getLayoutParams() );
-                // If replacing current view or hiding modal then remove the current view.
-                if( viewTransition == ViewTransition.Replace || viewTransition == ViewTransition.HideModal ) {
-                    parentView.removeView( mainView );
-                }
-                // If not hiding a modal (i.e. reverting to a previous view) then add the new view.
-                if( viewTransition != ViewTransition.HideModal ) {
-                    parentView.addView( view, idx );
-                }
+        if( viewContainer == null ) {
+            return; // Can't show views if no view container.
+        }
+        // Animate transition to the view controller, if the Android version supports it.
+        if( Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP ) {
+            Transition transition;
+            switch( viewTransition ) {
+            case Replace:
+                transition = new Fade();
+                break;
+            case ShowModal:
+                transition = new Slide( Gravity.TOP );
+                break;
+            case HideModal:
+                transition = new Slide( Gravity.BOTTOM );
+                break;
+            default:
+                transition = new Fade();
             }
+            TransitionManager.beginDelayedTransition( viewContainer, transition );
         }
-        else {
-            Log.w(Tag, "Main view placeholder in activity layout must be instance of ViewGroup");
+        // Create layout params for the view being shown.
+        FrameLayout.LayoutParams layoutParams
+            = new FrameLayout.LayoutParams( FrameLayout.LayoutParams.MATCH_PARENT,
+                                            FrameLayout.LayoutParams.MATCH_PARENT );
+        view.setLayoutParams( layoutParams );
+        // Add / remove views as appropriate.
+        switch( viewTransition ) {
+        case Replace:
+            if( mainViewController != null ) {
+                viewContainer.removeView( mainViewController );
+            }
+            viewContainer.addView( view );
+            break;
+        case ShowModal:
+            viewContainer.addView( view );
+            break;
+        case HideModal:
+            viewContainer.removeView( modalViewController );
         }
+        activeViewController = view;
     }
 
     @Override
