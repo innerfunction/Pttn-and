@@ -29,6 +29,10 @@ public class ValueMap {
         this.typeConversions = typeConversions;
     }
 
+    public Map getValues() {
+        return values;
+    }
+
     public Object resolve(String keyPath) {
         return KeyPath.resolve( keyPath, values );
     }

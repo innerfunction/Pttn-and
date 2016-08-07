@@ -144,7 +144,10 @@ public class NavigationViewController extends ViewController {
         }
         // Ensure that the top view matches this view's state.
         topView = views.getTopView();
-        topView.changeState( getState() );
+        State state = getState();
+        if( state != State.Instantiated && state != State.Destroyed ) {
+            topView.changeState( getState() );
+        }
     }
 
     public void pushView(ViewController newView) {

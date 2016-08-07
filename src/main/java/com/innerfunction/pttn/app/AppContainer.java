@@ -213,6 +213,7 @@ public class AppContainer extends Container {
         nameds.put("globals", globals );
         //nameds.put("locals", locals );
         nameds.put("container", this );
+        nameds.put("app", this );
 
         // Perform default container configuration.
         super.configureWith( configuration );
@@ -247,15 +248,15 @@ public class AppContainer extends Container {
         default:                            density = "hdpi";
         }
         Map<String,Object> platformValues = new HashMap<>();
-        platformValues.put( "name", "and");
-        platformValues.put( "display", density );
-        platformValues.put( "defaultDisplay", "hdpi");
-        platformValues.put( "full", "and-"+density);
-        values.put( "platform", platformValues );
+        platformValues.put("name", "and");
+        platformValues.put("display", density );
+        platformValues.put("defaultDisplay", "hdpi");
+        platformValues.put("full", "and-"+density);
+        values.put("platform", platformValues );
 
-        String mode = configuration.getValueAsString( "mode", "LIVE" );
+        String mode = configuration.getValueAsString("mode", "LIVE" );
         Log.i( Tag, String.format( "Configuration mode: %s", mode ) );
-        values.put( "mode", mode );
+        values.put("mode", mode );
 
         Locale locale = r.getConfiguration().locale;
         // The 'supportedLocales' setting can be used to declare a list of the locales that app assets are
