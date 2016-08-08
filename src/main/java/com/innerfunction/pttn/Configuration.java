@@ -280,7 +280,7 @@ public class Configuration {
                 String valueStr = (String)value;
                 char prefix = 0x0;
                 if( valueStr.length() > 1 ) {
-                    prefix = valueStr.charAt(0);
+                    prefix = valueStr.charAt( 0 );
                 }
                 // First, attempt resolving any context references. If these in turn resolve
                 // to a $ or # prefixed value, then they will be resolved in the following

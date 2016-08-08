@@ -138,6 +138,7 @@ public class ViewController extends FrameLayout implements MessageReceiver, Mess
             break;
         case Paused:
             if( state == State.Attached ) {
+                // TODO Review this - should instead move directly from attached to paused without starting.
                 changeState( State.Started );
             }
             if( state == State.Started || state == State.Running ) {
