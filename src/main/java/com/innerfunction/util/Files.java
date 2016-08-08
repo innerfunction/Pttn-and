@@ -37,13 +37,114 @@ import android.util.Log;
 
 /**
  * Utility methods for reading and writing files and streams.
- * @author juliangoacher
+ * This class provides both a static and instance-based interface. The static API provides a variety
+ * of useful methods for working with files on a standard file system. The instance API provides
+ * alternative implementations of these methods that are able to work with the Android assets
+ * filesystem in addition to standard files. These modified methods will recognize file paths
+ * prefixed with /android_asset/ and forward the call to an appropriate method on the Assets class.
+ * The instance methods will also automatically convert file URLs to path references.
  *
+ * @author juliangoacher
  */
 @SuppressWarnings("deprecation")
 public class Files {
 
     static final String LogTag = "Files";
+
+    private Assets assets;
+
+    public Files(Context context) {
+        this.assets = new Assets( context );
+    }
+
+    /**
+     * Convert a file reference to a path.
+     * @param ref   Either a file URL or a file path.
+     * @return      A file path.
+     */
+    static final String fileRefToPath(final String ref) {
+        if( ref.startsWith("file://") ) {
+            return ref.substring( 7 );
+        }
+        return ref;
+    }
+
+    /**
+     * Test whether a a file path references an Android asset.
+     * Asset references begin with /android_asset/.
+     * @param path  A file path.
+     * @return Returns true if the path is an asset reference.
+     */
+    static final boolean isAssetPath(final String path) {
+        return path.startsWith("/android_asset/");
+    }
+
+    /**
+     * Convert a asset path reference to an asset name.
+     * Strips the leading /android_asset/ from the path.
+     * @param path
+     * @return
+     */
+    static final String assetPathToName(final String path) {
+        return path.substring( 15 );
+    }
+
+    /**
+     * Convert a file reference to a URL.
+     * Plain file paths have file:// prepended (with a leading / added if necessary); File URLs
+     * are returned unchanged.
+     */
+    public static final String fileRefToURL(final String ref) {
+        if( ref.startsWith("file://") ) {
+            return ref;
+        }
+        String pathPrefix =  ref.charAt( 0 ) == '/' ? "" : "/";
+        return String.format("file://%s%s", pathPrefix, ref );
+    }
+
+    /**
+     * Test whether a file reference exists.
+     * @param ref   A file URL or path.
+     * @return Returns true if the file exists.
+     */
+    public boolean fileRefExists(String ref) {
+        String path = fileRefToPath( ref );
+        if( isAssetPath( path ) ) {
+            return assets.assetExists( assetPathToName( path ) );
+        }
+        return Files.fileExists( path );
+    }
+
+    /**
+     * Read a string from a file reference.
+     * @param ref   A file URL or path.
+     * @return Returns the text contents of the file, or null if it can't be read.
+     */
+    public String readStringFromRef(String ref) {
+        String result = null;
+        String path = fileRefToPath( ref );
+        if( isAssetPath( path ) ) {
+            InputStream in = null;
+            try {
+                in = assets.openInputStream( assetPathToName( path ) );
+                result = Files.readString( in, ref );
+            }
+            catch(IOException e) {
+                Log.e( LogTag, String.format("Reading stream %s", ref ), e );
+
+            }
+            finally {
+                try {
+                    in.close();
+                }
+                catch(Exception e) {}
+            }
+        }
+        else {
+            result = Files.readString( path );
+        }
+        return result;
+    }
 
     /** Test whether a file exists at the specified path. */
     public static boolean fileExists(String path) {

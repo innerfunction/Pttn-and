@@ -70,6 +70,11 @@ public class AnRBasedScheme extends FileBasedScheme {
             if( assetName.charAt( 0 ) == '/' ) {
                 assetName = assetName.substring( 1 );
             }
+            // TODO This needs to be reviewed - currently it is a hack to allow the content
+            // TODO container to be configured with a base content path which is an app: URI.
+            if( "url".equals( resourceType ) ) {
+                return "file:///android_asset/"+assetName;
+            }
             if( assets.assetExists( assetName ) ) {
                 // Asset name found at specified location, so return an asset resource.
                 result = new AnRResource.Asset( context, assetName, assets, uri );
