@@ -14,6 +14,7 @@
 package com.innerfunction.uri;
 
 import android.content.Context;
+import android.net.Uri;
 
 import java.util.Map;
 
@@ -34,6 +35,6 @@ public class StringScheme implements URIScheme {
             // The URI name is treated as a string template to be populated with the parameter values.
             value = StringTemplate.render( value, params );
         }
-        return value;
+        return Uri.decode( value );
     }
 }
