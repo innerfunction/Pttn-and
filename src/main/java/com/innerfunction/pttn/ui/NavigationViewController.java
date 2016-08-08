@@ -47,11 +47,16 @@ public class NavigationViewController extends ViewController {
             add( view );
         }
 
-        /** Pop the top view from the stack. */
+        /**
+         * Pop the top view from the stack.
+         * Returns the new top view, i.e. the second last item on the stack before calling this
+         * method; or null if the stack is empty.
+         */
         public ViewController pop() {
             int s = size();
             if( s > 0 ) {
-                return remove( s - 1 );
+                remove( s - 1 );
+                return getTopView();
             }
             return null;
         }
@@ -167,7 +172,8 @@ public class NavigationViewController extends ViewController {
 
     public ViewController popView() {
         ViewController poppedView = null;
-        if( views.size() > 1 ) {
+        int viewCount = views.size();
+        if( viewCount > 1 ) {
             // Remove the current top view.
             poppedView = topView;
             poppedView.changeState( State.Paused );
@@ -176,7 +182,7 @@ public class NavigationViewController extends ViewController {
             }
             removeChildViewController( poppedView );
             // Resume the next view.
-            topView = views.getTopView();
+            topView = views.pop();
             topView.changeState( getState() );
         }
         return poppedView;

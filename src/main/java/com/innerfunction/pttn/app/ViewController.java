@@ -269,12 +269,12 @@ public class ViewController extends FrameLayout implements MessageReceiver, Mess
 */
     @Override
     public void onDetachedFromWindow() {
-        super.onDetachedFromWindow();
-        changeState( State.Destroyed );
         if( parentViewController != null ) {
             parentViewController.removeChildViewController( this );
         }
         parentViewController = null;
+        changeState( State.Destroyed );
+        super.onDetachedFromWindow();
     }
 
     public void onStart() {
