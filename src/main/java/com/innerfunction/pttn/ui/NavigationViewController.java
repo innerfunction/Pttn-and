@@ -26,6 +26,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.innerfunction.pttn.Message;
+import com.innerfunction.pttn.app.Chrome;
 import com.innerfunction.pttn.app.ViewController;
 
 import java.util.ArrayList;
@@ -128,6 +129,17 @@ public class NavigationViewController extends ViewController {
         }
     }
 
+    @Override
+    public void setChrome(Chrome chrome) {
+        super.setChrome( chrome );
+        // This view instance's chrome configuration is disabled; instead, control over the chrome
+        // is delegated to all view controllers on the navigation stack; actual control resides
+        // with the running - i.e. the top - view.
+        for( ViewController view : views ) {
+            view.setChrome( chrome );
+        }
+    }
+
     public void setRootView(ViewController view) {
         setViews( Arrays.asList( view ) );
     }
@@ -218,6 +230,9 @@ public class NavigationViewController extends ViewController {
         super.addChildViewController( child );
         if( layout != null ) {
             layout.addView( child );
+        }
+        if( chrome != null ) {
+            child.setChrome( chrome );
         }
     }
 

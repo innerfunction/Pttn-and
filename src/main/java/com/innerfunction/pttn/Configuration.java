@@ -126,7 +126,7 @@ public class Configuration {
     private Configuration(Context androidContext) {
         this.androidContext = androidContext;
         this.conversions = TypeConversions.instanceForContext( androidContext );
-        setData( new HashMap<>() );
+        setData( null );
         this.context = new HashMap<>();
     }
 
@@ -176,14 +176,21 @@ public class Configuration {
     /** Set the configuration data. */
     public void setData(Object data) {
         this.sourceData = data;
+        if( data == null ) {
+            data = new HashMap<String, Object>();
+        }
         if( data instanceof String ) {
             data = conversions.asJSONData( data );
         }
         if( data instanceof List ) {
-            data = new ListBackedMap( (List)data );
+            // NOTE important to create a copy of the data at this point; it could be configuration
+            // data, and we don't want to rewrite it later.
+            data = new ListBackedMap( new ArrayList( (List)data ) );
         }
         if( data instanceof Map ) {
-            this.data = (Map<String,Object>)data;
+            // NOTE important to create a copy of the data at this point; it could be configuration
+            // data, and we don't want to rewrite it later.
+            this.data = new HashMap( (Map<String,Object>)data );
         }
     }
 

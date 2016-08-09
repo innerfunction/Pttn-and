@@ -159,6 +159,7 @@ public class ViewControllerActivity extends PttnActivity<ViewController> impleme
         }
         // Add the new view to the activity.
         view.onAttach( this );
+        view.setChrome( this );
         showView( view, ViewTransition.Replace );
         this.mainViewController = view;
         // Update the new view's state.

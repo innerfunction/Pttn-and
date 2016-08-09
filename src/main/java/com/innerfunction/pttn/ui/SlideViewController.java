@@ -19,6 +19,7 @@ import android.support.v4.widget.DrawerLayout;
 import android.view.View;
 
 import com.innerfunction.pttn.Message;
+import com.innerfunction.pttn.app.Chrome;
 import com.innerfunction.pttn.app.ViewController;
 
 import static android.support.v4.view.GravityCompat.*;
@@ -34,6 +35,8 @@ public class SlideViewController extends ViewController {
     public SlideViewController(Context context) {
         super( context );
         setLayoutName("slide_view_layout");
+        // This view instance delegates all chrome control to the main view.
+        layoutManager.setChromeDelegateViewID("main");
     }
 
     @Override

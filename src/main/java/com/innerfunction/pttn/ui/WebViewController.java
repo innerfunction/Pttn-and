@@ -53,7 +53,7 @@ public class WebViewController extends ViewController {
     /** An image to be displayed whilst the web view is loading. */
     private Drawable loadingImage;
     /** Flag indicating whether to use the HTML page's title as the view title. */
-    private boolean useHTMLTitle;
+    private boolean useHTMLTitle = true;
     /** The native web view. */
     protected WebView webView;
     /** Flag indicating that external links should be opened within the webview. */

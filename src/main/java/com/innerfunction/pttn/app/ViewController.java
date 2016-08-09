@@ -58,7 +58,7 @@ public class ViewController extends FrameLayout implements MessageReceiver, Mess
     /** The activity the view is attached to. */
     private Activity activity;
     /** The app's UI chrome. */
-    private Chrome chrome;
+    protected Chrome chrome = new ChromeStub();
     /** The view's view - i.e. the thing it displays and controls. */
     private View view;
     /** The view controller's parent view controller, if any. */
@@ -66,15 +66,15 @@ public class ViewController extends FrameLayout implements MessageReceiver, Mess
     /** A list of this controller's child view controllers. */
     private List<ViewController> childViewControllers = new ArrayList<>();
     /** Flag indicating whether to hide the view's title (i.e. action) bar. */
-    private Boolean hideTitleBar;
+    private boolean hideTitleBar = false;
     /** The view's title. */
     private String title;
     /** The view's background colour. */
     private int backgroundColor = Color.TRANSPARENT;
     /** The view's title bar color. */
-    private Integer titleBarColor;
+    private int titleBarColor = Color.TRANSPARENT;
     /** The view's title bar text color. */
-    private Integer titleBarTextColor;
+    private int titleBarTextColor = Color.TRANSPARENT;
     /** A list of view behaviours. */
     private List<ViewControllerBehaviour> behaviours = new ArrayList<>();
 
@@ -192,17 +192,16 @@ public class ViewController extends FrameLayout implements MessageReceiver, Mess
 
     public void onAttach(Activity activity) {
         this.activity = activity;
-        if( activity instanceof Chrome ) {
-            this.chrome = (Chrome)activity;
-        }
-        else {
-            this.chrome = new ChromeStub();
-        }
         this.view = onCreateView( activity );
         for( ViewController child : childViewControllers ) {
             child.onAttach( activity );
         }
         changeState( State.Attached );
+    }
+
+    public void setChrome(Chrome chrome) {
+        this.chrome = chrome;
+        layoutManager.setChrome( chrome );
     }
 
     public View onCreateView(Activity activity) {
@@ -249,26 +248,7 @@ public class ViewController extends FrameLayout implements MessageReceiver, Mess
     protected List<ViewController> getChildViewControllers() {
         return childViewControllers;
     }
-/*
-    TODO Review and confirm that following code isn't needed - it's the responsibility of view
-    TODO controller containers to ensure all children are added to the hierarchy.
-    @Override
-    protected void onAttachedToWindow() {
-        super.onAttachedToWindow();
-        // If no view controller parent already set then try looking for one in the view
-        // hierarchy.
-        if( parentViewController == null ) {
-            ViewParent parent = this;
-            while( (parent = parent.getParent()) != null ) {
-                if( parent instanceof ViewController ) {
-                    this.parentViewController = (ViewController)parent;
-                    parentViewController.addChildViewController( this );
-                    break;
-                }
-            }
-        }
-    }
-*/
+
     @Override
     public void onDetachedFromWindow() {
         if( parentViewController != null ) {
@@ -282,16 +262,12 @@ public class ViewController extends FrameLayout implements MessageReceiver, Mess
     public void onStart() {}
 
     public void onResume() {
-        if( hideTitleBar != null ) {
-            chrome.hideTitleBar( hideTitleBar.booleanValue() );
-        }
-        if( title != null ) {
-            chrome.setTitle( title );
-        }
-        if( titleBarColor != null ) {
+        chrome.hideTitleBar( hideTitleBar );
+        chrome.setTitle( title == null ? "" : title );
+        if( titleBarColor != Color.TRANSPARENT ) {
             chrome.setTitleBarColor( titleBarColor );
         }
-        if( titleBarTextColor != null ) {
+        if( titleBarTextColor != Color.TRANSPARENT ) {
             chrome.setTitleBarTextColor( titleBarTextColor );
         }
     }
