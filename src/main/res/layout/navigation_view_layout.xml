@@ -1,3 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
 // Copyright 2016 InnerFunction Ltd.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -11,26 +13,11 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License
-package com.innerfunction.pttn.app;
+-->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+             android:id="@+id/view_container"
+             android:layout_width="match_parent"
+             android:layout_height="match_parent">
 
-/**
- * An interface providing a view controller with access to the UI surround.
- * This is typically a wrapper for the parent activity.
- *
- * Created by juliangoacher on 25/07/16.
- */
-public interface Chrome {
+</FrameLayout>
 
-    /** Hide (or show) the title bar. */
-    void hideTitleBar(boolean hide);
-
-    /** Set the screen title. */
-    void setTitle(String title);
-
-    /** Set the title bar text color. */
-    void setTitleBarTextColor(int color);
-
-    /** Set the title bar background color. */
-    void setTitleBarColor(int color);
-
-}

@@ -107,7 +107,7 @@ public class NavigationViewController extends ViewController {
 
     public NavigationViewController(Context context) {
         super( context );
-        setLayoutName("view_activity_layout");
+        setLayoutName("navigation_view_layout");
     }
 
     @Override

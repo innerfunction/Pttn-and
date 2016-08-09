@@ -15,6 +15,7 @@ package com.innerfunction.pttn.app;
 
 import android.app.Activity;
 import android.content.Context;
+import android.graphics.Color;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -65,11 +66,15 @@ public class ViewController extends FrameLayout implements MessageReceiver, Mess
     /** A list of this controller's child view controllers. */
     private List<ViewController> childViewControllers = new ArrayList<>();
     /** Flag indicating whether to hide the view's title (i.e. action) bar. */
-    private boolean hideTitleBar;
+    private Boolean hideTitleBar;
     /** The view's title. */
     private String title;
     /** The view's background colour. */
-    private int backgroundColor = -1;
+    private int backgroundColor = Color.TRANSPARENT;
+    /** The view's title bar color. */
+    private Integer titleBarColor;
+    /** The view's title bar text color. */
+    private Integer titleBarTextColor;
     /** A list of view behaviours. */
     private List<ViewControllerBehaviour> behaviours = new ArrayList<>();
 
@@ -191,16 +196,12 @@ public class ViewController extends FrameLayout implements MessageReceiver, Mess
             this.chrome = (Chrome)activity;
         }
         else {
-            this.chrome = new ActivityChrome( activity );
+            this.chrome = new ChromeStub();
         }
         this.view = onCreateView( activity );
         for( ViewController child : childViewControllers ) {
             child.onAttach( activity );
         }
-        // TODO Should this only apply for the top-most view controller?
-        // TODO If so, is this the bast place to put the code?
-        chrome.hideTitleBar( hideTitleBar );
-        chrome.setTitle( title );
         changeState( State.Attached );
     }
 
@@ -209,7 +210,7 @@ public class ViewController extends FrameLayout implements MessageReceiver, Mess
         LayoutInflater inflater = activity.getLayoutInflater();
         View view = layoutManager.inflate( inflater, this );
         if( view != null ) {
-            if( backgroundColor > -1 ) {
+            if( backgroundColor != Color.TRANSPARENT ) {
                 view.setBackgroundColor( backgroundColor );
             }
             // Add the view as (the sole) child of the view controller.
@@ -278,12 +279,22 @@ public class ViewController extends FrameLayout implements MessageReceiver, Mess
         super.onDetachedFromWindow();
     }
 
-    public void onStart() {
-        // Call the title setter so that the action bar is updated.
-        setTitle( this.title );
-    }
+    public void onStart() {}
 
-    public void onResume() {}
+    public void onResume() {
+        if( hideTitleBar != null ) {
+            chrome.hideTitleBar( hideTitleBar.booleanValue() );
+        }
+        if( title != null ) {
+            chrome.setTitle( title );
+        }
+        if( titleBarColor != null ) {
+            chrome.setTitleBarColor( titleBarColor );
+        }
+        if( titleBarTextColor != null ) {
+            chrome.setTitleBarTextColor( titleBarTextColor );
+        }
+    }
 
     public void onPause() {}
 
@@ -380,6 +391,18 @@ public class ViewController extends FrameLayout implements MessageReceiver, Mess
 
     public int getBackgroundColor() {
         return backgroundColor;
+    }
+
+    public void setHideTitleBar(boolean hideTitleBar) {
+        this.hideTitleBar = hideTitleBar;
+    }
+
+    public void setTitleBarColor(int color) {
+        this.titleBarColor = color;
+    }
+
+    public void setTitleBarTextColor(int color) {
+        this.titleBarTextColor = color;
     }
 
     public void setLayoutName(String layoutName) {

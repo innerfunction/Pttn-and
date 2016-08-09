@@ -16,21 +16,22 @@ package com.innerfunction.pttn.app;
 import android.app.Activity;
 
 /**
+ * A stub implementation of the Chrome interface.
+ *
  * Created by juliangoacher on 25/07/16.
  */
-public class ActivityChrome implements Chrome {
-
-    public ActivityChrome(Activity activity) {
-        // TODO
-    }
+public class ChromeStub implements Chrome {
 
     @Override
-    public void hideTitleBar(boolean hide) {
-        // TODO
-    }
+    public void hideTitleBar(boolean hide) {}
 
     @Override
-    public void setTitle(String title) {
-        // TODO
-    }
+    public void setTitle(String title) {}
+
+    @Override
+    public void setTitleBarTextColor(int color) {}
+
+    @Override
+    public void setTitleBarColor(int color) {}
+
 }

@@ -14,12 +14,15 @@
 package com.innerfunction.pttn.app;
 
 import android.os.Build;
+import android.support.v7.app.ActionBar;
+import android.support.v7.widget.Toolbar;
 import android.transition.Fade;
 import android.transition.Slide;
 import android.transition.Transition;
 import android.transition.TransitionManager;
 import android.util.Log;
 import android.view.Gravity;
+import android.view.View;
 import android.widget.FrameLayout;
 
 import com.innerfunction.pttn.R;
@@ -48,6 +51,15 @@ public class ViewControllerActivity extends PttnActivity<ViewController> impleme
      * The currently displayed modal view controller, if any.
      */
     private ViewController modalViewController;
+    /**
+     * The title bar.
+     */
+    private Toolbar titleBar;
+    /**
+     * The title bar's action bar wrapper.
+     */
+    private ActionBar actionBar;
+
     /** A list of the different types of view transition. */
     enum ViewTransition { Replace, ShowModal, HideModal };
 
@@ -58,6 +70,15 @@ public class ViewControllerActivity extends PttnActivity<ViewController> impleme
             this.viewContainer = (FrameLayout)findViewById( R.id.view_container );
             if( viewContainer == null ) {
                 Log.w(Tag, "View container not found in activity layout");
+            }
+
+            this.titleBar = (Toolbar)findViewById( R.id.titlebar );
+            if( titleBar != null ) {
+                setSupportActionBar( titleBar );
+                this.actionBar = getSupportActionBar();
+            }
+            else {
+                Log.w(Tag, "Title bar not found in activity layout");
             }
         }
         catch(ClassCastException e) {
@@ -137,9 +158,9 @@ public class ViewControllerActivity extends PttnActivity<ViewController> impleme
             mainViewController.changeState( ViewController.State.Stopped );
         }
         // Add the new view to the activity.
+        view.onAttach( this );
+        showView( view, ViewTransition.Replace );
         this.mainViewController = view;
-        mainViewController.onAttach( this );
-        showView( mainViewController, ViewTransition.Replace );
         // Update the new view's state.
         if( state != null ) {
             mainViewController.changeState( state );
@@ -215,11 +236,34 @@ public class ViewControllerActivity extends PttnActivity<ViewController> impleme
 
     @Override
     public void hideTitleBar(boolean hide) {
-        // TODO
+        if( actionBar != null ) {
+            if( hide ) {
+                actionBar.hide();
+            }
+            else {
+                actionBar.show();
+            }
+        }
     }
 
     @Override
     public void setTitle(String title) {
-        // TODO
+        if( actionBar != null ) {
+            actionBar.setTitle( title );
+        }
+    }
+
+    @Override
+    public void setTitleBarTextColor(int color) {
+        if( titleBar != null ) {
+            titleBar.setTitleTextColor( color );
+        }
+    }
+
+    @Override
+    public void setTitleBarColor(int color) {
+        if( titleBar != null ) {
+            titleBar.setBackgroundColor( color );
+        }
     }
 }
