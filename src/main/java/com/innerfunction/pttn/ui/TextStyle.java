@@ -87,10 +87,10 @@ public class TextStyle {
     public void applyToTextView(TextView textView) {
         int style = 0;
         if( bold ) {
-            style &= Typeface.BOLD;
+            style |= Typeface.BOLD;
         }
         if( italic ) {
-            style &= Typeface.ITALIC;
+            style |= Typeface.ITALIC;
         }
         // TODO: Do any font name conversions need to be done here?
         Typeface typeface = Typeface.create( fontName, style );
