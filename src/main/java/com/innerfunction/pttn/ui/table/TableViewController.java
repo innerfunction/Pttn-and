@@ -69,6 +69,8 @@ public class TableViewController extends ViewController implements IOCContainerA
     protected int sectionTitleBackgroundColor;
     /** The ID of the selected row. */
     private String selectedID;
+    /** The index of the selected row. */
+    private NSIndexPath selectedIndexPath;
     /** A flag indicating whether the table has a search bar. */
     private boolean hasSearchBar;
     /** The text of a message to display when filtering by favorites. Currently obsolete. */
@@ -202,13 +204,13 @@ public class TableViewController extends ViewController implements IOCContainerA
     @Override
     public void onResume() {
         super.onResume();
-        if( selectedID != null ) {
-            NSIndexPath path = tableData.getIndexPathForFirstRowWithFieldValue( selectedID, "id");
-            if( path != null ) {
-                // NOTE This method is defined in the ATableView subclass belonging to this package,
-                // and selects the row as well as scrolling to it.
-                tableView.scrollToRowWithIndexPath( path );
-            }
+        if( selectedIndexPath == null && selectedID != null ) {
+            selectedIndexPath = tableData.getIndexPathForFirstRowWithFieldValue( selectedID, "id" );
+        }
+        if( selectedIndexPath != null ) {
+            // NOTE This method is defined in the ATableView subclass belonging to this package,
+            // and selects the row as well as scrolling to it.
+            tableView.scrollToRowWithIndexPath( selectedIndexPath );
         }
     }
 
@@ -238,6 +240,12 @@ public class TableViewController extends ViewController implements IOCContainerA
 
     public void setSelectedID(String selectedID) {
         this.selectedID = selectedID;
+        this.selectedIndexPath = null;
+    }
+
+    public void setSelectedIndex(int index) {
+        this.selectedIndexPath = NSIndexPath.indexPathForRowInSection( index, 0 );
+        this.selectedID = null;
     }
 
     public void setHasSearchBar(boolean hasSearchBar) {

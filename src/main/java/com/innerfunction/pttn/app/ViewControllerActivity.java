@@ -182,19 +182,19 @@ public class ViewControllerActivity extends PttnActivity<ViewController> impleme
             dismissModalView();
         }
         // Record the current view state, pause the current view.
-        ViewController.State state = mainViewController.getState();
         mainViewController.changeState( ViewController.State.Paused );
         // Show the new modal view and update its state.
         this.modalViewController = view;
         modalViewController.onAttach( this );
         showView( modalViewController, ViewTransition.ShowModal );
-        modalViewController.changeState( state );
+        modalViewController.changeState( ViewController.State.Running );
     }
 
     public void dismissModalView() {
         if( modalViewController != null ) {
             modalViewController.changeState( ViewController.State.Stopped );
             showView( mainViewController, ViewTransition.HideModal );
+            mainViewController.changeState( ViewController.State.Running );
             this.modalViewController = null;
         }
     }
