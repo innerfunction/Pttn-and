@@ -287,6 +287,10 @@ public class ViewController extends FrameLayout implements MessageReceiver, Mess
         return true;
     }
 
+    public void postMessage(String message) {
+        AppContainer.getAppContainer().postMessage( message, this );
+    }
+
     @Override
     public boolean receiveMessage(Message message, Object sender) {
         // First try passing message to behaviours.
