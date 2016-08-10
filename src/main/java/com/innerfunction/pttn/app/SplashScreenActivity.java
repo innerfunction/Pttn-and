@@ -37,7 +37,7 @@ public class SplashScreenActivity extends Activity {
      *  <meta-data android:name="splashScreenDelay" android:value="1000" />
      *
      */
-    private int splashDelay = 2000;
+    protected int splashDelay = 2000;
     /**
      * The splash-screen layout ID..
      * Defaults to R.layout.splashscreen_layout. Can be configured within the application
@@ -47,7 +47,7 @@ public class SplashScreenActivity extends Activity {
      *  <meta-data android:name="splashScreenLayout" android:resource="@R.layout.xxx" />
      *
      */
-    private int splashScreenLayout = R.layout.splashscreen_layout;
+    protected int splashScreenLayout = R.layout.splashscreen_layout;
 
     public void setSplashDelay(int delay) {
         this.splashDelay = delay;
@@ -80,6 +80,7 @@ public class SplashScreenActivity extends Activity {
                 AppContainer appContainer = AppContainer.getAppContainer();
                 if( appContainer != null && appContainer.isRunning() ) {
                     appContainer.showRootView();
+                    SplashScreenActivity.this.finish();
                 }
                 else if( !appContainer.isStartFailure() ) {
                     // App container not fully started yet, reschedule the task to try again after
