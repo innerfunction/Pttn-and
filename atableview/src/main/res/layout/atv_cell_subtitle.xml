@@ -21,7 +21,8 @@
                 android:id="@+id/imageView"
                 style="@style/Widget.ATableViewCell.ImageView"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="@dimen/atv_cell_content_margin" />
 
             <LinearLayout
                 android:layout_width="0dip"

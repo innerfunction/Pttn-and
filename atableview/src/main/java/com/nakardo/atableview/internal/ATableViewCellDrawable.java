@@ -106,9 +106,12 @@ public class ATableViewCellDrawable extends ShapeDrawable {
 		mRowHeight = rowHeight;
 		
 		// separator.
-		mSeparatorPaint = new Paint(getPaint());
-		mSeparatorPaint.setColor(DrawableUtils.getSeparatorColor(mTableView));
-		
+		// JG edit 1244 Don't draw separators if style is none.
+		if( tableView.getSeparatorStyle() != ATableViewCellSeparatorStyle.None ) {
+			mSeparatorPaint = new Paint( getPaint() );
+			mSeparatorPaint.setColor( DrawableUtils.getSeparatorColor( mTableView ) );
+		}
+
 		// calculate stroke width.
 		mStrokeWidth = DrawableUtils.getStrokeWidth(res);
 		
@@ -205,10 +208,14 @@ public class ATableViewCellDrawable extends ShapeDrawable {
 		canvas.restore(); canvas.save();	
 		
 		// separator.
-		canvas.concat(getSeparatorPaintMatrix(bounds));
-		shape.draw(canvas, mSeparatorPaint);
-		canvas.restore(); canvas.save();
-		
+		// JG edit 1244 Don't draw separators if style is none.
+		if( mSeparatorPaint != null ) {
+			canvas.concat( getSeparatorPaintMatrix( bounds ) );
+			shape.draw( canvas, mSeparatorPaint );
+			canvas.restore();
+			canvas.save();
+		}
+
         // top etched line.
 		canvas.concat(getTopEtchedPaintMatrix(bounds));
 		if (mTopEtchedPaint != null) shape.draw(canvas, mTopEtchedPaint);

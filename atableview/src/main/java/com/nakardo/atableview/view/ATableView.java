@@ -3,6 +3,7 @@ package com.nakardo.atableview.view;
 import java.util.ArrayList;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.util.AttributeSet;
 import android.util.SparseBooleanArray;
 import android.view.View;
@@ -34,7 +35,9 @@ public class ATableView extends ListView {
 	private boolean mAllowsMultipleSelection = false;
 	private ATableViewDataSource mDataSource;
 	private ATableViewDelegate mDelegate = new ATableViewDelegate();
-	
+
+	private View mFooterView;
+
 	public enum ATableViewStyle {
 		Plain, Grouped
 	};
@@ -44,6 +47,12 @@ public class ATableView extends ListView {
 		// closes #12, add footer for plain style tables in order to make the effect of repeating
 		// rows across table height.
 		if (mStyle == ATableViewStyle.Plain) {
+
+			// JG rewrite 0028 - this method needs to be recalled if data changes, but the original
+			// implementation added a new footer additional to the old one, so the visual footer
+			// could only grow in size.
+
+			/*
 			final View footerView = new FrameLayout(getContext());
 			
 			// add listener to resize after layout has been completed.
@@ -57,9 +66,24 @@ public class ATableView extends ListView {
 					footerView.setLayoutParams(params);
 				}
 			});
-			
 			footerView.setBackgroundDrawable(new ATableViewPlainFooterDrawable(this, lastRowHeight));
 			addFooterView(footerView);
+			*/
+			if( mFooterView == null ) {
+				mFooterView = new FrameLayout( getContext() );
+				mFooterView.setBackgroundDrawable( new ATableViewPlainFooterDrawable( this, lastRowHeight ) );
+				addFooterView( mFooterView );
+			}
+			// add listener to resize after layout has been completed.
+			getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+				public void onGlobalLayout() {
+					getViewTreeObserver().removeGlobalOnLayoutListener(this);
+					int footerHeight = getHeight() - getInternalAdapter().getContentHeight();
+					AbsListView.LayoutParams params = new AbsListView.LayoutParams(AbsListView.LayoutParams.MATCH_PARENT,
+						footerHeight > 0 ? footerHeight : 0);
+					mFooterView.setLayoutParams(params);
+				}
+			});
 		}
 	}
 	
@@ -216,9 +240,12 @@ public class ATableView extends ListView {
 	
 	public void reloadData() {
 		// JG change - copied from https://github.com/dmacosta/ATableView/commit/bb42905d893f76f85e0ff6eb05c390f3ada2602b
-		// Local copy of project seems to be a few commits behind - should just copy the lot?
-		setAdapter(new ATableViewAdapter(this));
+		// And then adapted to fix problems with footer.
+		ATableViewAdapter adapter = new ATableViewAdapter(this);
+		setupFooterView(adapter.getLastRowHeight());
+		setAdapter(adapter);
 		//getInternalAdapter().notifyDataSetChanged();
+
 		clearSelectedRows();
 	}
 	

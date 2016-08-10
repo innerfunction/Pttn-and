@@ -111,15 +111,21 @@ public class ATableViewAdapter extends BaseAdapter {
         // TODO we're supporting content height only for plain tables, it's more complicated for grouped style
         // since we would have to measure all headers & footers values.
         if (mTableView.getStyle() == ATableViewStyle.Plain) {
-            float density = mTableView.getResources().getDisplayMetrics().density;
+            // JG change 2136
+            //float density = mTableView.getResources().getDisplayMetrics().density;
             
             // rows.
             for (List<Integer> sectionHeights : mRowsHeight) {
                 for (int rowHeight : sectionHeights) {
-                    height += rowHeight * density;
+                    // JG change 2136
+                    //height += rowHeight * density;
+                    height += rowHeight;
                 }
             }
-            
+            // JG change 2136
+            float density = mTableView.getResources().getDisplayMetrics().density;
+            height *= density;
+
             // headers.
             for (int section = 0; section < mHeadersHeight.size(); section++) {
                 height += hasHeader(section) ? getHeaderFooterRowHeight(section, false) : 0;
@@ -134,7 +140,7 @@ public class ATableViewAdapter extends BaseAdapter {
             // might it be related with the ListView separators?
             height += getCount();
         }
-        
+
         return (int) Math.floor(height);
     }
     

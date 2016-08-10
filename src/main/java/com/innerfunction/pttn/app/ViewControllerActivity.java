@@ -69,20 +69,28 @@ public class ViewControllerActivity extends PttnActivity<ViewController> impleme
         try {
             this.viewContainer = (FrameLayout)findViewById( R.id.view_container );
             if( viewContainer == null ) {
-                Log.w(Tag, "View container not found in activity layout");
+                Log.w(Tag, "R.id.view_container not found in activity layout");
             }
-
+        }
+        catch(ClassCastException e) {
+            Log.w(Tag, "R.id.view_container in activity layout must be a FrameLayout instance");
+        }
+        try {
             this.titleBar = (Toolbar)findViewById( R.id.titlebar );
             if( titleBar != null ) {
                 setSupportActionBar( titleBar );
                 this.actionBar = getSupportActionBar();
+                /** Following to enable the left-hand button
+                 actionBar.setDisplayHomeAsUpEnabled( true );
+                 actionBar.setHomeButtonEnabled( true );
+                 */
             }
             else {
-                Log.w(Tag, "Title bar not found in activity layout");
+                Log.w(Tag, "R.id.titlebar not found in activity layout");
             }
         }
         catch(ClassCastException e) {
-            Log.w(Tag, "View container in activity layout must be a FrameLayout");
+            Log.w(Tag, "R.id.titlebar in activity layout must be a Toolbar instance");
         }
     }
 
