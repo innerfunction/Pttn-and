@@ -14,6 +14,7 @@
 package com.innerfunction.pttn.app;
 
 import android.app.Activity;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 
@@ -69,7 +70,7 @@ public class SplashScreenActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate( savedInstanceState );
 
-        ManifestMetaData.applyTo( this );
+//        ManifestMetaData.applyTo( this );
 
         setContentView( splashScreenLayout );
 
@@ -92,4 +93,5 @@ public class SplashScreenActivity extends Activity {
         // Schedule the task to run.
         new Handler().postDelayed( task, (long)splashDelay );
     }
+
 }

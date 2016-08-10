@@ -149,15 +149,30 @@ public class NavigationViewController extends ViewController {
     }
 
     public void setViews(List<ViewController> newViews) {
-        // Remove all current views from the controller.
-        for( ViewController view : views ) {
-            removeChildViewController( view );
+        // Want to preserve any views currently on the stack which are in the same position in the
+        // new list.
+        // First, find the position of the first view in the current list that doesn't match the
+        // view in the same position in the new list.
+        int i;
+        for( i = 0; i < views.size(); i++ ) {
+            if( i > newViews.size() ) {
+                break;
+            }
+            if( views.get( i ) != newViews.get( i ) ) {
+                break;
+            }
         }
-        this.views.clear();
+        // Next, remove all views on the current stack which are beyond the last common position.
+        for( int j = views.size() - 1; j >= i; j-- ) {
+            removeChildViewController( views.get( j ) );
+        }
+        // Trim the current view list to the correct size.
+        views.trim( i );
         // Add all new views to the controller and stack.
-        for( ViewController view : newViews ) {
-            addChildViewController( view );
-            views.push( view );
+        for( i = i; i < newViews.size(); i++ ) {
+            ViewController newView = newViews.get( i );
+            addChildViewController( newView );
+            views.push( newView );
         }
         // Ensure that the top view matches this view's state.
         topView = views.getTopView();
@@ -256,7 +271,7 @@ public class NavigationViewController extends ViewController {
             Object view = message.getParameter("view");
             if( view instanceof ViewController ) {
                 if( "reset".equals( message.getParameter("navigation") ) ) {
-                    setViews( Arrays.asList( (ViewController)view ) );
+                    setViews( Arrays.asList( views.get( 0 ), (ViewController)view ) );
                 }
                 else {
                     pushView( (ViewController)view );
