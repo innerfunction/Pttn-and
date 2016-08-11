@@ -291,6 +291,10 @@ public class ViewController extends FrameLayout implements MessageReceiver, Mess
         AppContainer.getAppContainer().postMessage( message, this );
     }
 
+    public void showToast(String message) {
+        Toast.makeText( getActivity(), message, Toast.LENGTH_LONG ).show();
+    }
+
     @Override
     public boolean receiveMessage(Message message, Object sender) {
         // First try passing message to behaviours.
@@ -303,7 +307,7 @@ public class ViewController extends FrameLayout implements MessageReceiver, Mess
         if( message.hasName("toast") ) {
             String toastMessage = (String)message.getParameter("message");
             if( toastMessage != null ) {
-                Toast.makeText( getActivity(), toastMessage, Toast.LENGTH_LONG ).show();
+                showToast( toastMessage );
             }
             return true;
         }

@@ -17,7 +17,9 @@ import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebSettings;
@@ -32,8 +34,11 @@ import com.innerfunction.pttn.app.AppContainer;
 import com.innerfunction.pttn.app.ViewController;
 import com.innerfunction.uri.FileResource;
 import com.innerfunction.uri.Resource;
+import com.innerfunction.util.Paths;
 
 import java.lang.reflect.Field;
+
+import uk.co.senab.photoview.PhotoViewAttacher;
 
 /**
  * A view for displaying web content.
@@ -52,6 +57,12 @@ public class WebViewController extends ViewController {
     private View loadingSpinner;
     /** An image to be displayed whilst the web view is loading. */
     private Drawable loadingImage;
+    /** The container view for the image previewer. */
+    private View imagePreviewContainer;
+    /** The view used to display image previews. */
+    private ImageView imagePreview;
+    /** The control used to provide zoom functionality to the image view. */
+    private PhotoViewAttacher imagePreviewControl;
     /** Flag indicating whether to use the HTML page's title as the view title. */
     private boolean useHTMLTitle = true;
     /** The native web view. */
@@ -104,10 +115,36 @@ public class WebViewController extends ViewController {
          * through the xml layout causes a memory leak; so instead, create as follows using the
          * application context and insert into layout by replacing placeholder view.
          */
-        webView = new NonLeakingWebView( activity );
+        this.webView = new NonLeakingWebView( activity );
         layoutManager.replaceView("webview", webView );
 
-        loadingSpinner = layout.findViewById( R.id.loadingSpinner );
+        this.loadingSpinner = layout.findViewById( R.id.loadingSpinner );
+
+        // View items for displaying image previews.
+        this.imagePreviewContainer = layout.findViewById( R.id.imagePreviewContainer );
+        this.imagePreview = (ImageView)layout.findViewById( R.id.imagePreview );
+        if( imagePreview != null ) {
+            this.imagePreviewControl = new PhotoViewAttacher( imagePreview );
+            imagePreviewControl.setOnPhotoTapListener( new PhotoViewAttacher.OnPhotoTapListener() {
+                @Override
+                public void onPhotoTap(View view, float x, float y) {
+                    showToast("Flick image to dismiss");
+                }
+                @Override
+                public void onOutsidePhotoTap() {
+                    // Hide the preview.
+                    imagePreviewContainer.setVisibility( GONE );
+                }
+            });
+            imagePreviewControl.setOnSingleFlingListener( new PhotoViewAttacher.OnSingleFlingListener() {
+                @Override
+                public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
+                    // Hide the preview.
+                    imagePreviewContainer.setVisibility( GONE );
+                    return true;
+                }
+            });
+        }
 
         WebSettings webSettings = webView.getSettings();
         webSettings.setJavaScriptEnabled( true );
@@ -181,6 +218,26 @@ public class WebViewController extends ViewController {
         }
     }
 
+    /**
+     * Display a preview of an image.
+     * @param url The image URL. There is an assumption here that remote URLs will already have
+     *            been loaded and cached by the web view, so there will be no additional cost or
+     *            delay caused by loading them again on the UI thread.
+     */
+    public void showImageAtURL(String url) {
+        if( imagePreviewContainer != null && imagePreview != null && imagePreviewControl != null ) {
+            // TODO Following doesn't work for http URLs.
+            Uri uri = Uri.parse( url );
+            imagePreview.setImageURI( uri );
+            /*
+            Drawable x = getResources().getDrawable( R.drawable.splashscreen );
+            imagePreview.setImageDrawable( x );
+            */
+            imagePreviewControl.update();
+            imagePreviewContainer.setVisibility( VISIBLE );
+        }
+    }
+
     @Override
     public boolean receiveMessage(Message message, Object sender) {
         if( message.hasName("load") ) {
@@ -224,6 +281,14 @@ public class WebViewController extends ViewController {
     private class DefaultWebViewClient extends WebViewClient {
         @Override
         public boolean shouldOverrideUrlLoading(android.webkit.WebView view, String url) {
+            String ext = Paths.extname( url );
+            if( ".jpeg".equals( ext ) ||
+                ".jpg".equals( ext ) ||
+                ".png".equals( ext ) ||
+                ".gif".equals( ext ) ) {
+                showImageAtURL( url );
+                return true;
+            }
             int idx = url.indexOf(':');
             String scheme = idx > 0 ? url.substring( 0, idx ) : "";
             if( "file".equals( scheme ) ) {
@@ -273,7 +338,7 @@ public class WebViewController extends ViewController {
 
     /**
      * A well behaved web view class.
-     * see http://stackoverflow.com/questions/3130654/memory-leak-in-webview
+     * See http://stackoverflow.com/questions/3130654/memory-leak-in-webview
      * and http://code.google.com/p/android/issues/detail?id=9375
      * "Note that the bug does NOT appear to be fixed in android 2.2 as romain claims.
      *  Also, you must call {@link #destroy()} from your activity's onDestroy method."
