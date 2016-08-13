@@ -14,12 +14,12 @@
 package com.innerfunction.pttn.app;
 
 /**
- * An interface providing a view controller with access to the UI surround.
+ * An interface providing a view controller with access to the screen title bar.
  * This is typically a wrapper for the parent activity.
  *
  * Created by juliangoacher on 25/07/16.
  */
-public interface Chrome {
+public interface TitleBar {
 
     /** Hide (or show) the title bar. */
     void hideTitleBar(boolean hide);
@@ -32,5 +32,8 @@ public interface Chrome {
 
     /** Set the title bar background color. */
     void setTitleBarColor(int color);
+
+    /** Set the left-hand title bar button. */
+    void setLeftTitleBarButton(TitleBarButton button);
 
 }

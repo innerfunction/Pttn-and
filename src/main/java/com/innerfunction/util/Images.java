@@ -17,6 +17,7 @@ import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Bitmap.Config;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.LinearGradient;
 import android.graphics.Matrix;
@@ -30,7 +31,59 @@ import android.graphics.Shader.TileMode;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 
+import com.innerfunction.http.Client;
+import com.innerfunction.http.Response;
+import com.innerfunction.q.Q;
+
+import java.io.File;
+import java.net.MalformedURLException;
+
 public class Images {
+
+    /**
+     * Load an image from a URL.
+     * @param url       Either a file: or HTTP URL.
+     * @param context   An Android context object.
+     * @return          A deferred promise resolving to the image as a Drawable instance.
+     *                  The promise will resolve to null if a valid image can't be loaded from the
+     *                  URL.
+     */
+    public static Q.Promise<Drawable> loadImageFromURL(String url, Context context) {
+        int idx = url.indexOf(':');
+        if( idx == -1 ) {
+            return Q.reject("Invalid URL");
+        }
+        String scheme = url.substring( 0, idx );
+        if( "file".equals( scheme ) ) {
+            String path = url.substring( 7 );
+            Bitmap bitmap = BitmapFactory.decodeFile( path );
+            Drawable drawable = new BitmapDrawable( Resources.getSystem(), bitmap );
+            return Q.resolve( drawable );
+        }
+        else if( "http".equals( scheme ) || "https".equals( scheme ) ) {
+            Client httpClient = new Client( context );
+            try {
+                return httpClient.get( url )
+                    .then( new Q.Promise.Callback<Response, Drawable>() {
+                        @Override
+                        public Drawable result(Response response) {
+                            Drawable drawable = null;
+                            String contentType = response.getContentType();
+                            if( contentType != null && contentType.startsWith("image/") ) {
+                                byte[] data = response.getRawBody();
+                                Bitmap bitmap = BitmapFactory.decodeByteArray( data, 0, data.length );
+                                drawable = new BitmapDrawable( Resources.getSystem(), bitmap );
+                            }
+                            return drawable;
+                        }
+                    } );
+            }
+            catch(MalformedURLException e) {
+                Q.reject( e );
+            }
+        }
+        return Q.reject( String.format("Unsupported URL scheme: %s", scheme ) );
+    }
 
     /**
      * Convert an image resource name to a resource ID.

@@ -13,25 +13,30 @@
 // limitations under the License
 package com.innerfunction.pttn.app;
 
-import android.app.Activity;
+import android.graphics.drawable.Drawable;
 
 /**
- * A stub implementation of the Chrome interface.
- *
- * Created by juliangoacher on 25/07/16.
+ * A class used to represent a title bar button's settings.
+ * Created by juliangoacher on 13/08/16.
  */
-public class ChromeStub implements Chrome {
+public class TitleBarButton {
 
-    @Override
-    public void hideTitleBar(boolean hide) {}
+    private Drawable image;
+    private String action;
 
-    @Override
-    public void setTitle(String title) {}
+    public void setImage(Drawable image) {
+        this.image = image;
+    }
 
-    @Override
-    public void setTitleBarTextColor(int color) {}
+    public Drawable getImage() {
+        return image;
+    }
 
-    @Override
-    public void setTitleBarColor(int color) {}
+    public void setAction(String action) {
+        this.action = action;
+    }
 
+    public String getAction() {
+        return action;
+    }
 }

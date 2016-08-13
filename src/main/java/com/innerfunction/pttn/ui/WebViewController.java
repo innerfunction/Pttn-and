@@ -16,6 +16,7 @@ package com.innerfunction.pttn.ui;
 import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.util.Log;
@@ -32,8 +33,10 @@ import com.innerfunction.pttn.Message;
 import com.innerfunction.pttn.R;
 import com.innerfunction.pttn.app.AppContainer;
 import com.innerfunction.pttn.app.ViewController;
+import com.innerfunction.q.Q;
 import com.innerfunction.uri.FileResource;
 import com.innerfunction.uri.Resource;
+import com.innerfunction.util.Images;
 import com.innerfunction.util.Paths;
 
 import java.lang.reflect.Field;
@@ -84,6 +87,7 @@ public class WebViewController extends ViewController {
 
     public WebViewController(Context context) {
         super( context );
+        setHideTitleBar( false );
         setLayoutName("web_view_layout");
     }
 
@@ -226,15 +230,33 @@ public class WebViewController extends ViewController {
      */
     public void showImageAtURL(String url) {
         if( imagePreviewContainer != null && imagePreview != null && imagePreviewControl != null ) {
-            // TODO Following doesn't work for http URLs.
-            Uri uri = Uri.parse( url );
-            imagePreview.setImageURI( uri );
-            /*
-            Drawable x = getResources().getDrawable( R.drawable.splashscreen );
-            imagePreview.setImageDrawable( x );
-            */
-            imagePreviewControl.update();
-            imagePreviewContainer.setVisibility( VISIBLE );
+            Images.loadImageFromURL( url, getContext() )
+                .then( new Q.Promise.Callback<Drawable, Void>() {
+                    @Override
+                    public Void result(final Drawable image) {
+                        imagePreview.post( new Runnable() {
+                            @Override
+                            public void run() {
+                                imagePreview.setBackgroundColor( Color.WHITE );
+                                imagePreview.setImageDrawable( image );
+                                imagePreviewControl.update();
+                                imagePreviewContainer.setVisibility( VISIBLE );
+                            }
+                        });
+                        return null;
+                    }
+                })
+                .error( new Q.Promise.ErrorCallback() {
+                    @Override
+                    public void error(final Exception e) {
+                        imagePreviewContainer.post( new Runnable() {
+                            @Override
+                            public void run() {
+                                showToast( e.getMessage() );
+                            }
+                        });
+                    }
+                });
         }
     }
 
@@ -267,6 +289,16 @@ public class WebViewController extends ViewController {
         webView.removeAllViews();
         webView.destroy();
         webView = null;
+    }
+
+    @Override
+    public boolean onBackPressed() {
+        // If image preview is being displayed then use the back button to dismiss it.
+        if( imagePreviewContainer.getVisibility() == VISIBLE ) {
+            imagePreviewContainer.setVisibility( GONE );
+            return false;
+        }
+        return super.onBackPressed();
     }
 
     /** Javascript console. */

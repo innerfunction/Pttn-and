@@ -84,6 +84,7 @@ public class TableViewController extends ViewController implements IOCContainerA
 
     public TableViewController(Context context) {
         super( context );
+        setHideTitleBar( false );
         this.tableData = new TableData( context );
     }
 
@@ -204,6 +205,10 @@ public class TableViewController extends ViewController implements IOCContainerA
     @Override
     public void onResume() {
         super.onResume();
+        // Make sure the current filter is applied to the data. (Note that the filter is cleared
+        // after dispatching a table row action, so it needs to be reapplied if navigating back
+        // after an action).
+        applyFilterName( filterName );
         if( selectedIndexPath == null && selectedID != null ) {
             selectedIndexPath = tableData.getIndexPathForFirstRowWithFieldValue( selectedID, "id" );
         }

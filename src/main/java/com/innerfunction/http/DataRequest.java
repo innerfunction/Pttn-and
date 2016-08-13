@@ -36,18 +36,23 @@ public class DataRequest extends Request {
         // TODO See http://stackoverflow.com/a/21534175 for how to deal with exception related to 401 response
         BufferedInputStream in = new BufferedInputStream( connection.getInputStream(), DataBufferSize );
         checkForNetworkSignon( connection );
-        byte[] body = new byte[0];
+        byte[] body = new byte[4096];
         int offset = 0;
         while( true ) {
-            if( body.length - offset < in.available() ) {
-                body = Arrays.copyOf( body, offset + in.available() );
-            }
+            // Read available data into the buffer.
             int read = in.read( body, offset, body.length - offset );
             if( read > 0 ) {
+                // Update read offset into buffer.
                 offset += read;
+                // If less than 4k free space left in the buffer then double its size.
+                if( body.length - offset < 4096 ) {
+                    body = Arrays.copyOf( body, body.length * 2 );
+                }
             }
-            else break;
+            else break; // No bytes read => end of content.
         }
+        // Trim array body back to content size.
+        body = Arrays.copyOf( body, offset );
         return new Response( getURL(), connection, body );
     }
 

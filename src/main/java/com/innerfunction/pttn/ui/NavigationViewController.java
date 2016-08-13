@@ -14,7 +14,6 @@
 package com.innerfunction.pttn.ui;
 
 import android.app.Activity;
-import android.app.Fragment;
 import android.content.Context;
 import android.os.Build;
 import android.transition.Slide;
@@ -26,7 +25,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.innerfunction.pttn.Message;
-import com.innerfunction.pttn.app.Chrome;
+import com.innerfunction.pttn.app.TitleBar;
 import com.innerfunction.pttn.app.ViewController;
 
 import java.util.ArrayList;
@@ -130,13 +129,13 @@ public class NavigationViewController extends ViewController {
     }
 
     @Override
-    public void setChrome(Chrome chrome) {
-        super.setChrome( chrome );
-        // This view instance's chrome configuration is disabled; instead, control over the chrome
+    public void setTitleBar(TitleBar titleBar) {
+        super.setTitleBar( titleBar );
+        // This view instance's titleBar configuration is disabled; instead, control over the titleBar
         // is delegated to all view controllers on the navigation stack; actual control resides
         // with the running - i.e. the top - view.
         for( ViewController view : views ) {
-            view.setChrome( chrome );
+            view.setTitleBar( titleBar );
         }
     }
 
@@ -246,8 +245,8 @@ public class NavigationViewController extends ViewController {
         if( layout != null ) {
             layout.addView( child );
         }
-        if( chrome != null ) {
-            child.setChrome( chrome );
+        if( titleBar != null ) {
+            child.setTitleBar( titleBar );
         }
     }
 
@@ -261,8 +260,16 @@ public class NavigationViewController extends ViewController {
 
     @Override
     public boolean onBackPressed() {
-        // Tell the activity to continue normal back button behaviour if nothing was popped here.
-        return popView() == null;
+        if( topView == null ) {
+            // Nothing on navigation stack so continue normal back button behaviour.
+            return true;
+        }
+        // First, let top view process back button.
+        if( topView.onBackPressed() ) {
+            // Then continue normal back button behaviour if nothing was popped here.
+            return popView() == null;
+        }
+        return false; // Top view processed the back button.
     }
 
     @Override

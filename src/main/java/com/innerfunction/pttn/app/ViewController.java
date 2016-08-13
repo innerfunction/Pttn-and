@@ -57,8 +57,8 @@ public class ViewController extends FrameLayout implements MessageReceiver, Mess
     protected LayoutManager layoutManager;
     /** The activity the view is attached to. */
     private Activity activity;
-    /** The app's UI chrome. */
-    protected Chrome chrome = new ChromeStub();
+    /** The app's title bar. */
+    protected TitleBar titleBar = new TitleBarStub();
     /** The view's view - i.e. the thing it displays and controls. */
     private View view;
     /** The view controller's parent view controller, if any. */
@@ -66,7 +66,7 @@ public class ViewController extends FrameLayout implements MessageReceiver, Mess
     /** A list of this controller's child view controllers. */
     private List<ViewController> childViewControllers = new ArrayList<>();
     /** Flag indicating whether to hide the view's title (i.e. action) bar. */
-    private boolean hideTitleBar = false;
+    private Boolean hideTitleBar;
     /** The view's title. */
     private String title;
     /** The view's background colour. */
@@ -75,6 +75,8 @@ public class ViewController extends FrameLayout implements MessageReceiver, Mess
     private int titleBarColor = Color.TRANSPARENT;
     /** The view's title bar text color. */
     private int titleBarTextColor = Color.TRANSPARENT;
+    /** The button displayed on the left-hand side of the title bar. */
+    private TitleBarButton leftTitleBarButton;
     /** A list of view behaviours. */
     private List<ViewControllerBehaviour> behaviours = new ArrayList<>();
 
@@ -199,9 +201,9 @@ public class ViewController extends FrameLayout implements MessageReceiver, Mess
         changeState( State.Attached );
     }
 
-    public void setChrome(Chrome chrome) {
-        this.chrome = chrome;
-        layoutManager.setChrome( chrome );
+    public void setTitleBar(TitleBar titleBar) {
+        this.titleBar = titleBar;
+        layoutManager.setTitleBar( titleBar );
     }
 
     public View onCreateView(Activity activity) {
@@ -262,14 +264,7 @@ public class ViewController extends FrameLayout implements MessageReceiver, Mess
     public void onStart() {}
 
     public void onResume() {
-        chrome.hideTitleBar( hideTitleBar );
-        chrome.setTitle( title == null ? "" : title );
-        if( titleBarColor != Color.TRANSPARENT ) {
-            chrome.setTitleBarColor( titleBarColor );
-        }
-        if( titleBarTextColor != Color.TRANSPARENT ) {
-            chrome.setTitleBarTextColor( titleBarTextColor );
-        }
+        refreshTitleBar();
     }
 
     public void onPause() {}
@@ -277,6 +272,23 @@ public class ViewController extends FrameLayout implements MessageReceiver, Mess
     public void onStop() {}
 
     public void onDestroy() {}
+
+    /** Update the title bar status. */
+    public void refreshTitleBar() {
+        if( hideTitleBar != null ) {
+            titleBar.hideTitleBar( hideTitleBar );
+        }
+        titleBar.setTitle( title == null ? "" : title );
+        if( titleBarColor != Color.TRANSPARENT ) {
+            titleBar.setTitleBarColor( titleBarColor );
+        }
+        if( titleBarTextColor != Color.TRANSPARENT ) {
+            titleBar.setTitleBarTextColor( titleBarTextColor );
+        }
+        if( leftTitleBarButton != null ) {
+            titleBar.setLeftTitleBarButton( leftTitleBarButton );
+        }
+    }
 
     /**
      * Notify the view of a back button press.
@@ -360,8 +372,8 @@ public class ViewController extends FrameLayout implements MessageReceiver, Mess
 
     public void setTitle(String title) {
         this.title = title;
-        if( chrome != null ) {
-            chrome.setTitle( title );
+        if( titleBar != null ) {
+            titleBar.setTitle( title );
         }
     }
 
@@ -387,6 +399,10 @@ public class ViewController extends FrameLayout implements MessageReceiver, Mess
 
     public void setTitleBarTextColor(int color) {
         this.titleBarTextColor = color;
+    }
+
+    public void setLeftTitleBarButton(TitleBarButton button) {
+        this.leftTitleBarButton = button;
     }
 
     public void setLayoutName(String layoutName) {

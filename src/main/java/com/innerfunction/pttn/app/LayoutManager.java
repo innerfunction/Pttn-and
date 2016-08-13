@@ -39,13 +39,13 @@ public class LayoutManager {
     private String layoutName;
     private View layout;
     /**
-     * The view ID of the chrome delegate.
-     * The chrome delegate is a view controller within the layout which is given control
-     * over the app's chrome (e.g. title bar). This method is useful in compound views, e.g. slide
-     * view controller, where just a single child view controls things like the title bar title.
+     * The view ID of the title bar delegate.
+     * The title bar  delegate is a view controller within the layout which is given control
+     * over the app's title bar. This method is useful in compound views, e.g. slide view
+     * controller, where just a single child view controls things like the title text.
      */
-    private String chromeDelegateViewID;
-    private Chrome chrome;
+    private String titleBarDelegateViewID;
+    private TitleBar titleBar;
 
     public LayoutManager(Fragment fragment) {
         this.fragment = fragment;
@@ -63,21 +63,21 @@ public class LayoutManager {
         return layoutName;
     }
 
-    public void setChromeDelegateViewID(String viewID) {
-        this.chromeDelegateViewID = viewID;
-        refreshChromeDelegate();
+    public void setTitleBarDelegateViewID(String viewID) {
+        this.titleBarDelegateViewID = viewID;
+        refreshTitleBarDelegate();
     }
 
-    public void setChrome(Chrome chrome) {
-        this.chrome = chrome;
-        refreshChromeDelegate();
+    public void setTitleBar(TitleBar titleBar) {
+        this.titleBar = titleBar;
+        refreshTitleBarDelegate();
     }
 
-    private void refreshChromeDelegate() {
-        if( this.chromeDelegateViewID != null && this.chrome != null ) {
-            Object delegate = viewComponents.get( chromeDelegateViewID );
+    private void refreshTitleBarDelegate() {
+        if( this.titleBarDelegateViewID != null && this.titleBar != null ) {
+            Object delegate = viewComponents.get( titleBarDelegateViewID );
             if( delegate instanceof ViewController ) {
-                ((ViewController)delegate).setChrome( chrome );
+                ((ViewController)delegate).setTitleBar( titleBar );
             }
         }
     }
@@ -112,7 +112,7 @@ public class LayoutManager {
 
     public void setViewComponents(Map<String,Object> viewComponents) {
         this.viewComponents = viewComponents;
-        refreshChromeDelegate();
+        refreshTitleBarDelegate();
     }
 
     public void addViewComponent(String name, Object component) {
@@ -128,7 +128,7 @@ public class LayoutManager {
         if( layout != null ) {
             populateViewComponent( name, component );
         }
-        refreshChromeDelegate();
+        refreshTitleBarDelegate();
     }
 
     public Object getViewComponent(String name) {

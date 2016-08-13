@@ -13,6 +13,8 @@
 // limitations under the License
 package com.innerfunction.pttn.app;
 
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.InsetDrawable;
 import android.os.Build;
 import android.support.v7.app.ActionBar;
 import android.support.v7.widget.Toolbar;
@@ -33,7 +35,7 @@ import com.innerfunction.pttn.R;
  *
  * Attached by juliangoacher on 19/05/16.
  */
-public class ViewControllerActivity extends PttnActivity<ViewController> implements Chrome {
+public class ViewControllerActivity extends PttnActivity<ViewController> implements TitleBar {
 
     /**
      * The layout which contains the activity view.
@@ -80,10 +82,6 @@ public class ViewControllerActivity extends PttnActivity<ViewController> impleme
             if( titleBar != null ) {
                 setSupportActionBar( titleBar );
                 this.actionBar = getSupportActionBar();
-                /** Following to enable the left-hand button
-                 actionBar.setDisplayHomeAsUpEnabled( true );
-                 actionBar.setHomeButtonEnabled( true );
-                 */
             }
             else {
                 Log.w(Tag, "R.id.titlebar not found in activity layout");
@@ -167,7 +165,7 @@ public class ViewControllerActivity extends PttnActivity<ViewController> impleme
         }
         // Add the new view to the activity.
         view.onAttach( this );
-        view.setChrome( this );
+        view.setTitleBar( this );
         showView( view, ViewTransition.Replace );
         this.mainViewController = view;
         // Update the new view's state.
@@ -275,4 +273,28 @@ public class ViewControllerActivity extends PttnActivity<ViewController> impleme
             titleBar.setBackgroundColor( color );
         }
     }
+
+    @Override
+    public void setLeftTitleBarButton(TitleBarButton button) {
+        if( actionBar != null ) {
+            if( button != null ) {
+                actionBar.setHomeButtonEnabled( true );
+                actionBar.setDisplayUseLogoEnabled( true );
+                titleBar.setNavigationIcon( button.getImage() );
+                final String action = button.getAction();
+                titleBar.setNavigationOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        if( activeViewController != null ) {
+                            activeViewController.postMessage( action );
+                        }
+                    }
+                });
+            }
+            else {
+//                actionBar.setHomeButtonEnabled( false );
+            }
+        }
+    }
+
 }
