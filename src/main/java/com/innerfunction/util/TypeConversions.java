@@ -22,8 +22,11 @@ import java.net.URISyntaxException;
 import java.text.ParseException;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 
 import android.content.Context;
@@ -288,6 +291,16 @@ public class TypeConversions {
             else {
                 result = value;
             }
+        }
+        else if( value instanceof List && !(value instanceof JSONArray) ) {
+            JSONArray array = new JSONArray();
+            array.addAll( (List)value );
+            result = array;
+        }
+        else if( value instanceof Map && !(value instanceof JSONObject) ) {
+            JSONObject object = new JSONObject();
+            object.putAll( (Map)value );
+            result = object;
         }
         else {
             result = value;

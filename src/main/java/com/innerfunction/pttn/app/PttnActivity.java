@@ -14,6 +14,7 @@
 package com.innerfunction.pttn.app;
 
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -34,6 +35,11 @@ public abstract class PttnActivity<T> extends AppCompatActivity {
      * Used to fetch the view controller instance from the app container.
      */
     private String viewUUID;
+
+    /**
+     * The app's default background color.
+     */
+    protected int appBackgroundColor = Color.LTGRAY;
 
     @Override
     protected void onNewIntent(Intent intent) {
@@ -70,10 +76,12 @@ public abstract class PttnActivity<T> extends AppCompatActivity {
             viewUUID = getIntent().getStringExtra( IntentActions.ViewUUID.name() );
         }
 
+        AppContainer appContainer = AppContainer.getAppContainer();
+        appBackgroundColor = appContainer.getAppBackgroundColor();
         // Check for a container instantiated view.
         if( viewUUID != null ) {
             try {
-                showView( (T)AppContainer.getAppContainer().getViewForUUID( viewUUID ) );
+                showView( (T)appContainer.getViewForUUID( viewUUID ) );
             }
             catch(ClassCastException e) {
                 // Shouldn't happen if everything is setup correctly.

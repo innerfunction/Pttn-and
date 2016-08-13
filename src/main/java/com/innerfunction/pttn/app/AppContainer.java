@@ -130,6 +130,14 @@ public class AppContainer extends Container {
         uriHandler.setAliases( aliases );
     }
 
+    public void setAppBackgroundColor(int color) {
+        this.appBackgroundColor = color;
+    }
+
+    public int getAppBackgroundColor() {
+        return appBackgroundColor;
+    }
+
     /**
      * Load the app configuration.
      */

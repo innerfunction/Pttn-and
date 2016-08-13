@@ -13,6 +13,7 @@
 // limitations under the License
 package com.innerfunction.pttn.app;
 
+import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.InsetDrawable;
 import android.os.Build;
@@ -200,6 +201,10 @@ public class ViewControllerActivity extends PttnActivity<ViewController> impleme
     protected void showView(ViewController view, ViewTransition viewTransition) {
         if( viewContainer == null ) {
             return; // Can't show views if no view container.
+        }
+        // If the view doesn't specify a background colour then set to the app's default.
+        if( view.getBackgroundColor() == Color.TRANSPARENT ) {
+            view.setBackgroundColor( appBackgroundColor );
         }
         // Animate transition to the view controller, if the Android version supports it.
         if( Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP ) {

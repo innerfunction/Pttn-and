@@ -206,6 +206,10 @@ public class ViewController extends FrameLayout implements MessageReceiver, Mess
         layoutManager.setTitleBar( titleBar );
     }
 
+    public TitleBar getTitleBar() {
+        return titleBar;
+    }
+
     public View onCreateView(Activity activity) {
         // If the fragment has a layout setting then inflate it and extract any view components.
         LayoutInflater inflater = activity.getLayoutInflater();
@@ -278,7 +282,9 @@ public class ViewController extends FrameLayout implements MessageReceiver, Mess
         if( hideTitleBar != null ) {
             titleBar.hideTitleBar( hideTitleBar );
         }
-        titleBar.setTitle( title == null ? "" : title );
+        if( title != null ) {
+            titleBar.setTitle( title );
+        }
         if( titleBarColor != Color.TRANSPARENT ) {
             titleBar.setTitleBarColor( titleBarColor );
         }
@@ -383,6 +389,7 @@ public class ViewController extends FrameLayout implements MessageReceiver, Mess
 
     public void setBackgroundColor(int backgroundColor) {
         this.backgroundColor = backgroundColor;
+        super.setBackgroundColor( backgroundColor );
     }
 
     public int getBackgroundColor() {
