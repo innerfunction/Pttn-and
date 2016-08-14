@@ -113,10 +113,6 @@ public class Client {
         String filename = String.format("%s_%d.tmp", getClass().getName(), System.currentTimeMillis() );
         File dataFile = new File( cacheDir, filename ) {
             @Override
-            public boolean renameTo(File destFile) {
-                return Files.mv( this, destFile );
-            }
-            @Override
             public void finalize() throws Throwable {
                 try {
                     // Delete temporary file as soon as this object is GC'd.

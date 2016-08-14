@@ -22,6 +22,7 @@ import android.net.Uri;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
@@ -287,6 +288,7 @@ public class WebViewController extends ViewController {
         webView.removeJavascriptInterface("console");
         webView.removeJavascriptInterface("app");
         webView.removeAllViews();
+        ((ViewGroup)webView.getParent()).removeView( webView );
         webView.destroy();
         webView = null;
     }

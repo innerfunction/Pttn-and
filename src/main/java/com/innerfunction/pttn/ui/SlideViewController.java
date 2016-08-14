@@ -83,13 +83,17 @@ public class SlideViewController extends ViewController {
     }
 
     public void openDrawer() {
-        getSlideView().changeState( getState() );
+        ViewController slideView = getSlideView();
+        slideView.setRunnable( true );
+        slideView.changeState( getState() );
         drawerLayout.openDrawer( slidePosition );
     }
 
     public void closeDrawer() {
         drawerLayout.closeDrawers();
-        getSlideView().changeState( State.Paused );
+        ViewController slideView = getSlideView();
+        slideView.setRunnable( false );
+        slideView.changeState( State.Paused );
     }
 
     public void toggleDrawer() {

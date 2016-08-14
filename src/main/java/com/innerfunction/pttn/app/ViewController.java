@@ -53,6 +53,14 @@ public class ViewController extends FrameLayout implements MessageReceiver, Mess
 
     /** The view's current lifecycle state. */
     protected State state = State.Instantiated;
+    /**
+     * A flag indicating whether the view should be transitioned into the Running state.
+     * This flag can be used by container views to control which of their child views should be
+     * transitioned to Running when the parent view is transitioned to Running. It is typically
+     * set to false on hidden views; for example, the navigation view controller sets the flag to
+     * false on all views on the navigation stack _except_ for the top, visible view.
+     */
+    protected boolean runnable = true;
     /** The view's layout manager. */
     protected LayoutManager layoutManager;
     /** The activity the view is attached to. */
@@ -88,6 +96,10 @@ public class ViewController extends FrameLayout implements MessageReceiver, Mess
     /** Get the view's current lifecycle state. */
     public State getState() {
         return state;
+    }
+
+    public void setRunnable(boolean runnable) {
+        this.runnable = runnable;
     }
 
     /**
@@ -130,7 +142,9 @@ public class ViewController extends FrameLayout implements MessageReceiver, Mess
             }
             if( state == State.Started || state == State.Paused ) {
                 for( ViewController child : childViewControllers ) {
-                    child.changeState( State.Running );
+                    if( child.runnable ) {
+                        child.changeState( State.Running );
+                    }
                 }
                 onResume();
                 // Apply behaviours.
@@ -145,7 +159,6 @@ public class ViewController extends FrameLayout implements MessageReceiver, Mess
             break;
         case Paused:
             if( state == State.Attached ) {
-                // TODO Review this - should instead move directly from attached to paused without starting.
                 changeState( State.Started );
             }
             if( state == State.Started || state == State.Running ) {

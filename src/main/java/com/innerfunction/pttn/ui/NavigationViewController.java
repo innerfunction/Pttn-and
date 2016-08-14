@@ -173,8 +173,13 @@ public class NavigationViewController extends ViewController {
             addChildViewController( newView );
             views.push( newView );
         }
+        // Set the runnable flag for each view.
+        for( i = 0; i < views.size() - 1; i++ ) {
+            views.get( i ).setRunnable( false );
+        }
         // Ensure that the top view matches this view's state.
         topView = views.getTopView();
+        topView.setRunnable( true );
         State state = getState();
         if( state != State.Instantiated && state != State.Destroyed ) {
             topView.changeState( getState() );
@@ -188,8 +193,10 @@ public class NavigationViewController extends ViewController {
         }
         // Pause the current top view.
         topView.changeState( State.Paused );
+        topView.setRunnable( false );
         // Add the new view and change to current state.
         addChildViewController( newView );
+        newView.setRunnable( true );
         newView.changeState( getState() );
         // Update stack.
         views.push( newView );
@@ -209,6 +216,7 @@ public class NavigationViewController extends ViewController {
             removeChildViewController( poppedView );
             // Resume the next view.
             topView = views.pop();
+            topView.setRunnable( true );
             topView.changeState( getState() );
         }
         return poppedView;
@@ -231,6 +239,7 @@ public class NavigationViewController extends ViewController {
             }
             // The root view is now the top view...
             topView = views.getTopView();
+            topView.setRunnable( true );
             topView.changeState( getState() );
             // Remove discarded items from the navigation stack.
             views.trim( 1 );
