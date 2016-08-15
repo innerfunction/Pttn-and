@@ -237,12 +237,12 @@ public class NavigationViewController extends ViewController {
                 view.changeState( State.Paused );
                 removeChildViewController( view );
             }
+            // Remove discarded items from the navigation stack.
+            views.trim( 1 );
             // The root view is now the top view...
             topView = views.getTopView();
             topView.setRunnable( true );
             topView.changeState( getState() );
-            // Remove discarded items from the navigation stack.
-            views.trim( 1 );
             popped = true;
         }
         return popped;
