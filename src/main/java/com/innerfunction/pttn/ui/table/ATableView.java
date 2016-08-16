@@ -51,7 +51,7 @@ public class ATableView extends com.nakardo.atableview.view.ATableView {
                 for( int s = 0; s < indexPath.getSection(); s++ ) {
                     row += dataSource.numberOfRowsInSection( ATableView.this, s ) + 1;
                 }
-                row += indexPath.getRow();
+                row += indexPath.getRow() - 1;
                 ATableView.this.setSelection( row );
             }
         });
