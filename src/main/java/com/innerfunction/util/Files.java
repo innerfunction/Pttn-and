@@ -20,6 +20,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.StringBufferInputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
@@ -142,6 +143,52 @@ public class Files {
         }
         else {
             result = Files.readString( path );
+        }
+        return result;
+    }
+
+    /**
+     * Move a file from one location to another.
+     * @param sourceRef A file URL or path. If the referenced file is in the app's assets folder
+     *                  then the file will be copied rather than moved.
+     * @param targetRef The location to copy the file to.
+     */
+    public boolean mvFileRef(String sourceRef, String targetRef) {
+        boolean result = false;
+        String sourcePath = fileRefToPath( sourceRef );
+        String targetPath = fileRefToPath( targetRef );
+        if( isAssetPath( sourcePath ) ) {
+            InputStream in = null;
+            OutputStream out = null;
+            try {
+                in = assets.openInputStream( assetPathToName( sourcePath ) );
+                out = new FileOutputStream( targetPath );
+                byte[] buffer = new byte[250 * 1024];
+                int read;
+                while( (read = in.read( buffer, 0, buffer.length )) > -1 ) {
+                    out.write( buffer, 0, read );
+                }
+                out.flush();
+                result = true;
+            }
+            catch(IOException e) {
+                Log.e( LogTag, String.format("Copying stream %s -> %s", sourceRef, targetRef ), e );
+            }
+            finally {
+                try {
+                    in.close();
+                }
+                catch(Exception e) {}
+                try {
+                    out.close();
+                }
+                catch(Exception e) {}
+            }
+        }
+        else {
+            File source = new File( sourcePath );
+            File target = new File( targetPath );
+            result = Files.mv( source, target );
         }
         return result;
     }
