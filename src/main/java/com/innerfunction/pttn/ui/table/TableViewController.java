@@ -119,7 +119,10 @@ public class TableViewController extends ViewController implements IOCContainerA
         tableView = new ATableView( style, activity );
         tableView.setDataSource( makeDataSource() );
         tableView.setDelegate( makeDelegate() );
-        tableView.setBackgroundColor( getBackgroundColor() );
+        int backgroundColor = getBackgroundColor();
+        if( backgroundColor != 0 ) {
+            tableView.setBackgroundColor( getBackgroundColor() );
+        }
         //tableView.setSeparatorStyle( ATableViewCell.ATableViewCellSeparatorStyle.None );
         addView( tableView );
         return tableView;
