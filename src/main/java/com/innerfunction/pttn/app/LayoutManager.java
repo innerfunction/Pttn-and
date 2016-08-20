@@ -38,14 +38,6 @@ public class LayoutManager {
     private Map<String,Object> viewComponents = new HashMap<>();
     private String layoutName;
     private View layout;
-    /**
-     * The view ID of the title bar delegate.
-     * The title bar  delegate is a view controller within the layout which is given control
-     * over the app's title bar. This method is useful in compound views, e.g. slide view
-     * controller, where just a single child view controls things like the title text.
-     */
-    private String titleBarDelegateViewID;
-    private TitleBar titleBar;
 
     public LayoutManager(Fragment fragment) {
         this.fragment = fragment;
@@ -61,25 +53,6 @@ public class LayoutManager {
 
     public String getLayoutName() {
         return layoutName;
-    }
-
-    public void setTitleBarDelegateViewID(String viewID) {
-        this.titleBarDelegateViewID = viewID;
-        refreshTitleBarDelegate();
-    }
-
-    public void setTitleBar(TitleBar titleBar) {
-        this.titleBar = titleBar;
-        refreshTitleBarDelegate();
-    }
-
-    private void refreshTitleBarDelegate() {
-        if( this.titleBarDelegateViewID != null && this.titleBar != null ) {
-            Object delegate = viewComponents.get( titleBarDelegateViewID );
-            if( delegate instanceof ViewController ) {
-                ((ViewController)delegate).setTitleBar( titleBar );
-            }
-        }
     }
 
     private Context getContext() {
@@ -112,7 +85,6 @@ public class LayoutManager {
 
     public void setViewComponents(Map<String,Object> viewComponents) {
         this.viewComponents = viewComponents;
-        refreshTitleBarDelegate();
     }
 
     public void addViewComponent(String name, Object component) {
@@ -128,7 +100,6 @@ public class LayoutManager {
         if( layout != null ) {
             populateViewComponent( name, component );
         }
-        refreshTitleBarDelegate();
     }
 
     public Object getViewComponent(String name) {

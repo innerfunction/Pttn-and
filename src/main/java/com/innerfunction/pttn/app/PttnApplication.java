@@ -64,7 +64,7 @@ public class PttnApplication extends Application {
         super.onCreate();
         ManifestMetaData.applyTo( this );
         try {
-            // Enable debugging of webviews via titleBar.
+            // Enable debugging of webviews via titleBarState.
             // Taken from https://developer.chrome.com/devtools/docs/remote-debugging#debugging-webviews
             if( Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT ) {
                 if( 0 != (getApplicationInfo().flags &= ApplicationInfo.FLAG_DEBUGGABLE) ) {

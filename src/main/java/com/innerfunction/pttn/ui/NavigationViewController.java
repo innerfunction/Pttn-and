@@ -16,6 +16,7 @@ package com.innerfunction.pttn.ui;
 import android.app.Activity;
 import android.content.Context;
 import android.os.Build;
+import android.transition.Fade;
 import android.transition.Slide;
 import android.transition.Transition;
 import android.transition.TransitionManager;
@@ -88,7 +89,8 @@ public class NavigationViewController extends ViewController {
     static {
         if( Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP ) {
             NavigateForwardTransition = new Slide( Gravity.RIGHT );
-            NavigateBackTransition = new Slide( Gravity.LEFT );
+            //NavigateBackTransition = new Slide( Gravity.LEFT );
+            NavigateBackTransition = new Fade();
         }
     }
 
@@ -131,9 +133,6 @@ public class NavigationViewController extends ViewController {
     @Override
     public void setTitleBar(TitleBar titleBar) {
         super.setTitleBar( titleBar );
-        // This view instance's titleBar configuration is disabled; instead, control over the titleBar
-        // is delegated to all view controllers on the navigation stack; actual control resides
-        // with the running - i.e. the top - view.
         for( ViewController view : views ) {
             view.setTitleBar( titleBar );
         }
@@ -253,9 +252,6 @@ public class NavigationViewController extends ViewController {
         super.addChildViewController( child );
         if( layout != null ) {
             layout.addView( child );
-        }
-        if( titleBar != null ) {
-            child.setTitleBar( titleBar );
         }
     }
 

@@ -15,24 +15,14 @@ package com.innerfunction.pttn.app;
 
 /**
  * A stub implementation of the TitleBar interface.
+ * Used as a default, do-nothing interface implementation which a view controller can be
+ * initialied with.
  *
- * Created by juliangoacher on 25/07/16.
+ * Created by juliangoacher on 20/08/16.
  */
 public class TitleBarStub implements TitleBar {
 
     @Override
-    public void hideTitleBar(boolean hide) {}
-
-    @Override
-    public void setTitle(String title) {}
-
-    @Override
-    public void setTitleBarTextColor(int color) {}
-
-    @Override
-    public void setTitleBarColor(int color) {}
-
-    @Override
-    public void setLeftTitleBarButton(TitleBarButton button) {}
+    public void applyState(TitleBarState state) {}
 
 }

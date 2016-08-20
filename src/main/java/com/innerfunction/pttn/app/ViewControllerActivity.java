@@ -23,7 +23,6 @@ import android.transition.Transition;
 import android.transition.TransitionManager;
 import android.util.Log;
 import android.view.Gravity;
-import android.view.View;
 import android.widget.FrameLayout;
 
 import com.innerfunction.pttn.R;
@@ -34,7 +33,7 @@ import com.innerfunction.pttn.R;
  *
  * Attached by juliangoacher on 19/05/16.
  */
-public class ViewControllerActivity extends PttnActivity<ViewController> implements TitleBar {
+public class ViewControllerActivity extends PttnActivity<ViewController> {
 
     /**
      * The layout which contains the activity view.
@@ -53,13 +52,9 @@ public class ViewControllerActivity extends PttnActivity<ViewController> impleme
      */
     private ViewController modalViewController;
     /**
-     * The title bar.
+     * The application title bar.
      */
-    private Toolbar titleBar;
-    /**
-     * The title bar's action bar wrapper.
-     */
-    private ActionBar actionBar;
+    private TitleBar titleBar;
 
     /** A list of the different types of view transition. */
     enum ViewTransition { Replace, ShowModal, HideModal };
@@ -77,10 +72,11 @@ public class ViewControllerActivity extends PttnActivity<ViewController> impleme
             Log.w(Tag, "R.id.view_container in activity layout must be a FrameLayout instance");
         }
         try {
-            this.titleBar = (Toolbar)findViewById( R.id.titlebar );
-            if( titleBar != null ) {
-                setSupportActionBar( titleBar );
-                this.actionBar = getSupportActionBar();
+            Toolbar toolBar = (Toolbar)findViewById( R.id.titlebar );
+            if( toolBar != null ) {
+                setSupportActionBar( toolBar );
+                ActionBar actionBar = getSupportActionBar();
+                this.titleBar = new ActivityTitleBar( toolBar, actionBar );
             }
             else {
                 Log.w(Tag, "R.id.titlebar not found in activity layout");
@@ -164,7 +160,6 @@ public class ViewControllerActivity extends PttnActivity<ViewController> impleme
         }
         // Add the new view to the activity.
         view.onAttach( this );
-        view.setTitleBar( this );
         showView( view, ViewTransition.Replace );
         this.mainViewController = view;
         // Update the new view's state.
@@ -242,62 +237,13 @@ public class ViewControllerActivity extends PttnActivity<ViewController> impleme
             viewContainer.removeView( modalViewController );
         }
         activeViewController = view;
+        // Reset the title bar after changing the main view - the new view will apply its state
+        // once it is resumed.
+        view.setTitleBar( titleBar );
     }
 
-    @Override
-    public void hideTitleBar(boolean hide) {
-        if( actionBar != null ) {
-            if( hide ) {
-                actionBar.hide();
-            }
-            else {
-                actionBar.show();
-            }
-        }
-    }
-
-    @Override
-    public void setTitle(String title) {
-        if( actionBar != null ) {
-            actionBar.setTitle( title );
-        }
-    }
-
-    @Override
-    public void setTitleBarTextColor(int color) {
-        if( titleBar != null ) {
-            titleBar.setTitleTextColor( color );
-        }
-    }
-
-    @Override
-    public void setTitleBarColor(int color) {
-        if( titleBar != null ) {
-            titleBar.setBackgroundColor( color );
-        }
-    }
-
-    @Override
-    public void setLeftTitleBarButton(TitleBarButton button) {
-        if( actionBar != null ) {
-            if( button != null ) {
-                actionBar.setHomeButtonEnabled( true );
-                actionBar.setDisplayUseLogoEnabled( true );
-                titleBar.setNavigationIcon( button.getImage() );
-                final String action = button.getAction();
-                titleBar.setNavigationOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        if( activeViewController != null ) {
-                            activeViewController.postMessage( action );
-                        }
-                    }
-                });
-            }
-            else {
-//                actionBar.setHomeButtonEnabled( false );
-            }
-        }
+    public TitleBar getTitleBar() {
+        return titleBar;
     }
 
 }

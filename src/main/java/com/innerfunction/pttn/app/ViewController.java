@@ -65,8 +65,8 @@ public class ViewController extends FrameLayout implements MessageReceiver, Mess
     protected LayoutManager layoutManager;
     /** The activity the view is attached to. */
     private Activity activity;
-    /** The app's title bar. */
-    protected TitleBar titleBar = new TitleBarStub();
+    /** This view's title bar state. */
+    protected TitleBarState titleBarState = new TitleBarState();
     /** The view's view - i.e. the thing it displays and controls. */
     private View view;
     /** The view controller's parent view controller, if any. */
@@ -79,12 +79,6 @@ public class ViewController extends FrameLayout implements MessageReceiver, Mess
     private String title;
     /** The view's background colour. */
     private int backgroundColor = Color.TRANSPARENT;
-    /** The view's title bar color. */
-    private int titleBarColor = Color.TRANSPARENT;
-    /** The view's title bar text color. */
-    private int titleBarTextColor = Color.TRANSPARENT;
-    /** The button displayed on the left-hand side of the title bar. */
-    private TitleBarButton leftTitleBarButton;
     /** A list of view behaviours. */
     private List<ViewControllerBehaviour> behaviours = new ArrayList<>();
 
@@ -207,20 +201,32 @@ public class ViewController extends FrameLayout implements MessageReceiver, Mess
 
     public void onAttach(Activity activity) {
         this.activity = activity;
-        this.view = onCreateView( activity );
-        for( ViewController child : childViewControllers ) {
-            child.onAttach( activity );
+        if( state == State.Instantiated ) {
+            this.view = onCreateView( activity );
+            for( ViewController child : childViewControllers ) {
+                child.onAttach( activity );
+            }
+            changeState( State.Attached );
         }
-        changeState( State.Attached );
+        else {
+            // If the view controller is stopped and detached from the window, and then
+            // subsequently reused then its view won't be null at this point.
+            // This can happen with the root view when the app is exited and restarted.
+            assert this.state == State.Stopped;
+            assert this.view != null;
+        }
     }
 
     public void setTitleBar(TitleBar titleBar) {
-        this.titleBar = titleBar;
-        layoutManager.setTitleBar( titleBar );
+        titleBarState.setTitleBar( titleBar );
     }
 
     public TitleBar getTitleBar() {
-        return titleBar;
+        return titleBarState.getTitleBar();
+    }
+
+    public TitleBarState getTitleBarState() {
+        return titleBarState;
     }
 
     public View onCreateView(Activity activity) {
@@ -253,6 +259,8 @@ public class ViewController extends FrameLayout implements MessageReceiver, Mess
             if( activity != null ) {
                 child.onAttach( activity );
             }
+            // Make the child forward title bar state updates through this view's title bar state.
+            child.setTitleBar( titleBarState );
         }
     }
 
@@ -270,11 +278,6 @@ public class ViewController extends FrameLayout implements MessageReceiver, Mess
 
     @Override
     public void onDetachedFromWindow() {
-        /* TODO Confirm this not needed.
-        if( parentViewController != null ) {
-            parentViewController.removeChildViewController( this );
-        }
-        */
         parentViewController = null;
         changeState( State.Destroyed );
         super.onDetachedFromWindow();
@@ -283,7 +286,7 @@ public class ViewController extends FrameLayout implements MessageReceiver, Mess
     public void onStart() {}
 
     public void onResume() {
-        refreshTitleBar();
+        titleBarState.apply();
     }
 
     public void onPause() {}
@@ -291,25 +294,6 @@ public class ViewController extends FrameLayout implements MessageReceiver, Mess
     public void onStop() {}
 
     public void onDestroy() {}
-
-    /** Update the title bar status. */
-    public void refreshTitleBar() {
-        if( hideTitleBar != null ) {
-            titleBar.hideTitleBar( hideTitleBar );
-        }
-        if( title != null ) {
-            titleBar.setTitle( title );
-        }
-        if( titleBarColor != Color.TRANSPARENT ) {
-            titleBar.setTitleBarColor( titleBarColor );
-        }
-        if( titleBarTextColor != Color.TRANSPARENT ) {
-            titleBar.setTitleBarTextColor( titleBarTextColor );
-        }
-        if( leftTitleBarButton != null ) {
-            titleBar.setLeftTitleBarButton( leftTitleBarButton );
-        }
-    }
 
     /**
      * Notify the view of a back button press.
@@ -393,9 +377,7 @@ public class ViewController extends FrameLayout implements MessageReceiver, Mess
 
     public void setTitle(String title) {
         this.title = title;
-        if( titleBar != null ) {
-            titleBar.setTitle( title );
-        }
+        titleBarState.setTitle( title );
     }
 
     public String getTitle() {
@@ -412,19 +394,25 @@ public class ViewController extends FrameLayout implements MessageReceiver, Mess
     }
 
     public void setHideTitleBar(boolean hideTitleBar) {
-        this.hideTitleBar = hideTitleBar;
+        this.titleBarState.setTitleBarHidden( hideTitleBar );
     }
 
     public void setTitleBarColor(int color) {
-        this.titleBarColor = color;
+        this.titleBarState.setTitleBarColor( color );
     }
 
     public void setTitleBarTextColor(int color) {
-        this.titleBarTextColor = color;
+        this.titleBarState.setTitleBarTextColor( color );
     }
 
     public void setLeftTitleBarButton(TitleBarButton button) {
-        this.leftTitleBarButton = button;
+        button.setOwner( this );
+        this.titleBarState.setLeftTitleBarButton( button );
+    }
+
+    public void setRightTitleBarButton(TitleBarButton button) {
+        button.setOwner( this );
+        this.titleBarState.setRightTitleBarButton( button );
     }
 
     public void setLayoutName(String layoutName) {

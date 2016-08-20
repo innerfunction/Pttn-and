@@ -34,8 +34,6 @@ public class SlideViewController extends ViewController {
     public SlideViewController(Context context) {
         super( context );
         setLayoutName("slide_view_layout");
-        // This view instance delegates all titleBar control to the main view.
-        layoutManager.setTitleBarDelegateViewID("main");
     }
 
     @Override
@@ -83,6 +81,11 @@ public class SlideViewController extends ViewController {
     }
 
     public void openDrawer() {
+        // Pause the main view.
+        ViewController mainView = getMainView();
+        mainView.setRunnable( false );
+        mainView.changeState( State.Paused );
+        // Show slide view & update its state.
         ViewController slideView = getSlideView();
         slideView.setRunnable( true );
         slideView.changeState( getState() );
@@ -90,10 +93,15 @@ public class SlideViewController extends ViewController {
     }
 
     public void closeDrawer() {
+        // Hide and pause the slide view.
         drawerLayout.closeDrawers();
         ViewController slideView = getSlideView();
         slideView.setRunnable( false );
         slideView.changeState( State.Paused );
+        // Restart the main view.
+        ViewController mainView = getMainView();
+        mainView.setRunnable( true );
+        mainView.changeState( getState() );
     }
 
     public void toggleDrawer() {
@@ -175,4 +183,5 @@ public class SlideViewController extends ViewController {
         }
         return false;
     }
+
 }

@@ -21,19 +21,12 @@ package com.innerfunction.pttn.app;
  */
 public interface TitleBar {
 
-    /** Hide (or show) the title bar. */
-    void hideTitleBar(boolean hide);
-
-    /** Set the screen title. */
-    void setTitle(String title);
-
-    /** Set the title bar text color. */
-    void setTitleBarTextColor(int color);
-
-    /** Set the title bar background color. */
-    void setTitleBarColor(int color);
-
-    /** Set the left-hand title bar button. */
-    void setLeftTitleBarButton(TitleBarButton button);
+    /**
+     * Apply state to the title bar.
+     * The provided state is applied on top of any existing state. This allows the title bar's
+     * final state to be built up by compounding the configured states of a number of views.
+     * @param state The state to apply to this title bar.
+     */
+    void applyState(TitleBarState state);
 
 }

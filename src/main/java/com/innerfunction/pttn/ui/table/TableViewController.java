@@ -19,12 +19,8 @@ import java.util.Map;
 
 import android.app.Activity;
 import android.content.Context;
-import android.os.Bundle;
-import android.os.Parcelable;
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.Toast;
 
 import com.innerfunction.pttn.Configuration;
@@ -33,7 +29,6 @@ import com.innerfunction.pttn.IOCContainerAware;
 import com.innerfunction.pttn.Message;
 import com.innerfunction.pttn.app.AppContainer;
 import com.innerfunction.pttn.app.ViewController;
-import com.innerfunction.pttn.app.ViewFragment;
 import com.innerfunction.uri.Resource;
 import com.innerfunction.util.ValueMap;
 
