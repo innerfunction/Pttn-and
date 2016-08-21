@@ -130,14 +130,6 @@ public class NavigationViewController extends ViewController {
         }
     }
 
-    @Override
-    public void setTitleBar(TitleBar titleBar) {
-        super.setTitleBar( titleBar );
-        for( ViewController view : views ) {
-            view.setTitleBar( titleBar );
-        }
-    }
-
     public void setRootView(ViewController view) {
         setViews( Arrays.asList( view ) );
     }

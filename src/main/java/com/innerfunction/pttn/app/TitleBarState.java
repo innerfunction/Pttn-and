@@ -17,7 +17,7 @@ package com.innerfunction.pttn.app;
  * A class for representing the configured state of a view's title bar.
  * Created by juliangoacher on 19/08/16.
  */
-public class TitleBarState implements TitleBar {
+public class TitleBarState {
 
     /** The title bar being controlled by this state. */
     private TitleBar titleBar = new TitleBarStub();
@@ -54,15 +54,15 @@ public class TitleBarState implements TitleBar {
     }
 
     public void setTitleBarTextColor(int color) {
-        this.color = color;
+        this.textColor = color;
     }
 
     public int getTitleBarTextColor() {
-        return color;
+        return textColor;
     }
 
     public void setTitleBarColor(int color) {
-        this.textColor = color;
+        this.color = color;
     }
 
     public int getTitleBarColor() {
@@ -90,55 +90,4 @@ public class TitleBarState implements TitleBar {
         titleBar.applyState( this );
     }
 
-    @Override
-    public void applyState(TitleBarState state) {
-        // Apply the combination of the current state and the argument state to the title bar.
-        titleBar.applyState( new Union( state ) );
-    }
-
-    /**
-     * A combination of this title bar state with another state.
-     * Note that for most title bar properties, the other state's property setting takes
-     * precedence over this state's.
-     */
-    class Union extends TitleBarState {
-
-        private TitleBarState state;
-
-        Union(TitleBarState state) {
-            this.state = state;
-        }
-
-        public boolean getTitleBarHidden() {
-            return hidden || state.getTitleBarHidden();
-        }
-
-        public String getTitle() {
-            return notNull( state.getTitle(), title );
-        }
-
-        public int getTitleBarColor() {
-            return notZero( state.getTitleBarColor(), color );
-        }
-
-        public int getTitleBarTextColor() {
-            return notZero( state.getTitleBarTextColor(), textColor );
-        }
-
-        public TitleBarButton getLeftTitleBarButton() {
-            return notNull( state.getLeftTitleBarButton(), leftButton );
-        }
-
-        public TitleBarButton getRightTitleBarButton() {
-            return notNull( state.getRightTitleBarButton(), rightButton );
-        }
-
-        <T> T notNull(T a, T b) {
-            return a != null ? a : b;
-        }
-
-        int notZero(int a, int b) {
-            return a != 0 ? a : b;
-        }
-    }
 }

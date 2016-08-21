@@ -19,6 +19,7 @@ import android.support.v4.widget.DrawerLayout;
 import android.view.View;
 
 import com.innerfunction.pttn.Message;
+import com.innerfunction.pttn.app.TitleBarStub;
 import com.innerfunction.pttn.app.ViewController;
 
 import static android.support.v4.view.GravityCompat.*;
@@ -53,9 +54,12 @@ public class SlideViewController extends ViewController {
     }
 
     public void setSlideView(ViewController slideView) {
+        slideView.setRunnable( false );
         removeChildViewController( getSlideView() );
         addChildViewController( slideView );
         layoutManager.setViewComponent("slide", slideView );
+        // Prevent the slide view from controlling the title bar.
+        slideView.setTitleBar( new TitleBarStub() );
     }
 
     public ViewController getSlideView() {

@@ -66,7 +66,7 @@ public class ViewController extends FrameLayout implements MessageReceiver, Mess
     /** The activity the view is attached to. */
     private Activity activity;
     /** This view's title bar state. */
-    protected TitleBarState titleBarState = new TitleBarState();
+    protected VirtualTitleBar titleBarState = new VirtualTitleBar();
     /** The view's view - i.e. the thing it displays and controls. */
     private View view;
     /** The view controller's parent view controller, if any. */

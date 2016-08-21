@@ -34,7 +34,8 @@ public class ActivityTitleBar implements TitleBar {
 
     @Override
     public void applyState(TitleBarState state) {
-        if( state.getTitleBarHidden() ) {
+        boolean hidden = state.getTitleBarHidden();
+        if( hidden ) {
             actionBar.hide();
         }
         else {
@@ -68,6 +69,8 @@ public class ActivityTitleBar implements TitleBar {
         }
         else {
             actionBar.setHomeButtonEnabled( false );
+            actionBar.setDisplayUseLogoEnabled( false );
+            toolbar.setNavigationIcon( null );
         }
         TitleBarButton rightButton = state.getRightTitleBarButton();
         if( rightButton != null ) {
