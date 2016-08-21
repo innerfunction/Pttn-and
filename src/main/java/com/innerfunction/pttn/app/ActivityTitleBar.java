@@ -13,8 +13,11 @@
 // limitations under the License
 package com.innerfunction.pttn.app;
 
+import android.graphics.drawable.Drawable;
 import android.support.v7.app.ActionBar;
 import android.support.v7.widget.Toolbar;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 
 /**
@@ -53,16 +56,16 @@ public class ActivityTitleBar implements TitleBar {
         if( textColor != 0 ) {
             toolbar.setTitleTextColor( textColor );
         }
-        TitleBarButton leftButton = state.getLeftTitleBarButton();
+        final TitleBarButton leftButton = state.getLeftTitleBarButton();
         if( leftButton != null ) {
             actionBar.setHomeButtonEnabled( true );
             actionBar.setDisplayUseLogoEnabled( true );
             toolbar.setNavigationIcon( leftButton.getImage() );
-            final String action = leftButton.getAction();
-            final ViewController viewController = leftButton.getOwner();
             toolbar.setNavigationOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
+                    String action = leftButton.getAction();
+                    ViewController viewController = leftButton.getOwner();
                     viewController.postMessage( action );
                 }
             });
@@ -72,9 +75,25 @@ public class ActivityTitleBar implements TitleBar {
             actionBar.setDisplayUseLogoEnabled( false );
             toolbar.setNavigationIcon( null );
         }
-        TitleBarButton rightButton = state.getRightTitleBarButton();
+        final TitleBarButton rightButton = state.getRightTitleBarButton();
+        Menu menu = toolbar.getMenu();
+        menu.clear();
         if( rightButton != null ) {
-
+            MenuItem menuItem = menu.add( Menu.NONE, Menu.NONE, Menu.NONE, rightButton.getTitle() );
+            Drawable image = rightButton.getImage();
+            if( image != null ) {
+                menuItem.setIcon( image );
+                menuItem.setShowAsAction( MenuItem.SHOW_AS_ACTION_ALWAYS );
+                menuItem.setOnMenuItemClickListener( new MenuItem.OnMenuItemClickListener() {
+                    @Override
+                    public boolean onMenuItemClick(MenuItem item) {
+                        String action = rightButton.getAction();
+                        ViewController viewController = rightButton.getOwner();
+                        viewController.postMessage( action );
+                        return false;
+                    }
+                });
+            }
         }
     }
 }

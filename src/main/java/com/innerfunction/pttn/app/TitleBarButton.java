@@ -22,8 +22,17 @@ import android.graphics.drawable.Drawable;
 public class TitleBarButton {
 
     private ViewController owner;
+    private String title;
     private Drawable image;
     private String action;
+
+    public TitleBarButton() {}
+
+    public TitleBarButton(String title, Drawable image, String action) {
+        this.title = title;
+        this.image = image;
+        this.action = action;
+    }
 
     public void setOwner(ViewController owner) {
         this.owner = owner;
@@ -31,6 +40,14 @@ public class TitleBarButton {
 
     public ViewController getOwner() {
         return owner;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public String getTitle() {
+        return title;
     }
 
     public void setImage(Drawable image) {

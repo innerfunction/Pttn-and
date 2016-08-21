@@ -408,7 +408,7 @@ public class TableViewController extends ViewController implements IOCContainerA
             refreshTableView();
             return true;
         }
-        return false;
+        return super.receiveMessage( message, sender );
     }
 
 }

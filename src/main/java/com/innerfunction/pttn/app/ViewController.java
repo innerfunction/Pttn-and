@@ -328,8 +328,11 @@ public class ViewController extends FrameLayout implements MessageReceiver, Mess
             }
             return true;
         }
-        if( message.hasName("show-image") ) {
-            // TODO
+        if( message.hasName("dismiss-modal") ) {
+            if( activity instanceof ViewControllerActivity ) {
+                ((ViewControllerActivity)activity).dismissModalView();
+                return true;
+            }
         }
         return false;
     }
