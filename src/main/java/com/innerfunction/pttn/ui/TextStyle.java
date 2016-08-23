@@ -97,7 +97,7 @@ public class TextStyle {
         if( typeface != null ) {
             textView.setTypeface( typeface );
         }
-        textView.setTextSize( Display.ptToPx( fontSize ) );
+        textView.setTextSize( Display.ptToSp( fontSize ) );
         textView.setTextColor( textColor );
         textView.setBackgroundColor( backgroundColor );
         textView.setGravity( textAlign.gravity );

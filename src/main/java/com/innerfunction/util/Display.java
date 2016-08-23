@@ -47,22 +47,24 @@ public class Display {
     }
 
     /**
-     * Convert a point size value to actual screen pixels.
+     * Convert a point size value to scaled pixels.
      * @param   pt  A point value.
-     * @return  A pixel value.
+     * @return  A scaled pixel value.
      */
-    public static int ptToPx(int pt) {
-        return ptToPx( (float)pt );
+    public static int ptToSp(int pt) {
+        return ptToSp( (float)pt );
     }
 
     /**
-     * Convert a point size value to actual screen pixels.
+     * Convert a point size value to scaled pixels.
      * Point values are calculated as 0.85 of the DIP value.
      * @param   pt  A point value.
-     * @return  A pixel value.
+     * @return  A scaled pixel value.
      */
-    public static int ptToPx(float pt) {
-        return dpToPx( pt * 0.85f );
+    public static int ptToSp(float pt) {
+        pt *= 0.85f;
+        float sp = TypedValue.applyDimension( TypedValue.COMPLEX_UNIT_SP, pt, getDisplayMetrics() );
+        return Math.round( sp );
     }
 
     /**
