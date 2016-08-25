@@ -210,7 +210,8 @@ public class ViewControllerActivity extends PttnActivity<ViewController> {
                 transition = new Slide( Gravity.TOP );
                 break;
             case HideModal:
-                transition = new Slide( Gravity.BOTTOM );
+                //transition = new Slide( Gravity.BOTTOM );
+                transition = new Fade();
                 break;
             default:
                 transition = new Fade();

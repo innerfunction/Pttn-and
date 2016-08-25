@@ -99,25 +99,25 @@ public class Response {
             return new String( body, contentEncoding );
         }
         catch(UnsupportedEncodingException e) {
-            Log.e(Tag, String.format("Bad content encoding when reading response body: %s", contentEncoding ) );
+            Log.e( Tag, String.format( "Bad content encoding when reading response body: %s", contentEncoding ) );
         }
         return null;
     }
 
     public Object parseBodyData() {
-        if("application/json".equals( contentType ) ) {
+        if( "application/json".equals( contentType ) ) {
             String json = getBody();
             if( json != null ) {
                 return JSONValue.parse( json );
             }
         }
-        else if("application/x-www-form-urlencoded".equals( contentType ) ) {
+        else if( "application/x-www-form-urlencoded".equals( contentType ) ) {
             String data = getBody();
             if( data != null ) {
                 Map<String,Object> result = new HashMap<>();
-                String[] pairs = TextUtils.split( data, "&");
+                String[] pairs = TextUtils.split( data, "&" );
                 for( String pair : pairs ) {
-                    String[] keyValue = TextUtils.split( pair, "=");
+                    String[] keyValue = TextUtils.split( pair, "=" );
                     String key = Uri.decode( keyValue[0] );
                     String value = Uri.decode( keyValue[1] );
                     result.put( key, value );

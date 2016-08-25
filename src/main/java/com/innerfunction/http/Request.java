@@ -15,8 +15,10 @@ package com.innerfunction.http;
 
 import android.text.TextUtils;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.CookieStore;
 import java.net.HttpCookie;
 import java.net.HttpURLConnection;
@@ -112,6 +114,28 @@ public abstract class Request {
 
     /** Read the server response. */
     abstract Response readResponse(HttpURLConnection connection) throws IOException;
+
+    /**
+     * Open an input stream on a connection.
+     * This method encapsulates the complexity associated with opening an input stream on a non-2xx
+     * HTTP response.
+     * @param connection    The HTTP connection.
+     * @return An input stream on the HTTP response.
+     * @throws IOException If a non-HTTP connection error occurs.
+     */
+    protected InputStream openInputStream(HttpURLConnection connection) throws IOException {
+        InputStream in;
+        try {
+            in = connection.getInputStream();
+        }
+        catch(IOException e) {
+            if( connection.getResponseCode() == -1 ) {
+                throw e;
+            }
+            in = connection.getErrorStream();
+        }
+        return new BufferedInputStream( in, DataBufferSize );
+    }
 
     /**
      * Add cookies to a request connection.

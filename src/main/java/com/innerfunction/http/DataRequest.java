@@ -15,6 +15,7 @@ package com.innerfunction.http;
 
 import java.io.BufferedInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.util.Arrays;
@@ -33,8 +34,7 @@ public class DataRequest extends Request {
 
     @Override
     Response readResponse(HttpURLConnection connection) throws IOException {
-        // TODO See http://stackoverflow.com/a/21534175 for how to deal with exception related to 401 response
-        BufferedInputStream in = new BufferedInputStream( connection.getInputStream(), DataBufferSize );
+        InputStream in = openInputStream( connection );
         checkForNetworkSignon( connection );
         byte[] body = new byte[4096];
         int offset = 0;

@@ -201,12 +201,12 @@ public class Client {
                     if( isAuthenticationErrorResponse( response ) ) {
                         // Try to authenticate and then resubmit the original request.
                         authenticate()
-                            .then(new Q.Promise.Callback<Response, Response>() {
+                            .then(new Q.Promise.Callback<Response, Void>() {
                                 @Override
-                                public Response result(Response response) {
+                                public Void result(Response response) {
                                     // Retry the original request.
                                     promise.resolve( send( request ) );
-                                    return response;
+                                    return null;
                                 }
                             })
                             .error(new Q.Promise.ErrorCallback() {
