@@ -94,13 +94,13 @@ public class Container implements ConfigurationData, Service, MessageReceiver, M
     private Map<String,List<PendingNamed>> pendingNames;
     /**
      * A map of pending property value reference counts, keyed by the property's parent object.
-     * Used to manage deferred calls to the IOCContainerAware.afterConfig() method.
+     * Used to manage deferred calls to the IOCConfigurationAware.afterConfig() method.
      */
     private Map<Object,Integer> pendingValueRefCounts;
     /**
      * A map of pending value object configurations. These are the configurations for the parent
      * objects of pending property values. These are needed for deferred calls to the
-     * IFIOCContainerAware.afterIOCConfig() method.
+     * IFIOCConfigurationAware.afterIOCConfig() method.
      */
     private Map<Object,Configuration> pendingValueObjectConfigs;
     /**
@@ -419,11 +419,11 @@ public class Container implements ConfigurationData, Service, MessageReceiver, M
                 else {
                     pendingValueRefCounts.remove( objectKey );
                     // The property object is now fully configured, invoke its afterConfigure()
-                    // method if it implements IOCContainerAware.
+                    // method if it implements IOCConfigurationAware.
                     Object pendingObj = pending.getObject();
-                    if( pendingObj instanceof IOCContainerAware ) {
+                    if( pendingObj instanceof IOCConfigurationAware ) {
                         Configuration objConfig = pendingValueObjectConfigs.remove( objectKey );
-                        ((IOCContainerAware)pendingObj).afterIOCConfigure( objConfig );
+                        ((IOCConfigurationAware)pendingObj).afterIOCConfigure( objConfig );
                     }
                 }
             }
@@ -522,7 +522,7 @@ public class Container implements ConfigurationData, Service, MessageReceiver, M
 
     /**
      * Record the configuration for an object with pending value references.
-     * Needed to ensure the the [IFIOCContainerAware afterConfiguration:] method is called correctly.
+     * Needed to ensure the the IOCConfigurationAware.afterIOCConfigure method is called correctly.
      */
     public void recordPendingValueObjectConfiguration(Object objectKey, Configuration configuration) {
         pendingValueObjectConfigs.put( objectKey, configuration );

@@ -13,7 +13,6 @@
 // limitations under the License
 package com.innerfunction.pttn;
 
-import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.util.Log;
 import android.util.LruCache;
@@ -87,8 +86,8 @@ public class ObjectConfigurer {
      */
     public void configure(Object object, Class<?> memberType, Configuration configuration, String kpPrefix) {
         // Start the object configuration.
-        if( object instanceof IOCContainerAware ) {
-            ((IOCContainerAware)object).beforeIOCConfigure( configuration );
+        if( object instanceof IOCConfigurationAware ) {
+            ((IOCConfigurationAware)object).beforeIOCConfigure( configuration );
         }
         // Configure the object.
         if( object instanceof Configurable ) {
@@ -114,13 +113,13 @@ public class ObjectConfigurer {
         }
         configuredObjectCount++;
         // Post configuration.
-        if( object instanceof IOCContainerAware ) {
+        if( object instanceof IOCConfigurationAware ) {
             Object objectKey = new ObjectKey( object );
             if( container.hasPendingValueRefsForObjectKey( objectKey ) ) {
                 container.recordPendingValueObjectConfiguration( objectKey, configuration );
             }
             else {
-                ((IOCContainerAware)object).afterIOCConfigure( configuration );
+                ((IOCConfigurationAware)object).afterIOCConfigure( configuration );
             }
         }
         container.doPostConfiguration( object );

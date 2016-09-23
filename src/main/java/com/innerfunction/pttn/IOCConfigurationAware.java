@@ -14,14 +14,14 @@
 package com.innerfunction.pttn;
 
 /**
- * An IOC component aware of its container.
- * Object's implementing this protocol will have their iocContainer property
- * set to the container that has instantiated them.
- *
- * Created by juliangoacher on 23/09/16.
+ * An IOC component aware of the configuration lifecycle.
  */
-public interface IOCContainerAware {
+public interface IOCConfigurationAware {
 
-    void setIOCContainer(Container container);
+    /** Called immediately before the object is configured by calls to its properties. */
+    void beforeIOCConfigure(Configuration configuration);
+
+    /** Called immediately after the object is configured by calls to its properties. */
+    void afterIOCConfigure(Configuration configuration);
 
 }

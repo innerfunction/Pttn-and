@@ -25,6 +25,7 @@ import android.widget.Toast;
 
 import com.innerfunction.pttn.Configuration;
 import com.innerfunction.pttn.Container;
+import com.innerfunction.pttn.IOCConfigurationAware;
 import com.innerfunction.pttn.IOCContainerAware;
 import com.innerfunction.pttn.Message;
 import com.innerfunction.pttn.app.AppContainer;
@@ -42,7 +43,7 @@ import com.nakardo.atableview.view.ATableViewCell;
  * A configurable table view component.
  * Attached by juliangoacher on 20/05/16.
  */
-public class TableViewController extends ViewController implements IOCContainerAware {
+public class TableViewController extends ViewController implements IOCContainerAware, IOCConfigurationAware {
 
     static final String Tag = TableViewController.class.getSimpleName();
 
