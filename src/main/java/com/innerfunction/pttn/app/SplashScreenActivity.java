@@ -68,9 +68,12 @@ public class SplashScreenActivity extends Activity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate( savedInstanceState );
+        // The following is to avoid a blank white screen being briefly displayed as the activity
+        // loads; taken from http://stackoverflow.com/a/20560190 but note comment below that at
+        // http://stackoverflow.com/a/34960302
+        setTheme( android.R.style.Theme_Translucent_NoTitleBar );
 
-//        ManifestMetaData.applyTo( this );
+        super.onCreate( savedInstanceState );
 
         setContentView( splashScreenLayout );
 
