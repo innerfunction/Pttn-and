@@ -128,7 +128,6 @@ public class ATableViewCell extends FrameLayout implements Checkable {
 
 	@Override
 	public void setPressed(boolean pressed) {
-		
 		// disable selection when it's not allowed by the table configuration.
 		ATableView tableView = (ATableView) getParent();
 		super.setPressed(tableView.getAllowsSelection() ? pressed : false);

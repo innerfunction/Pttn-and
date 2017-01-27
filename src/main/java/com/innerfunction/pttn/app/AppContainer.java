@@ -462,8 +462,12 @@ public class AppContainer extends Container {
         if( "mailto".equalsIgnoreCase( scheme )) {
             intent = new Intent( Intent.ACTION_SENDTO, Uri.parse( url ));
         }
-        if( intent != null ) {
-            ((Activity)currentActivity).startActivity( intent );
+        if( currentActivity == null ) {
+            // This can happen because... meh Android
+            Log.w( Tag, "openURL: currentActivity is null");
+        }
+        else if( intent != null ) {
+            currentActivity.startActivity( intent );
             return true;
         }
         return false;

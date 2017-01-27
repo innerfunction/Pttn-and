@@ -125,6 +125,11 @@ public class ViewControllerActivity extends PttnActivity<ViewController> {
             activeViewController.changeState( ViewController.State.Destroyed );
         }
         super.onDestroy();
+        // Remove any child views. This is necessary because if the view has been supplied by
+        // the app container (e.g. see AppContainer.showViewUsingActivityType) then it may
+        // be reused at a later point, but an IllegalStateException will be thrown when the view
+        // is added to the new activity if it hasn't been previously removed from the old one.
+        viewContainer.removeAllViews();
     }
 
     @Override
