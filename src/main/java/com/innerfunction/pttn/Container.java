@@ -253,27 +253,27 @@ public class Container implements ConfigurationData, Service, MessageReceiver, M
      * the class name in which case a new instance of the proxy class is returned.
      */
     public Object newInstanceForClassNameAndConfiguration(String className, Configuration configuration) {
+        Object instance = null;
         // If config proxy available for classname then instantiate proxy instead of new instance.
         IOCProxyLookup.Entry proxyEntry = IOCProxyLookup.lookupConfigurationProxyForClassName( className );
         if( proxyEntry != null ) {
-            return proxyEntry.instantiateProxy( androidContext );
+            instance = proxyEntry.instantiateProxy( androidContext );
         }
-        // Otherwise continue with class instantiation.
-        try {
-            Class objClass = Class.forName( className );
-            Object instance = null;
-            // Try constructing with a single android Context argument.
-            instance = constructWithArgument( objClass, Context.class, androidContext );
-            // Try constructing with a single Configuration argument.
-            if( instance == null ) {
-                instance = constructWithArgument( objClass, Configuration.class, configuration );
-                // Try constructing with a no-args constructor.
+        else {
+            // Otherwise continue with class instantiation.
+            try {
+                Class objClass = Class.forName( className );
+                // Try constructing with a single android Context argument.
+                instance = constructWithArgument( objClass, Context.class, androidContext );
+                // Try constructing with a single Configuration argument.
                 if( instance == null ) {
-                    instance = objClass.newInstance();
+                    instance = constructWithArgument( objClass, Configuration.class, configuration );
+                    // Try constructing with a no-args constructor.
+                    if( instance == null ) {
+                        instance = objClass.newInstance();
+                    }
                 }
             }
-            doPostInstantiation( instance );
-            return instance;
         }
         catch(ClassNotFoundException e) {
             Log.e( Tag, String.format("Class not found: %s", className ) );
@@ -284,7 +284,10 @@ public class Container implements ConfigurationData, Service, MessageReceiver, M
         catch(Exception e) {
             Log.e( Tag, String.format("Error initializing object of class %s", className ), e );
         }
-        return null;
+        if( instance != null ) {
+            doPostInstantiation( instance );
+        }
+        return instance;
     }
 
     /**

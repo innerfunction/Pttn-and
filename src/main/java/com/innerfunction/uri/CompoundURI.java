@@ -438,11 +438,11 @@ public class CompoundURI {
         return false;
     }
 
-    // // Match | followed by any format characters or kv ~ -
+    // // Match | followed by any format characters or . _ ~ -
     private boolean parseFormat(String input, ASTNode ast) {
         if( firstChar( input ) == '|' ) {
             input = input.substring( 1 );
-            String[] groups = Regex.matches("^([\\w_~-]*)(.*)$", input );
+            String[] groups = Regex.matches("^([\\w\\._~-]*)(.*)$", input );
             if( groups != null && groups.length > 2 ) {
                 ast.format = groups[1];
                 ast.__trailing = groups[2];
