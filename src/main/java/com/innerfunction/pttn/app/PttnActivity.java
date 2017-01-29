@@ -43,6 +43,8 @@ public abstract class PttnActivity<T> extends AppCompatActivity {
 
     @Override
     protected void onNewIntent(Intent intent) {
+        Log.d(Tag,"onNewIntent");
+
         super.onNewIntent( intent );
         /*
         String dispatchAction = null;
@@ -72,6 +74,9 @@ public abstract class PttnActivity<T> extends AppCompatActivity {
         // TODO Assuming here that if the activity is being recreated then viewUUID will have been
         // TODO recovered by an onRestoreInstanceState(...) method call
 
+        Log.d(Tag,"onCreate, viewUUID="+viewUUID);
+        android.os.Debug.waitForDebugger();
+
         if( viewUUID == null ) {
             viewUUID = getIntent().getStringExtra( IntentActions.ViewUUID.name() );
         }
@@ -81,7 +86,8 @@ public abstract class PttnActivity<T> extends AppCompatActivity {
         // Check for a container instantiated view.
         if( viewUUID != null ) {
             try {
-                showView( (T)appContainer.getViewForUUID( viewUUID ) );
+                T view = (T)appContainer.getViewForUUID( viewUUID );
+                showView( view );
             }
             catch(ClassCastException e) {
                 // Shouldn't happen if everything is setup correctly.
@@ -93,20 +99,23 @@ public abstract class PttnActivity<T> extends AppCompatActivity {
 
     @Override
     public void onResume() {
+        Log.d(Tag,"onResume");
         super.onResume();
         AppContainer.getAppContainer().setCurrentActivity( this );
     }
 
     @Override
     public void onPause() {
+        Log.d(Tag,"onPause");
         super.onPause();
         AppContainer.getAppContainer().clearCurrentActivity( this );
     }
 
     @Override
     public void onDestroy() {
+        Log.d(Tag,"onDestroy");
         if( viewUUID != null ) {
-            AppContainer.getAppContainer().removeViewForUUID( viewUUID );
+            //AppContainer.getAppContainer().removeViewForUUID( viewUUID );
         }
         super.onDestroy();
     }
