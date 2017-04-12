@@ -74,12 +74,12 @@ public abstract class PttnActivity<T> extends AppCompatActivity {
         // TODO Assuming here that if the activity is being recreated then viewUUID will have been
         // TODO recovered by an onRestoreInstanceState(...) method call
 
-        Log.d(Tag,"onCreate, viewUUID="+viewUUID);
-        android.os.Debug.waitForDebugger();
+        //android.os.Debug.waitForDebugger();
 
         if( viewUUID == null ) {
             viewUUID = getIntent().getStringExtra( IntentActions.ViewUUID.name() );
         }
+        Log.d(Tag,"onCreate, viewUUID="+viewUUID);
 
         AppContainer appContainer = AppContainer.getAppContainer();
         appBackgroundColor = appContainer.getAppBackgroundColor();
