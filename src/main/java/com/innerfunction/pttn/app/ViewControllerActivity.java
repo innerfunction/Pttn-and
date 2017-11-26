@@ -23,6 +23,8 @@ import android.transition.Transition;
 import android.transition.TransitionManager;
 import android.util.Log;
 import android.view.Gravity;
+import android.view.ViewGroup;
+import android.view.ViewParent;
 import android.widget.FrameLayout;
 
 import com.innerfunction.pttn.R;
@@ -228,15 +230,25 @@ public class ViewControllerActivity extends PttnActivity<ViewController> {
             = new FrameLayout.LayoutParams( FrameLayout.LayoutParams.MATCH_PARENT,
                                             FrameLayout.LayoutParams.MATCH_PARENT );
         view.setLayoutParams( layoutParams );
+        // JG FIX 20171125 - Read view parent.
+        ViewParent parent = view.getParent();
         // Add / remove views as appropriate.
         switch( viewTransition ) {
         case Replace:
             if( mainViewController != null ) {
                 viewContainer.removeView( mainViewController );
             }
+            // JG FIX 20171125 - Check if view already has a view parent, remove from parent if so.
+            if( parent instanceof ViewGroup ) {
+                ((ViewGroup)parent).removeView( view );
+            }
             viewContainer.addView( view );
             break;
         case ShowModal:
+            // JG FIX 20171125 - Check if view already has a view parent, remove from parent if so.
+            if( parent instanceof ViewGroup ) {
+                ((ViewGroup)parent).removeView( view );
+            }
             viewContainer.addView( view );
             break;
         case HideModal:
